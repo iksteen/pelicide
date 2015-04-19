@@ -1,0 +1,53 @@
+body, html {
+    padding: 0;
+    margin: 0;
+    font-family: Roboto, sans-serif;
+}
+
+#main_layout {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
+#layout_main_panel_left > .w2ui-panel-content {
+    border-right: 1px solid silver;
+}
+
+#layout_editor_panel_main > .w2ui-panel-content {
+    background-color: #002240;
+    padding: 0.5em;
+}
+
+#layout_editor_panel_right > .w2ui-panel-content {
+    background-color: white;
+    padding: 0.5em;
+}
+
+.CodeMirror {
+    height: 100%;
+    margin: 0;
+    border: 0;
+    padding: 0;
+}
+
+#preview_container {
+    height: 100%;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    overflow: scroll;
+}
+
+#preview {
+    font-size: 1.1em;
+    color: #002240;
+}
+
+#render {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    margin: 0;
+    padding: 0;
+}

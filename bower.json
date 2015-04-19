@@ -1,0 +1,17 @@
+{
+  "name": "pelicide",
+  "version": "0.0.0",
+  "authors": [
+    "Ingmar Steen <iksteen@gmail.com>"
+  ],
+  "description": "An IDE for Pelican",
+  "license": "MIT",
+  "homepage": "https://github.com/iksteen/pelicide",
+  "dependencies": {
+    "w2ui": "~1.4.2",
+    "jquery": "~2.1.3",
+    "jquery-jsonrpc": "~0.1.1",
+    "codemirror": "~5.1.0",
+    "fontawesome": "~4.3.0"
+  }
+}

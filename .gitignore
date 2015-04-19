@@ -1,0 +1,5 @@
+.idea
+*.pyc
+dist
+*.egg-info
+pelicide/ui/components
