@@ -148,6 +148,7 @@ $(function() {
                     theme: 'cobalt'
                 }
             );
+            CodeMirror.autoLoadMode(this._codeMirror, mode);
 
             this._codeMirror.on('change', $.proxy(this.schedulePreview, this));
 
@@ -304,5 +305,6 @@ $(function() {
         }
     };
 
+    CodeMirror.modeURL = 'components/codemirror/mode/%N/%N.js';
     new Pelicide();
 });
