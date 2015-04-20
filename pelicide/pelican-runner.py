@@ -3,8 +3,9 @@ import os
 import sys
 import tempfile
 from pelican.log import init as log_init
-from pelican import get_instance, logging, signals, Readers
+from pelican import get_instance, logging, signals, Readers, urlwrappers
 from traceback import print_exc
+import datetime
 
 
 def build(pelican, settings, filenames=None):
@@ -59,8 +60,17 @@ def render(readers, fmt, content):
         os.unlink(f.name)
 
 
+def encode_metadata(o):
+    if isinstance(o, datetime.datetime):
+        return o.strftime('%Y-%m-%d %H:%M:%S')
+    elif isinstance(o, urlwrappers.URLWrapper):
+        return str(o)
+    else:
+        raise TypeError('Don\'t know how to serialize %s' % type(o))
+
+
 def reply(cmd_id, result, args=None):
-    sys.stdout.write('%s %s %s\n' % (cmd_id, '+' if result else '-', json.dumps(args)))
+    sys.stdout.write('%s %s %s\n' % (cmd_id, '+' if result else '-', json.dumps(args, default=encode_metadata)))
 
 
 def success(cmd_id, args=None):
@@ -125,7 +135,6 @@ def run(config_file, init_settings):
         elif cmd == 'render':
             try:
                 response = dict(zip(('content', 'metadata'), render(readers, *args)))
-                response['metadata'] = None
                 success(cmd_id, response)
             except Exception as e:
                 print_exc()
