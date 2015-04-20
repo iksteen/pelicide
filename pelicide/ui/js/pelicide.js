@@ -304,7 +304,7 @@ $(function() {
             var content = this._editor && this._editor.content();
             if(content) {
                 $.jsonRPC.request('render', {
-                    params: ['markdown', content],
+                    params: [this._currentFormat, content],
                     success: function(result) {
                         $('#preview').html(result.result);
                     }
