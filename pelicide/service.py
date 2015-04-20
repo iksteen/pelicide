@@ -59,3 +59,15 @@ class PelicideService(object):
 
         with open(path, 'rb') as f:
             return f.read().decode('utf-8')
+
+    def json_rpc_set_content(self, path, content):
+        content_path = self.runner.settings['PATH']
+        if not content_path.endswith(os.sep):
+            content_path += os.sep
+        path = os.path.abspath(os.path.join(self.runner.settings['PATH'], path))
+
+        if not path.startswith(content_path):
+            raise IOError('File not in content path.')
+
+        with open(path, 'wb') as f:
+            f.write(content.encode('utf-8'))
