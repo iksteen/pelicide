@@ -10,10 +10,11 @@ $(function() {
 
     Pelicide.prototype = {
         _previewPending: false,
-        _pendingPreviewScroll: false,
 
         init: function() {
             this._content = {};
+            this._editors = {};
+            this._editor = null;
 
             this.initLayout();
             this.initSidebar();
@@ -133,38 +134,14 @@ $(function() {
 
         initEditor: function(mode, content) {
             var panel=$('#layout_editor_panel_main').find('> .w2ui-panel-content');
+            panel.empty();
 
-            if(this._codeMirror !== null) {
-                this._codeMirror = null;
-                panel.empty();
+            if(this._editor !== null) {
+                this._editor.close();
+                this._editor = null;
             }
 
-            this._codeMirror = CodeMirror(
-                panel[0],
-                {
-                    value: content,
-                    lineWrapping: true,
-                    mode: mode,
-                    theme: 'cobalt'
-                }
-            );
-            CodeMirror.autoLoadMode(this._codeMirror, mode);
-
-            this._codeMirror.on('change', $.proxy(this.schedulePreview, this));
-
-            $('.CodeMirror-scroll').on('scroll', $.proxy(function() {
-                if(! this._pendingPreviewScroll) {
-                    this._pendingPreviewScroll = true;
-
-                    setTimeout($.proxy(function() {
-                        var viewport=$('.CodeMirror-scroll'),
-                            target=$('#preview_container'),
-                            f = viewport.scrollTop() / (viewport.prop('scrollHeight') - viewport.prop('offsetHeight'));
-                        this._pendingPreviewScroll = false;
-                        target.scrollTop(f * (target.prop('scrollHeight') - target.prop('offsetHeight')));
-                    }, this), 25);
-                }
-            }, this));
+            this._editor = new this._editors[mode](this, panel[0], content);
         },
 
         toggleSidebar: function(event) {
@@ -291,7 +268,7 @@ $(function() {
         },
 
         updatePreview: function() {
-            var content = this._codeMirror && this._codeMirror.getValue();
+            var content = this._editor && this._editor.content();
             if(content) {
                 $.jsonRPC.request('render', {
                     params: ['markdown', content],
@@ -302,9 +279,81 @@ $(function() {
             } else {
                 $('#preview').html('');
             }
+        },
+
+        setUpPreviewScrollSync: function(el) {
+            var pending = false;
+
+            $(el).on('scroll', function() {
+                if(! pending) {
+                    pending = true;
+                    setTimeout($.proxy(function() {
+                        var el = $(this),
+                            target = $('#preview_container'),
+                            f = el.scrollTop() / (el.prop('scrollHeight') - el.prop('offsetHeight'));
+                        target.scrollTop(f * (target.prop('scrollHeight') - target.prop('offsetHeight')));
+                        pending = false;
+                    }, this), 25);
+                }
+            });
+        },
+
+        addEditor: function(editor, modes) {
+            for(var i=0; i<modes.length; ++i) {
+                this._editors[modes[i]] = editor;
+            }
         }
     };
 
+    function CodeMirrorEditor(pelicide, parent_el, content) {
+        /* Set up CodeMirror */
+        this._codeMirror = CodeMirror(
+            parent_el,
+            {
+                value: content,
+                lineWrapping: true,
+                mode: this.mode,
+                theme: 'cobalt'
+            }
+        );
+        if(CodeMirror.autoLoadMode !== undefined)
+            CodeMirror.autoLoadMode(this._codeMirror, this.mode);
+
+        // Schedule preview update on content changes
+        this._codeMirror.on('change', $.proxy(pelicide.schedulePreview, pelicide));
+
+        // Sync preview scrolling
+        pelicide.setUpPreviewScrollSync(this._codeMirror.getScrollerElement());
+    }
+
+    CodeMirrorEditor.prototype = {
+        mode: 'text/plain',
+        close: function() {
+            this._codeMirror = null;
+        },
+
+        content: function() {
+            return this._codeMirror.getValue();
+        }
+    };
+
+    function MarkdownEditor(pelicide, parent_el, content) {
+        CodeMirrorEditor.call(this, pelicide, parent_el, content);
+    }
+    MarkdownEditor.prototype = Object.create(CodeMirrorEditor.prototype);
+    $.extend(
+        MarkdownEditor.prototype,
+        {
+            constructor: MarkdownEditor,
+            mode: 'markdown'
+        }
+    );
+    MarkdownEditor.register = function(pelicide) {
+        pelicide.addEditor(MarkdownEditor, ['md', 'markdown', 'mdown']);
+    };
+
     CodeMirror.modeURL = 'components/codemirror/mode/%N/%N.js';
-    new Pelicide();
+
+    var pelicide = new Pelicide();
+    MarkdownEditor.register(pelicide);
 });
