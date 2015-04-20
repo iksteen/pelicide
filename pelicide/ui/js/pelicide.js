@@ -149,23 +149,6 @@ define([
             }
         },
 
-        initEditor: function (path, mode, editor, content) {
-            var panel = jQuery('#layout_editor_panel_main').find('> .w2ui-panel-content');
-            panel.empty();
-
-            if (this._editor !== null) {
-                this._editor.close();
-                this._editor = null;
-                this._currentFormat = null;
-                this._currentPath = null;
-                this.dirty(false);
-            }
-
-            this._editor = new editor(this, panel[0], content);
-            this._currentFormat = mode;
-            this._currentPath = path;
-        },
-
         toggleSidebar: function (event) {
             w2ui['layout'].toggle('left');
         },
@@ -275,6 +258,18 @@ define([
             return this._editors[mode] || this._editors[''];
         },
 
+        close: function() {
+            if (this._editor !== null) {
+                $(w2ui['editor'].el('main')).empty();
+                this._editor.close();
+                this._editor = null;
+                this._currentFormat = null;
+                this._currentPath = null;
+                this.dirty(false);
+                this.updatePreview();
+            }
+        },
+
         load: function (path) {
             var mode = this.getFormat(path),
                 editor = this.findEditor(mode);
@@ -284,14 +279,21 @@ define([
                 return;
             }
 
+            this.close();
+
             jQuery.jsonRPC.request('get_content', {
                 params: [path],
                 success: jQuery.proxy(function (result) {
-                    this.initEditor(path, mode, editor, result.result);
+                    this._editor = new editor(this, w2ui['editor'].el('main'), result.result);
+                    this._currentFormat = mode;
+                    this._currentPath = path;
                     this.updatePreview();
                 }, this),
                 error: function (e) {
-                    alert('error:' + e);
+                    if(e.error && e.error.message)
+                        w2alert('Error: ' + e.error.message);
+                    else
+                        w2alert('Error: ' + e);
                 }
             });
         },
