@@ -9,9 +9,11 @@ class RunnerProtocol(protocol.ProcessProtocol):
         self.callback = callback
         self.seq = 0
         self.buffer = ''
+        self.pending = set()
 
     def sendCommand(self, command, args=None):
         self.seq += 1
+        self.pending.add(self.seq)
         self.transport.write('%d %s %s\n' % (self.seq, command, json.dumps(args)))
         return self.seq
 
@@ -23,9 +25,17 @@ class RunnerProtocol(protocol.ProcessProtocol):
 
     def process_response(self, response):
         seq, result, args = response.split(' ', 2)
+        seq = int(seq)
+        if seq in self.pending:
+            self.pending.remove(seq)
         args = json.loads(args)
         if self.callback is not None:
-            self.callback(int(seq), result == '+', args)
+            self.callback(seq, result == '+', args)
+
+    def processExited(self, reason):
+        pending, self.pending = self.pending, set()
+        while pending:
+            self.callback(pending.pop(), False, reason)
 
 
 class Runner(object):
@@ -69,6 +79,8 @@ class Runner(object):
         return self.command('quit').addCallback(lambda _: self.start())
 
     def command(self, command, args=None):
+        if self.transport.proto is None:
+            self.start()
         command_id = self.transport.proto.sendCommand(command, args)
         d = defer.Deferred()
         self.pending[command_id] = d
