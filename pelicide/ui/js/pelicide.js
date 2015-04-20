@@ -141,6 +141,18 @@ define([
             w2ui['layout'].content('main', w2ui['editor']);
         },
 
+        showError: function(e) {
+            if(e.error) {
+                if(e.error.message !== undefined) {
+                    w2alert('Error: ' + e.error.message);
+                } else {
+                    w2alert('Error: ' + e.error);
+                }
+            }
+            else
+                w2alert('Error: ' + e);
+        },
+
         dirty: function(dirty) {
             if(dirty === undefined) {
                 return !w2ui['editor_main_toolbar'].get('save')['disabled'];
@@ -257,8 +269,8 @@ define([
             return this._editors[mode] || this._editors[''];
         },
 
-        close: function() {
-            if (this._editor !== null) {
+        close: function(success) {
+            var _close = $.proxy(function (){
                 $(w2ui['editor'].el('main')).empty();
                 this._editor.close();
                 this._editor = null;
@@ -266,6 +278,45 @@ define([
                 this._currentPath = null;
                 this.dirty(false);
                 this.updatePreview();
+                success && success();
+            }, this);
+
+            if (this._editor !== null) {
+                if(this.dirty()) {
+                    var save=$.proxy(this.save, this);
+
+                    $().w2popup({
+                        title: 'Confirm close',
+                        width: 450,
+                        height: 220,
+                        body: '<div class="w2ui-centered w2ui-confirm-msg" style="font-size: 13px;">' +
+                              '<p>The content of the currently opened file has changed.</p>' +
+                              '<p>Are you sure you want to close this file?</p></div>',
+                        buttons: '<button value="save" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Save</button>' +
+                                 '<button value="discard" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Discard</button>' +
+                                 '<button value="cancel" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Cancel</button>',
+                        onOpen: function() {
+                            setTimeout(function() {
+                                $('.px-confirm-close').on('click', function(event) {
+                                    var result=$(event.target).val();
+
+                                    w2popup.close();
+
+                                    if(result == 'save') {
+                                        save(function () {
+                                            _close();
+                                        });
+                                    } else if(result == 'discard')
+                                        _close();
+                                });
+                            }, 0);
+                        }
+                    });
+                } else {
+                    _close();
+                }
+            } else {
+                success && success();
             }
         },
 
@@ -278,38 +329,30 @@ define([
                 return;
             }
 
-            this.close();
-
-            jQuery.jsonRPC.request('get_content', {
-                params: [path],
-                success: jQuery.proxy(function (result) {
-                    this._editor = new editor(this, w2ui['editor'].el('main'), result.result);
-                    this._currentFormat = mode;
-                    this._currentPath = path;
-                    this.updatePreview();
-                }, this),
-                error: function (e) {
-                    if(e.error && e.error.message)
-                        w2alert('Error: ' + e.error.message);
-                    else
-                        w2alert('Error: ' + e);
-                }
-            });
+            this.close(jQuery.proxy(function() {
+                jQuery.jsonRPC.request('get_content', {
+                    params: [path],
+                    success: jQuery.proxy(function (result) {
+                        this._editor = new editor(this, w2ui['editor'].el('main'), result.result);
+                        this._currentFormat = mode;
+                        this._currentPath = path;
+                        this.updatePreview();
+                    }, this),
+                    error: this.showError
+                });
+            }, this));
         },
 
-        save: function () {
+        save: function (success) {
             this.dirty(false);
 
             if(this._editor) {
                 jQuery.jsonRPC.request('set_content', {
                     params: [this._currentPath, this._editor.content()],
+                    success: success,
                     error: $.proxy(function (e) {
                         this.dirty(true);
-
-                        if(e.error && e.error.message)
-                            w2alert('Error: ' + e.error.message);
-                        else
-                            w2alert('Error: ' + e);
+                        this.showError(e);
                     }, this)
                 });
             }
