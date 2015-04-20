@@ -90,6 +90,14 @@ define([
                                     checked: true,
                                     onClick: jQuery.proxy(this.toggleSidebar, this)
                                 },
+                                {type: 'break'},
+                                {
+                                    type: 'button',
+                                    id: 'save',
+                                    icon: 'fa fa-save',
+                                    hint: 'Save',
+                                    onClick: jQuery.proxy(this.save, this)
+                                },
                                 {type: 'spacer'},
                                 {
                                     type: 'check',
@@ -276,6 +284,20 @@ define([
                     alert('error:' + e);
                 }
             });
+        },
+
+        save: function () {
+            if(this._editor) {
+                jQuery.jsonRPC.request('set_content', {
+                    params: [this._currentPath, this._editor.content()],
+                    error: function (e) {
+                        if(e.error && e.error.message)
+                            w2alert('Error: ' + e.error.message);
+                        else
+                            w2alert('Error: ' + e);
+                    }
+                });
+            }
         },
 
         setPreviewMode: function (mode) {
