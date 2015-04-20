@@ -1,6 +1,6 @@
 define([
     'jquery',
-    'cm-editor',
+    'js/cm-editor',
     'cm/mode/rst/rst'
 ], function(jQuery, CMEditor) {
     function RSTEditor(pelicide, parent_el, content) {

@@ -1,9 +1,9 @@
 require.config({
     paths: {
-        jquery: '../components/jquery/dist/jquery',
-        jquery_jsonrpc: '../components/jquery-jsonrpc/jquery.jsonrpc',
-        w2ui: '../components/w2ui/w2ui-1.4.2.min',
-        cm: '../components/codemirror'
+        jquery: 'components/jquery/dist/jquery.min',
+        jquery_jsonrpc: 'components/jquery-jsonrpc/jquery.jsonrpc',
+        w2ui: 'components/w2ui/w2ui-1.4.2.min',
+        cm: 'components/codemirror'
     },
     shim: {
         jquery_jsonrpc: ['jquery'],
@@ -14,9 +14,9 @@ require.config({
 require([
     'jquery',
     'jquery_jsonrpc',
-    'pelicide',
-    'md-editor',
-    'rst-editor'
+    'js/pelicide',
+    'js/md-editor',
+    'js/rst-editor'
 ], function(jQuery, _, Pelicide, MDEditor, RSTEditor) {
     // Set up jquery-jsonrpc default endpoint.
     jQuery.jsonRPC.setup({

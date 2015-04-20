@@ -1,6 +1,6 @@
 define([
     'jquery',
-    'cm-editor',
+    'js/cm-editor',
     'cm/mode/markdown/markdown'
 ], function(jq, CMEditor) {
     function MDEditor(pelicide, parent_el, content) {
