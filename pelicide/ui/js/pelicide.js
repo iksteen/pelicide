@@ -132,7 +132,7 @@ $(function() {
             w2ui['layout'].content('main', w2ui['editor']);
         },
 
-        initEditor: function(mode, content) {
+        initEditor: function(editor, content) {
             var panel=$('#layout_editor_panel_main').find('> .w2ui-panel-content');
             panel.empty();
 
@@ -141,7 +141,7 @@ $(function() {
                 this._editor = null;
             }
 
-            this._editor = new this._editors[mode](this, panel[0], content);
+            this._editor = new editor(this, panel[0], content);
         },
 
         toggleSidebar: function(event) {
@@ -234,11 +234,31 @@ $(function() {
             });
         },
 
-        load: function(filename) {
+        findEditor: function(path) {
+            var filename=path.split('/').pop(),
+                dot=filename.lastIndexOf('.'),
+                ext='';
+
+            /* >0 because of dotfiles */
+            if(dot > 0) {
+                ext = filename.substring(dot + 1);
+            }
+
+            return this._editors[ext] || this._editors[''];
+        },
+
+        load: function(path) {
+            var editor = this.findEditor(path);
+
+            if(editor === undefined) {
+                w2alert('No editor is registered for this file type.', 'Unknown file type');
+                return;
+            }
+
             $.jsonRPC.request('get_content', {
-                params: [filename],
+                params: [path],
                 success: $.proxy(function (result) {
-                    this.initEditor('markdown', result.result);
+                    this.initEditor(editor, result.result);
                     this.updatePreview();
                 }, this),
                 error: function (e) {
