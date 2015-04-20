@@ -33,6 +33,7 @@ def run(args, project):
         },
     )
     yield runner.start()
+    yield runner.command('build')
 
     r = static.File(os.path.join(os.path.dirname(__file__), 'ui'))
     r.putChild('rpc', webserver.JsonRpcResource(PelicideService(runner)))

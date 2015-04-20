@@ -113,8 +113,6 @@ def run(config_file, init_settings):
 
     logging.info('Initialised pelican engine.')
 
-    build(pelican, settings)
-
     sys.stdout.write('0 + %s\n' % json.dumps({
         key: settings.get(key)
         for key in ('SITENAME', 'PATH', 'THEME',)
