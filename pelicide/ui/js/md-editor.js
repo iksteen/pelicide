@@ -2,13 +2,13 @@ define([
     'jquery',
     'js/cm-editor',
     'cm/mode/markdown/markdown'
-], function(jq, CMEditor) {
+], function(jQuery, CMEditor) {
     function MDEditor(pelicide, parent_el, content) {
         CMEditor.call(this, pelicide, parent_el, content);
     }
 
     MDEditor.prototype = Object.create(CMEditor.prototype);
-    jq.extend(
+    jQuery.extend(
         MDEditor.prototype,
         {
             constructor: MDEditor,
