@@ -212,8 +212,7 @@ define([
                             {
                                 id: node_id,
                                 text: node.name,
-                                icon: 'fa fa-folder-o',
-                                expanded: true
+                                icon: 'fa fa-folder-o'
                             }
                         );
                         addContentNodes(content, node_id, node.data, check);
