@@ -94,6 +94,7 @@ define([
                                 {
                                     type: 'button',
                                     id: 'save',
+                                    disabled: true,
                                     icon: 'fa fa-save',
                                     hint: 'Save',
                                     onClick: jQuery.proxy(this.save, this)
@@ -140,6 +141,10 @@ define([
             w2ui['layout'].content('main', w2ui['editor']);
         },
 
+        dirty: function(dirty) {
+            w2ui['editor_main_toolbar'].set('save', {disabled: !dirty || self._editor === null});
+        },
+
         initEditor: function (path, mode, editor, content) {
             var panel = jQuery('#layout_editor_panel_main').find('> .w2ui-panel-content');
             panel.empty();
@@ -149,6 +154,7 @@ define([
                 this._editor = null;
                 this._currentFormat = null;
                 this._currentPath = null;
+                this.dirty(false);
             }
 
             this._editor = new editor(this, panel[0], content);
@@ -287,15 +293,19 @@ define([
         },
 
         save: function () {
+            this.dirty(false);
+
             if(this._editor) {
                 jQuery.jsonRPC.request('set_content', {
                     params: [this._currentPath, this._editor.content()],
-                    error: function (e) {
+                    error: $.proxy(function (e) {
+                        this.dirty(true);
+
                         if(e.error && e.error.message)
                             w2alert('Error: ' + e.error.message);
                         else
                             w2alert('Error: ' + e);
-                    }
+                    }, this)
                 });
             }
         },

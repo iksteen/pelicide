@@ -16,8 +16,11 @@ define([
             CodeMirror.autoLoadMode(this._codeMirror, this.mode);
         }
 
-        // Schedule preview update on content changes
-        this._codeMirror.on('change', $.proxy(pelicide.schedulePreview, pelicide));
+        // Mark dirty and schedule preview update on content changes
+        this._codeMirror.on('change', $.proxy(function() {
+            this.dirty(true);
+            this.schedulePreview();
+        }, pelicide));
 
         // Sync preview scrolling
         pelicide.setUpPreviewScrollSync(this._codeMirror.getScrollerElement());
