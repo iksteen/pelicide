@@ -58,4 +58,4 @@ class PelicideService(object):
             raise IOError('File not found')
 
         with open(path, 'rb') as f:
-            return f.read()
+            return f.read().decode('utf-8')
