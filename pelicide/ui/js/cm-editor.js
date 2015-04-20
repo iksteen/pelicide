@@ -9,7 +9,7 @@ define([
                 value: content,
                 lineWrapping: true,
                 mode: this.mode,
-                theme: 'cobalt'
+                theme: 'pelicide'
             }
         );
         if(CodeMirror.autoLoadMode !== undefined) {
