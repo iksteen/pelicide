@@ -173,7 +173,7 @@ $(function() {
                 }
             }
 
-            function addContentNodes(content, parent, nodes) {
+            function addContentNodes(content, parent, nodes, check) {
                 var sorted_nodes=[];
                 for(var prop in nodes) {
                     if(nodes.hasOwnProperty(prop)) {
@@ -197,9 +197,10 @@ $(function() {
                             {
                                 id: node_id,
                                 text: node.name,
-                                icon: 'fa fa-file-text-o'
+                                icon: 'fa fa-file-text-o',
+                                disabled: !check(node)
                             }
-                        )
+                        );
                     } else {
                         sidebar.add(
                             parent,
@@ -210,7 +211,7 @@ $(function() {
                                 expanded: true
                             }
                         );
-                        addContentNodes(content, node_id, node.data);
+                        addContentNodes(content, node_id, node.data, check);
                     }
                 }
             }
@@ -228,7 +229,9 @@ $(function() {
 
             $.jsonRPC.request('list_content', {
                 success: $.proxy(function(result) {
-                    addContentNodes(this._content, 'content', result.result);
+                    addContentNodes(this._content, 'content', result.result, $.proxy(function(node) {
+                        return this.findEditor(node.name) !== undefined;
+                    }, this));
                     sidebar.unlock();
                 }, this)
             });
