@@ -57,6 +57,8 @@ def render(readers, fmt, content):
         f.write(content.encode('utf-8'))
         f.close()
         return readers.readers[fmt].read(f.name)
+    except SystemExit:  # docutils calls sys.exit() on error
+        raise RuntimeError('Syntax error')
     finally:
         os.unlink(f.name)
 
