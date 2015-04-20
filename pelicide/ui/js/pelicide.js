@@ -181,7 +181,7 @@ $(function() {
             for(i=0; i<nodes.length; ++i) {
                 sidebar.remove(nodes[i].id);
             }
-            w2ui['sidebar'].lock('Loading...', true);
+            sidebar.lock('Loading...', true);
 
             this._content = {};
 
@@ -237,12 +237,23 @@ $(function() {
                 }
             }
 
+            $.jsonRPC.request('get_settings', {
+                success: function(result) {
+                    if(result.result['SITENAME']) {
+                        document.title = result.result['SITENAME'] + ' (Pelicide)';
+                        sidebar.set('content', {
+                            text: result.result['SITENAME']
+                        });
+                    }
+                }
+            });
+
             $.jsonRPC.request('list_content', {
                 success: $.proxy(function(result) {
                     addContentNodes(this._content, 'content', result.result);
                     sidebar.unlock();
                 }, this)
-            })
+            });
         },
 
         load: function(filename) {
