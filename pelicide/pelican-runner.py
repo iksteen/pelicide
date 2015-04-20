@@ -1,3 +1,4 @@
+from __future__ import print_function
 import json
 import os
 import sys
@@ -66,7 +67,14 @@ def encode_metadata(o):
     elif isinstance(o, urlwrappers.URLWrapper):
         return str(o)
     else:
-        raise TypeError('Don\'t know how to serialize %s' % type(o))
+        try:
+            v = str(o)
+            print('Don\'t know how to serialize %s, using str().\n' % type(o), file=sys.stderr)
+            return v
+        except Exception:
+            print_exc()
+            print('Don\'t know how to serialize %s and str() failed, using None.' % type(o), file=sys.stderr)
+            return None
 
 
 def reply(cmd_id, result, args=None):
