@@ -1,35 +1,33 @@
-$(function() {
-    $.jsonRPC.setup({
-        endPoint: '/rpc'
-    });
-
+define([
+    'jquery',
+    'jquery_jsonrpc',
+    'w2ui'
+], function(jQuery, _, _) {
     function Pelicide() {
-        this.previewDelay = 50;
-        this.init();
     }
 
     Pelicide.prototype = {
+        previewDelay: 50,
+        _editors: {},
+        _content: {},
+        _editor: null,
         _currentFormat: null,
         _currentPath: null,
         _previewPending: false,
 
-        init: function() {
-            this._content = {};
-            this._editors = {};
-            this._editor = null;
-
-            this.initLayout();
+        run: function (box) {
+            this.initLayout(box);
             this.initSidebar();
             this.initEditorLayout();
 
-            setTimeout($.proxy(function() {
+            setTimeout(jQuery.proxy(function () {
                 this.setPreviewMode('preview');
                 this.loadProject();
             }, this), 0);
         },
 
-        initLayout: function() {
-            $('#main_layout').w2layout({
+        initLayout: function (box) {
+            jQuery(box).w2layout({
                 name: 'layout',
                 panels: [
                     {
@@ -42,7 +40,7 @@ $(function() {
                                     type: 'button',
                                     id: 'refresh',
                                     icon: 'fa fa-refresh',
-                                    onClick: $.proxy(this.loadProject, this)
+                                    onClick: jQuery.proxy(this.loadProject, this)
                                 }
                             ]
                         }
@@ -54,8 +52,8 @@ $(function() {
             });
         },
 
-        initSidebar: function() {
-            w2ui['layout'].content('left', $().w2sidebar({
+        initSidebar: function () {
+            w2ui['layout'].content('left', jQuery().w2sidebar({
                 name: 'sidebar',
                 nodes: [
                     {
@@ -66,17 +64,17 @@ $(function() {
                         group: true
                     }
                 ],
-                onDblClick: $.proxy(function(e) {
+                onDblClick: jQuery.proxy(function (e) {
                     var path = this._content[e.target];
-                    if(path !== undefined) {
+                    if (path !== undefined) {
                         this.load(path);
                     }
                 }, this)
             }));
         },
 
-        initEditorLayout: function() {
-            $().w2layout({
+        initEditorLayout: function () {
+            jQuery().w2layout({
                 name: 'editor',
                 panels: [
                     {
@@ -90,16 +88,16 @@ $(function() {
                                     icon: 'fa fa-bars',
                                     hint: 'Toggle sidebar',
                                     checked: true,
-                                    onClick: $.proxy(this.toggleSidebar, this)
+                                    onClick: jQuery.proxy(this.toggleSidebar, this)
                                 },
-                                { type: 'spacer' },
+                                {type: 'spacer'},
                                 {
                                     type: 'check',
                                     id: 'preview',
                                     icon: 'fa fa-eye',
                                     hint: 'Toggle preview',
                                     checked: true,
-                                    onClick: $.proxy(this.togglePreview, this)
+                                    onClick: jQuery.proxy(this.togglePreview, this)
                                 }
                             ]
                         }
@@ -123,7 +121,7 @@ $(function() {
                                     caption: 'Render'
                                 }
                             ],
-                            onClick: $.proxy(function(event) {
+                            onClick: jQuery.proxy(function (event) {
                                 this.setPreviewMode(event.target);
                             }, this)
                         }
@@ -134,11 +132,11 @@ $(function() {
             w2ui['layout'].content('main', w2ui['editor']);
         },
 
-        initEditor: function(path, mode, editor, content) {
-            var panel=$('#layout_editor_panel_main').find('> .w2ui-panel-content');
+        initEditor: function (path, mode, editor, content) {
+            var panel = jQuery('#layout_editor_panel_main').find('> .w2ui-panel-content');
             panel.empty();
 
-            if(this._editor !== null) {
+            if (this._editor !== null) {
                 this._editor.close();
                 this._editor = null;
                 this._currentFormat = null;
@@ -150,19 +148,19 @@ $(function() {
             this._currentPath = path;
         },
 
-        toggleSidebar: function(event) {
+        toggleSidebar: function (event) {
             w2ui['layout'].toggle('left');
         },
 
-        togglePreview: function(event) {
+        togglePreview: function (event) {
             w2ui['editor'].toggle('right');
         },
 
-        loadProject: function() {
+        loadProject: function () {
             var sidebar = w2ui['sidebar'],
                 nodes = sidebar.find('content', {}),
                 i;
-            for(i=0; i<nodes.length; ++i) {
+            for (i = 0; i < nodes.length; ++i) {
                 sidebar.remove(nodes[i].id);
             }
             sidebar.lock('Loading...', true);
@@ -170,9 +168,9 @@ $(function() {
             this._content = {};
 
             function sortNodes(a, b) {
-                if(a.type == b.type) {
+                if (a.type == b.type) {
                     return (a.name < b.name) ? -1 : (a.name > b.name) ? 1 : 0;
-                } else if(a.type === 'object') {
+                } else if (a.type === 'object') {
                     return -1;
                 } else {
                     return 1;
@@ -180,9 +178,9 @@ $(function() {
             }
 
             function addContentNodes(content, parent, nodes, check) {
-                var sorted_nodes=[];
-                for(var prop in nodes) {
-                    if(nodes.hasOwnProperty(prop)) {
+                var sorted_nodes = [];
+                for (var prop in nodes) {
+                    if (nodes.hasOwnProperty(prop)) {
                         sorted_nodes.push({
                             name: prop,
                             type: typeof(nodes[prop]),
@@ -192,11 +190,11 @@ $(function() {
                 }
                 sorted_nodes.sort(sortNodes);
 
-                for(var i=0; i<sorted_nodes.length; ++i) {
-                    var node=sorted_nodes[i],
+                for (var i = 0; i < sorted_nodes.length; ++i) {
+                    var node = sorted_nodes[i],
                         node_id = parent + '-' + i;
 
-                    if(node.type === 'string') {
+                    if (node.type === 'string') {
                         content[node_id] = node.data;
                         sidebar.add(
                             parent,
@@ -222,9 +220,9 @@ $(function() {
                 }
             }
 
-            $.jsonRPC.request('get_settings', {
-                success: function(result) {
-                    if(result.result['SITENAME']) {
+            jQuery.jsonRPC.request('get_settings', {
+                success: function (result) {
+                    if (result.result['SITENAME']) {
                         document.title = result.result['SITENAME'] + ' (Pelicide)';
                         sidebar.set('content', {
                             text: result.result['SITENAME']
@@ -233,9 +231,9 @@ $(function() {
                 }
             });
 
-            $.jsonRPC.request('list_content', {
-                success: $.proxy(function(result) {
-                    addContentNodes(this._content, 'content', result.result, $.proxy(function(node) {
+            jQuery.jsonRPC.request('list_content', {
+                success: jQuery.proxy(function (result) {
+                    addContentNodes(this._content, 'content', result.result, jQuery.proxy(function (node) {
                         return this.findEditor(this.getFormat(node.name)) !== undefined;
                     }, this));
                     sidebar.unlock();
@@ -243,34 +241,34 @@ $(function() {
             });
         },
 
-        getFormat: function(path) {
-            var filename=path.split('/').pop(),
-                dot=filename.lastIndexOf('.');
+        getFormat: function (path) {
+            var filename = path.split('/').pop(),
+                dot = filename.lastIndexOf('.');
 
             /* >0 because of dotfiles */
-            if(dot > 0) {
+            if (dot > 0) {
                 return filename.substring(dot + 1);
             } else {
                 return '';
             }
         },
 
-        findEditor: function(mode) {
+        findEditor: function (mode) {
             return this._editors[mode] || this._editors[''];
         },
 
-        load: function(path) {
-            var mode=this.getFormat(path),
+        load: function (path) {
+            var mode = this.getFormat(path),
                 editor = this.findEditor(mode);
 
-            if(editor === undefined) {
+            if (editor === undefined) {
                 w2alert('No editor is registered for this file type.', 'Unknown file type');
                 return;
             }
 
-            $.jsonRPC.request('get_content', {
+            jQuery.jsonRPC.request('get_content', {
                 params: [path],
-                success: $.proxy(function (result) {
+                success: jQuery.proxy(function (result) {
                     this.initEditor(path, mode, editor, result.result);
                     this.updatePreview();
                 }, this),
@@ -280,8 +278,8 @@ $(function() {
             });
         },
 
-        setPreviewMode: function(mode) {
-            if(mode == 'render') {
+        setPreviewMode: function (mode) {
+            if (mode == 'render') {
                 w2ui['editor'].content('right', '<iframe id="render" src="/site/index.html"></iframe>');
             } else {
                 w2ui['editor'].content('right', '<div id="preview_container"><div id="preview"></div></div>');
@@ -289,40 +287,40 @@ $(function() {
             }
         },
 
-        schedulePreview: function() {
-            if(! this._previewPending) {
+        schedulePreview: function () {
+            if (!this._previewPending) {
                 this._previewPending = true;
 
-                setTimeout($.proxy(function() {
+                setTimeout(jQuery.proxy(function () {
                     this._previewPending = false;
                     this.updatePreview();
                 }, this), this.previewDelay);
             }
         },
 
-        updatePreview: function() {
+        updatePreview: function () {
             var content = this._editor && this._editor.content();
-            if(content) {
-                $.jsonRPC.request('render', {
+            if (content) {
+                jQuery.jsonRPC.request('render', {
                     params: [this._currentFormat, content],
-                    success: function(result) {
-                        $('#preview').html(result.result);
+                    success: function (result) {
+                        jQuery('#preview').html(result.result);
                     }
                 })
             } else {
-                $('#preview').html('');
+                jQuery('#preview').html('');
             }
         },
 
-        setUpPreviewScrollSync: function(el) {
+        setUpPreviewScrollSync: function (el) {
             var pending = false;
 
-            $(el).on('scroll', function() {
-                if(! pending) {
+            jQuery(el).on('scroll', function () {
+                if (!pending) {
                     pending = true;
-                    setTimeout($.proxy(function() {
-                        var el = $(this),
-                            target = $('#preview_container'),
+                    setTimeout(jQuery.proxy(function () {
+                        var el = jQuery(this),
+                            target = jQuery('#preview_container'),
                             f = el.scrollTop() / (el.prop('scrollHeight') - el.prop('offsetHeight'));
                         target.scrollTop(f * (target.prop('scrollHeight') - target.prop('offsetHeight')));
                         pending = false;
@@ -331,78 +329,12 @@ $(function() {
             });
         },
 
-        addEditor: function(editor, modes) {
-            for(var i=0; i<modes.length; ++i) {
-                this._editors[modes[i]] = editor;
+        register: function(editor) {
+            for (var i = 0; i < editor.formats.length; ++i) {
+                this._editors[editor.formats[i]] = editor;
             }
         }
     };
 
-    function CodeMirrorEditor(pelicide, parent_el, content) {
-        /* Set up CodeMirror */
-        this._codeMirror = CodeMirror(
-            parent_el,
-            {
-                value: content,
-                lineWrapping: true,
-                mode: this.mode,
-                theme: 'cobalt'
-            }
-        );
-        if(CodeMirror.autoLoadMode !== undefined)
-            CodeMirror.autoLoadMode(this._codeMirror, this.mode);
-
-        // Schedule preview update on content changes
-        this._codeMirror.on('change', $.proxy(pelicide.schedulePreview, pelicide));
-
-        // Sync preview scrolling
-        pelicide.setUpPreviewScrollSync(this._codeMirror.getScrollerElement());
-    }
-
-    CodeMirrorEditor.prototype = {
-        mode: 'text/plain',
-        close: function() {
-            this._codeMirror = null;
-        },
-
-        content: function() {
-            return this._codeMirror.getValue();
-        }
-    };
-
-    function MarkdownEditor(pelicide, parent_el, content) {
-        CodeMirrorEditor.call(this, pelicide, parent_el, content);
-    }
-    MarkdownEditor.prototype = Object.create(CodeMirrorEditor.prototype);
-    $.extend(
-        MarkdownEditor.prototype,
-        {
-            constructor: MarkdownEditor,
-            mode: 'markdown'
-        }
-    );
-    MarkdownEditor.register = function(pelicide) {
-        pelicide.addEditor(MarkdownEditor, ['md', 'markdown', 'mdown']);
-    };
-
-    function ReSTEditor(pelicide, parent_el, content) {
-        CodeMirrorEditor.call(this, pelicide, parent_el, content);
-    }
-    ReSTEditor.prototype = Object.create(CodeMirrorEditor.prototype);
-    $.extend(
-        ReSTEditor.prototype,
-        {
-            constructor: ReSTEditor,
-            mode: 'rst'
-        }
-    );
-    ReSTEditor.register = function(pelicide) {
-        pelicide.addEditor(ReSTEditor, ['rst']);
-    };
-
-    CodeMirror.modeURL = 'components/codemirror/mode/%N/%N.js';
-
-    var pelicide = new Pelicide();
-    MarkdownEditor.register(pelicide);
-    ReSTEditor.register(pelicide);
+    return Pelicide;
 });
