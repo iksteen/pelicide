@@ -346,7 +346,7 @@ define([
                     }
                 })
             } else {
-                jQuery('#preview').html('');
+                jQuery('#preview').empty();
             }
         },
 
