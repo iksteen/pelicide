@@ -385,8 +385,24 @@ $(function() {
         pelicide.addEditor(MarkdownEditor, ['md', 'markdown', 'mdown']);
     };
 
+    function ReSTEditor(pelicide, parent_el, content) {
+        CodeMirrorEditor.call(this, pelicide, parent_el, content);
+    }
+    ReSTEditor.prototype = Object.create(CodeMirrorEditor.prototype);
+    $.extend(
+        ReSTEditor.prototype,
+        {
+            constructor: ReSTEditor,
+            mode: 'rst'
+        }
+    );
+    ReSTEditor.register = function(pelicide) {
+        pelicide.addEditor(ReSTEditor, ['rst']);
+    };
+
     CodeMirror.modeURL = 'components/codemirror/mode/%N/%N.js';
 
     var pelicide = new Pelicide();
     MarkdownEditor.register(pelicide);
+    ReSTEditor.register(pelicide);
 });
