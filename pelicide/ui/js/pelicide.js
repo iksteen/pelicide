@@ -142,7 +142,11 @@ define([
         },
 
         dirty: function(dirty) {
-            w2ui['editor_main_toolbar'].set('save', {disabled: !dirty || self._editor === null});
+            if(dirty === undefined) {
+                return !w2ui['editor_main_toolbar'].get('save')['disabled'];
+            } else {
+                w2ui['editor_main_toolbar'].set('save', {disabled: !dirty || self._editor === null});
+            }
         },
 
         initEditor: function (path, mode, editor, content) {
