@@ -9,6 +9,8 @@ $(function() {
     }
 
     Pelicide.prototype = {
+        _currentFormat: null,
+        _currentPath: null,
         _previewPending: false,
 
         init: function() {
@@ -132,16 +134,20 @@ $(function() {
             w2ui['layout'].content('main', w2ui['editor']);
         },
 
-        initEditor: function(editor, content) {
+        initEditor: function(path, mode, editor, content) {
             var panel=$('#layout_editor_panel_main').find('> .w2ui-panel-content');
             panel.empty();
 
             if(this._editor !== null) {
                 this._editor.close();
                 this._editor = null;
+                this._currentFormat = null;
+                this._currentPath = null;
             }
 
             this._editor = new editor(this, panel[0], content);
+            this._currentFormat = mode;
+            this._currentPath = path;
         },
 
         toggleSidebar: function(event) {
@@ -230,28 +236,32 @@ $(function() {
             $.jsonRPC.request('list_content', {
                 success: $.proxy(function(result) {
                     addContentNodes(this._content, 'content', result.result, $.proxy(function(node) {
-                        return this.findEditor(node.name) !== undefined;
+                        return this.findEditor(this.getFormat(node.name)) !== undefined;
                     }, this));
                     sidebar.unlock();
                 }, this)
             });
         },
 
-        findEditor: function(path) {
+        getFormat: function(path) {
             var filename=path.split('/').pop(),
-                dot=filename.lastIndexOf('.'),
-                ext='';
+                dot=filename.lastIndexOf('.');
 
             /* >0 because of dotfiles */
             if(dot > 0) {
-                ext = filename.substring(dot + 1);
+                return filename.substring(dot + 1);
+            } else {
+                return '';
             }
+        },
 
-            return this._editors[ext] || this._editors[''];
+        findEditor: function(mode) {
+            return this._editors[mode] || this._editors[''];
         },
 
         load: function(path) {
-            var editor = this.findEditor(path);
+            var mode=this.getFormat(path),
+                editor = this.findEditor(mode);
 
             if(editor === undefined) {
                 w2alert('No editor is registered for this file type.', 'Unknown file type');
@@ -261,7 +271,7 @@ $(function() {
             $.jsonRPC.request('get_content', {
                 params: [path],
                 success: $.proxy(function (result) {
-                    this.initEditor(editor, result.result);
+                    this.initEditor(path, mode, editor, result.result);
                     this.updatePreview();
                 }, this),
                 error: function (e) {
