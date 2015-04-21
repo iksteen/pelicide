@@ -13,6 +13,7 @@ define([
         _editor: null,
         _currentFormat: null,
         _currentPath: null,
+        _previewMode: null,
         _previewPending: false,
 
         run: function (box) {
@@ -21,7 +22,7 @@ define([
             this.initEditorLayout();
 
             setTimeout(jQuery.proxy(function () {
-                this.setPreviewMode('preview');
+                this.previewMode('draft');
                 this.loadProject();
             }, this), 0);
         },
@@ -118,9 +119,9 @@ define([
                             items: [
                                 {
                                     type: 'radio',
-                                    id: 'preview',
+                                    id: 'draft',
                                     group: '1',
-                                    caption: 'Preview',
+                                    caption: 'Draft',
                                     checked: true
                                 },
                                 {
@@ -131,7 +132,7 @@ define([
                                 }
                             ],
                             onClick: jQuery.proxy(function (event) {
-                                this.setPreviewMode(event.target);
+                                this.previewMode(event.target);
                             }, this)
                         }
                     }
@@ -240,7 +241,8 @@ define([
                             text: result.result['SITENAME']
                         });
                     }
-                }
+                },
+                error: this.showError
             });
 
             jQuery.jsonRPC.request('list_content', {
@@ -358,37 +360,58 @@ define([
             }
         },
 
-        setPreviewMode: function (mode) {
-            if (mode == 'render') {
-                w2ui['editor'].content('right', '<iframe id="render" src="/site/index.html"></iframe>');
-            } else {
-                w2ui['editor'].content('right', '<div id="preview_container"><div id="preview"></div></div>');
-                this.updatePreview();
+        previewMode: function (mode) {
+            if(mode === undefined) {
+                return this._previewMode;
+            }
+
+            setTimeout(function() {
+                w2ui['editor_right_toolbar'].check((mode == 'render') ? 'render' : 'draft');
+                w2ui['editor_right_toolbar'].uncheck((mode == 'render') ? 'draft' : 'render');
+            }, 0);
+
+            if(mode != this._previewMode) {
+                this._previewMode = mode;
+
+                if (mode == 'render') {
+                    w2ui['editor'].content('right', '<iframe id="render" src="/site/index.html"></iframe>');
+                } else {
+                    w2ui['editor'].content('right', '<div id="preview_container"><div id="preview"></div></div>');
+                    this.updatePreview();
+                }
             }
         },
 
         schedulePreview: function () {
             if (!this._previewPending) {
                 this._previewPending = true;
-
-                setTimeout(jQuery.proxy(function () {
-                    this._previewPending = false;
-                    this.updatePreview();
-                }, this), this.previewDelay);
+                setTimeout(jQuery.proxy(this.updatePreview, this), this.previewDelay);
             }
         },
 
         updatePreview: function () {
-            var content = this._editor && this._editor.content();
-            if (content) {
-                jQuery.jsonRPC.request('render', {
-                    params: [this._currentFormat, content],
-                    success: function (result) {
-                        jQuery('#preview').html(result.result);
-                    }
-                })
-            } else {
-                jQuery('#preview').empty();
+            this._previewPending = false;
+
+            if(this._previewMode != 'render') {
+                var content = this._editor && this._editor.content(),
+                    preview = jQuery('#preview');
+
+                if (content) {
+                    jQuery.jsonRPC.request('render', {
+                        params: [this._currentFormat, content],
+                        success: function (result) {
+                            preview.html(result.result);
+                        },
+                        error: function(error) {
+                            preview.empty().append(
+                                '<h3 style="color: red">Render failed:</h3>',
+                                jQuery('<p>').html(error.error.message)
+                            );
+                        }
+                    })
+                } else {
+                    preview.empty();
+                }
             }
         },
 
