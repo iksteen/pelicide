@@ -9,7 +9,7 @@ from traceback import print_exc
 import datetime
 
 
-def build(pelican, settings, filenames=None):
+def scan(pelican, settings):
     context = settings.copy()
     # Share these among all the generators and content objects:
     context['filenames'] = {}  # maps source path to Content object or None
@@ -28,6 +28,12 @@ def build(pelican, settings, filenames=None):
     for p in generators:
         if hasattr(p, 'generate_context'):
             p.generate_context()
+
+    return context, generators
+
+
+def build(pelican, settings, filenames=None):
+    context, generators = scan(pelican, settings)
 
     output = {}
 
