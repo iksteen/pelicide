@@ -16,32 +16,29 @@ body, html {
 
 #layout_editor_panel_main > .w2ui-panel-content {
     background-color: #002240;
-    padding: 0.5em;
+    padding: 1em;
 }
 
 #layout_editor_panel_right > .w2ui-panel-content {
     background-color: white;
-    padding: 0.5em;
 }
 
 .CodeMirror {
     height: 100%;
-    margin: 0;
-    border: 0;
-    padding: 0;
 }
 
 #preview_container {
     height: 100%;
     margin: 0;
     border: 0;
-    padding: 0;
+    padding: 1em 2em;
     overflow: scroll;
 }
 
 #preview {
-    font-size: 1.1em;
+    font-size: 1em;
     color: #002240;
+    font-family: Helvetica, arial, sans-serif;
 }
 
 #render {

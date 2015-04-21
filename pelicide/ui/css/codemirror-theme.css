@@ -1,4 +1,4 @@
-.cm-s-pelicide.CodeMirror { background: #002240; color: white; font-family: Inconsolata; }
+.cm-s-pelicide.CodeMirror { background: #002240; color: #ccc; font-family: Inconsolata; }
 .cm-s-pelicide div.CodeMirror-selected { background: #b36539 !important; }
 .cm-s-pelicide.CodeMirror ::selection { background: rgba(179, 101, 57, .99); }
 .cm-s-pelicide.CodeMirror ::-moz-selection { background: rgba(179, 101, 57, .99); }
