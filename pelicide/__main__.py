@@ -1,42 +1,11 @@
 from __future__ import print_function
 import ConfigParser
 import argparse
-import atexit
-import shutil
 import sys
 import os
-import tempfile
 from twisted.internet import reactor, defer, error
 from twisted.web import server, static
-from txjsonrpc2.web import server as webserver
-from pelicide.runner import Runner
-from pelicide.service import PelicideService
-
-
-@defer.inlineCallbacks
-def start_service(root, project, path_prefix=''):
-    def clean(tmp_path):
-        print('Cleaning up {}'.format(tmp_path), file=sys.stderr)
-        shutil.rmtree(tmp_path, True)
-
-    temp_path = tempfile.mkdtemp()
-    atexit.register(clean, temp_path)
-    output_path = os.path.join(temp_path, 'output')
-
-    runner = Runner(
-        project['python'],
-        project['pelicanconf'],
-        {
-            'OUTPUT_PATH': output_path,
-            'SITEURL': '%s/site' % path_prefix,
-            'RELATIVE_URLS': False,
-        },
-    )
-    root.putChild('rpc', webserver.JsonRpcResource(PelicideService(runner)))
-    root.putChild('site', static.File(output_path))
-
-    yield runner.start()
-    yield runner.command('build')
+from pelicide.service import start_service
 
 
 def parse_project(project_path):
