@@ -99,7 +99,7 @@ define([
                                     disabled: true,
                                     icon: 'fa fa-save',
                                     hint: 'Save',
-                                    onClick: jQuery.proxy(this.save, this)
+                                    onClick: jQuery.proxy(function() { this.save(); }, this)
                                 },
                                 {type: 'spacer'},
                                 {
