@@ -3,6 +3,22 @@ define([
     'jquery_jsonrpc',
     'w2ui'
 ], function(jQuery, _, _) {
+
+    function getErrorMessage(e) {
+        if(e.error) {
+            if(e.error.message !== undefined)
+                return e.error.message;
+            else
+                return e.error;
+        }
+        else
+            return e;
+    }
+
+    function showError(e) {
+        w2alert(getErrorMessage(e));
+    }
+
     function Pelicide() {
     }
 
@@ -162,18 +178,6 @@ define([
             w2ui['layout'].content('main', w2ui['editor']);
         },
 
-        showError: function(e) {
-            if(e.error) {
-                if(e.error.message !== undefined) {
-                    w2alert('Error: ' + e.error.message);
-                } else {
-                    w2alert('Error: ' + e.error);
-                }
-            }
-            else
-                w2alert('Error: ' + e);
-        },
-
         dirty: function(dirty) {
             if(dirty === undefined) {
                 return this._editor && this._dirty;
@@ -263,7 +267,7 @@ define([
                         });
                     }
                 },
-                error: this.showError
+                error: showError
             });
 
             jQuery.jsonRPC.request('list_content', {
@@ -273,21 +277,22 @@ define([
                     }, this));
                     sidebar.unlock();
                 }, this),
-                error: this.showError
+                error: showError
             });
         },
 
         rebuildProject: function () {
             w2ui['layout_left_toolbar'].disable('rebuild');
+
             jQuery.jsonRPC.request('build', {
                 success: function () {
                     w2ui['layout_left_toolbar'].enable('rebuild');
                 },
                 error: jQuery.proxy(function (e) {
                     w2ui['layout_left_toolbar'].enable('rebuild');
-                    this.showError(e);
+                    showError(e);
                 }, this)
-            })
+            });
         },
 
         getFormat: function (path) {
@@ -375,7 +380,7 @@ define([
                         this._currentPath = path;
                         this.updatePreview();
                     }, this),
-                    error: this.showError
+                    error: showError
                 });
             }, this));
         },
@@ -389,7 +394,7 @@ define([
                     success: success,
                     error: $.proxy(function (e) {
                         this.dirty(true);
-                        this.showError(e);
+                        showError(e);
                     }, this)
                 });
             }
