@@ -388,14 +388,15 @@ define([
         schedulePreview: function () {
             if (!this._previewPending) {
                 this._previewPending = true;
-                setTimeout(jQuery.proxy(this.updatePreview, this), this.previewDelay);
+                setTimeout(jQuery.proxy(function () {
+                    this._previewPending = false;
+                    this.updatePreview();
+                }, this), this.previewDelay);
             }
         },
 
         updatePreview: function () {
-            this._previewPending = false;
-
-            if(this._previewMode != 'render') {
+            if(this.previewMode() != 'render') {
                 var content = this._editor && this._editor.content(),
                     preview = jQuery('#preview');
 
