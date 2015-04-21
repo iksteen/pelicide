@@ -42,6 +42,7 @@ define([
                                     type: 'button',
                                     id: 'refresh',
                                     icon: 'fa fa-refresh',
+                                    hint: 'Refresh project',
                                     onClick: jQuery.proxy(this.loadProject, this)
                                 }
                             ]
