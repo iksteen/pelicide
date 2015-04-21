@@ -44,6 +44,13 @@ define([
                                     icon: 'fa fa-refresh',
                                     hint: 'Refresh project',
                                     onClick: jQuery.proxy(this.loadProject, this)
+                                },
+                                {
+                                    type: 'button',
+                                    id: 'rebuild',
+                                    icon: 'fa fa-wrench',
+                                    hint: 'Rebuild project',
+                                    onClick: jQuery.proxy(this.rebuildProject, this)
                                 }
                             ]
                         }
@@ -257,6 +264,19 @@ define([
                 }, this),
                 error: this.showError
             });
+        },
+
+        rebuildProject: function () {
+            w2ui['layout_left_toolbar'].disable('rebuild');
+            jQuery.jsonRPC.request('build', {
+                success: function () {
+                    w2ui['layout_left_toolbar'].enable('rebuild');
+                },
+                error: jQuery.proxy(function (e) {
+                    w2ui['layout_left_toolbar'].enable('rebuild');
+                    this.showError(e);
+                }, this)
+            })
         },
 
         getFormat: function (path) {
