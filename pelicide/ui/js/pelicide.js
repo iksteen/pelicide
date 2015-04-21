@@ -251,7 +251,8 @@ define([
                         return this.findEditor(this.getFormat(node.name)) !== undefined;
                     }, this));
                     sidebar.unlock();
-                }, this)
+                }, this),
+                error: this.showError
             });
         },
 
