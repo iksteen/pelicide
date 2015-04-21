@@ -391,12 +391,14 @@ define([
             if(this._editor) {
                 jQuery.jsonRPC.request('set_content', {
                     params: [this._currentPath, this._editor.content()],
-                    success: success,
+                    success: function() { success && success() },
                     error: $.proxy(function (e) {
                         this.dirty(true);
                         showError(e);
                     }, this)
                 });
+            } else {
+                success && success();
             }
         },
 
