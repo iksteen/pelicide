@@ -131,18 +131,29 @@ define([
                                     id: 'draft',
                                     group: '1',
                                     caption: 'Draft',
-                                    checked: true
+                                    checked: true,
+                                    onClick: jQuery.proxy(function () {
+                                        this.previewMode('draft');
+                                    }, this)
                                 },
                                 {
                                     type: 'radio',
                                     id: 'render',
                                     group: '1',
-                                    caption: 'Render'
+                                    caption: 'Render',
+                                    onClick: jQuery.proxy(function () {
+                                        this.previewMode('render');
+                                    }, this)
+                                },
+                                {
+                                    type: 'button',
+                                    id: 'update_preview',
+                                    icon: 'fa fa-refresh',
+                                    hint: 'Refresh',
+                                    disabled: true,
+                                    onClick: jQuery.proxy(this.updatePreview, this)
                                 }
-                            ],
-                            onClick: jQuery.proxy(function (event) {
-                                this.previewMode(event.target);
-                            }, this)
+                            ]
                         }
                     }
                 ]
@@ -398,8 +409,10 @@ define([
                 this._previewMode = mode;
 
                 if (mode == 'render') {
+                    w2ui['editor_right_toolbar'].enable('update_preview');
                     w2ui['editor'].content('right', '<iframe id="render" src="/site/index.html"></iframe>');
                 } else {
+                    w2ui['editor_right_toolbar'].disable('update_preview');
                     w2ui['editor'].content('right', '<div id="preview_container"><div id="preview"></div></div>');
                     this.updatePreview();
                 }
@@ -407,7 +420,7 @@ define([
         },
 
         schedulePreview: function () {
-            if (!this._previewPending) {
+            if (this.previewMode() == 'draft' && !this._previewPending) {
                 this._previewPending = true;
                 setTimeout(jQuery.proxy(function () {
                     this._previewPending = false;
@@ -437,6 +450,8 @@ define([
                 } else {
                     preview.empty();
                 }
+            } else {
+                $('#render')[0].contentWindow.location.reload(true);
             }
         },
 
