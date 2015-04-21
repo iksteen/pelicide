@@ -284,14 +284,16 @@ define([
         rebuildProject: function () {
             w2ui['layout_left_toolbar'].disable('rebuild');
 
-            jQuery.jsonRPC.request('build', {
-                success: function () {
-                    w2ui['layout_left_toolbar'].enable('rebuild');
-                },
-                error: jQuery.proxy(function (e) {
-                    w2ui['layout_left_toolbar'].enable('rebuild');
-                    showError(e);
-                }, this)
+            this.save(function() {
+                jQuery.jsonRPC.request('build', {
+                    success: function () {
+                        w2ui['layout_left_toolbar'].enable('rebuild');
+                    },
+                    error: function (e) {
+                        w2ui['layout_left_toolbar'].enable('rebuild');
+                        showError(e);
+                    }
+                });
             });
         },
 
