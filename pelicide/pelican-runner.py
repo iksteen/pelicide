@@ -142,6 +142,21 @@ def run(config_file, init_settings):
             success(cmd_id, settings[args[0]])
         elif cmd == 'extensions':
             success(cmd_id, readers.extensions)
+        elif cmd == 'scan':
+            try:
+                context, _ = scan(pelican, settings)
+                project_content = {
+                    filename: {
+                        'type': content.__class__.__module__ + '.' + content.__class__.__name__,
+                        'url': getattr(content, 'url', None),
+                        'metadata': getattr(content, 'metadata', {})
+                    }
+                    for filename, content in context['filenames'].items()
+                }
+                success(cmd_id, project_content)
+            except Exception as e:
+                print_exc()
+                fail(cmd_id, str(e))
         elif cmd == 'build':
             try:
                 output = build(pelican, settings, args)
