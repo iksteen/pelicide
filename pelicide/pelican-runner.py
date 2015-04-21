@@ -3,10 +3,14 @@ import json
 import os
 import sys
 import tempfile
+import jinja2.filters
 from pelican.log import init as log_init
 from pelican import get_instance, logging, signals, Readers, urlwrappers
 from traceback import print_exc
 import datetime
+
+
+striptags = jinja2.filters.FILTERS['striptags']
 
 
 def scan(pelican, settings):
@@ -144,15 +148,21 @@ def run(config_file, init_settings):
             success(cmd_id, readers.extensions)
         elif cmd == 'scan':
             try:
+                def get_title(filename, content):
+                    title = getattr(content, 'metadata', {}).get('title')
+                    return striptags(title) if title else os.path.split(filename)[1]
+
                 context, _ = scan(pelican, settings)
-                project_content = {
-                    filename: {
+                project_content = [
+                    {
+                        'path': filename,
+                        'title': get_title(filename, content),
                         'type': content.__class__.__module__ + '.' + content.__class__.__name__,
                         'url': getattr(content, 'url', None),
                         'metadata': getattr(content, 'metadata', {})
                     }
                     for filename, content in context['filenames'].items()
-                }
+                ]
                 success(cmd_id, project_content)
             except Exception as e:
                 print_exc()
