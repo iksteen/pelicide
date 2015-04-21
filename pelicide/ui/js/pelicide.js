@@ -125,6 +125,14 @@ define([
                                     hint: 'Save',
                                     onClick: jQuery.proxy(function() { this.save(); }, this)
                                 },
+                                {
+                                    type: 'button',
+                                    id: 'rebuild_page',
+                                    icon: 'fa fa-wrench',
+                                    hint: 'Rebuild page',
+                                    disabled: true,
+                                    onClick: jQuery.proxy(this.rebuildPage, this)
+                                },
                                 {type: 'spacer'},
                                 {
                                     type: 'check',
@@ -297,6 +305,25 @@ define([
             });
         },
 
+        rebuildPage: function () {
+            w2ui['editor_main_toolbar'].disable('rebuild_page');
+
+            if (self._editor !== null) {
+                this.save(function () {
+                    jQuery.jsonRPC.request('build', {
+                        params: [self._currentPath],
+                        success: jQuery.proxy(function () {
+                            w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: this._editor === null});
+                        }, this),
+                        error: jQuery.proxy(function (e) {
+                            w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: this._editor === null});
+                            showError(e);
+                        }, this)
+                    });
+                });
+            }
+        },
+
         getFormat: function (path) {
             var filename = path.split('/').pop(),
                 dot = filename.lastIndexOf('.');
@@ -315,6 +342,7 @@ define([
 
         close: function(success) {
             var _close = $.proxy(function (){
+                w2ui['editor_main_toolbar'].disable('rebuild_page');
                 $(w2ui['editor'].el('main')).empty();
                 this._editor.close();
                 this._editor = null;
@@ -380,6 +408,7 @@ define([
                         this._editor = new editor(this, w2ui['editor'].el('main'), result.result);
                         this._currentFormat = mode;
                         this._currentPath = path;
+                        w2ui['editor_main_toolbar'].enable('rebuild_page');
                         this.updatePreview();
                     }, this),
                     error: showError
