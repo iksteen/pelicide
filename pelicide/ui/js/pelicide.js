@@ -11,6 +11,7 @@ define([
         _editors: {},
         _content: {},
         _editor: null,
+        _dirty: false,
         _currentFormat: null,
         _currentPath: null,
         _previewMode: null,
@@ -156,10 +157,11 @@ define([
 
         dirty: function(dirty) {
             if(dirty === undefined) {
-                return !w2ui['editor_main_toolbar'].get('save')['disabled'];
-            } else {
-                w2ui['editor_main_toolbar'].set('save', {disabled: !dirty || self._editor === null});
+                return this._editor && this._dirty;
             }
+
+            this._dirty = dirty;
+            w2ui['editor_main_toolbar'].set('save', {disabled: self._editor === null || !dirty});
         },
 
         toggleSidebar: function (event) {
