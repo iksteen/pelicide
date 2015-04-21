@@ -34,25 +34,19 @@ class PelicideService(object):
         return self.runner.command('render', [fmt, content]).addCallback(lambda v: v['content'])
 
     def json_rpc_list_content(self):
-        home = self.runner.settings['PATH']
-        content = {}
+        def process(project_content):
+            content = ({}, [])
+            for node in project_content:
+                dirname, filename = os.path.split(node['path'])
+                if dirname:
+                    p = reduce(lambda a, b: a[0].setdefault(b, ({}, [])), dirname.split(os.sep), content)
+                else:
+                    p = content
+                p[1].append(node)
 
-        for path, dirnames, filenames in os.walk(home):
-            if path == home:
-                p = content
-            else:
-                rel_path = os.path.relpath(path, home)
-                p = reduce(lambda a, b: a[b], rel_path.split(os.sep), content)
+            return content
 
-            for dirname in dirnames:
-                if not dirname.startswith('.'):
-                    p[dirname] = {}
-
-            for filename in filenames:
-                if not filename.startswith('.'):
-                    p[filename] = os.path.relpath(os.path.join(path, filename), home)
-
-        return content
+        return self.runner.command('scan').addCallback(process)
 
     def json_rpc_get_content(self, path):
         content_path = self.runner.settings['PATH']

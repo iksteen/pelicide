@@ -91,9 +91,9 @@ define([
                     }
                 ],
                 onDblClick: jQuery.proxy(function (e) {
-                    var path = this._content[e.target];
-                    if (path !== undefined) {
-                        this.load(path);
+                    var file = this._content[e.target];
+                    if (file !== undefined) {
+                        this.load(file.path);
                     }
                 }, this)
             }));
@@ -214,56 +214,39 @@ define([
 
             this._content = {};
 
-            function sortNodes(a, b) {
-                if (a.type == b.type) {
-                    return (a.name < b.name) ? -1 : (a.name > b.name) ? 1 : 0;
-                } else if (a.type === 'object') {
-                    return -1;
-                } else {
-                    return 1;
+            var node_id = 0;
+            function addContentNodes(content, parent, dirs, files, check) {
+                var dirnames = [];
+                for(var dirname in dirs) {
+                    if (dirs.hasOwnProperty(dirname))
+                        dirnames.push(dirname);
                 }
-            }
+                dirnames.sort(function (a, b) {
+                    return a.localeCompare(b);
+                });
+                jQuery.each(dirnames, function (i, dirname) {
+                    var id = 'content_' + (++node_id);
+                    sidebar.add(parent, {
+                        id: id,
+                        text: dirname,
+                        icon: 'fa fa-folder-o'
+                    });
+                    addContentNodes(content, id, dirs[dirname][0], dirs[dirname][1], check);
+                });
 
-            function addContentNodes(content, parent, nodes, check) {
-                var sorted_nodes = [];
-                for (var prop in nodes) {
-                    if (nodes.hasOwnProperty(prop)) {
-                        sorted_nodes.push({
-                            name: prop,
-                            type: typeof(nodes[prop]),
-                            data: nodes[prop]
-                        });
-                    }
-                }
-                sorted_nodes.sort(sortNodes);
-
-                for (var i = 0; i < sorted_nodes.length; ++i) {
-                    var node = sorted_nodes[i],
-                        node_id = parent + '-' + i;
-
-                    if (node.type === 'string') {
-                        content[node_id] = node.data;
-                        sidebar.add(
-                            parent,
-                            {
-                                id: node_id,
-                                text: node.name,
-                                icon: 'fa fa-file-text-o',
-                                disabled: !check(node)
-                            }
-                        );
-                    } else {
-                        sidebar.add(
-                            parent,
-                            {
-                                id: node_id,
-                                text: node.name,
-                                icon: 'fa fa-folder-o'
-                            }
-                        );
-                        addContentNodes(content, node_id, node.data, check);
-                    }
-                }
+                files.sort(function (a, b) {
+                    return a.title.localeCompare(b.title);
+                });
+                jQuery.each(files, function (i, file) {
+                    var id = 'content_' + (++node_id);
+                    content[id] = file;
+                    sidebar.add(parent, {
+                        id: id,
+                        text: file.title,
+                        icon: 'fa fa-file-text-o',
+                        disabled: !check(file.path)
+                    });
+                });
             }
 
             jQuery.jsonRPC.request('get_settings', {
@@ -280,9 +263,15 @@ define([
 
             jQuery.jsonRPC.request('list_content', {
                 success: jQuery.proxy(function (result) {
-                    addContentNodes(this._content, 'content', result.result, jQuery.proxy(function (node) {
-                        return this.findEditor(this.getFormat(node.name)) !== undefined;
-                    }, this));
+                    addContentNodes(
+                        this._content,
+                        'content',
+                        result.result[0],
+                        result.result[1],
+                        jQuery.proxy(function (filename) {
+                            return this.findEditor(this.getFormat(filename)) !== undefined;
+                        }, this)
+                    );
                     sidebar.unlock();
                 }, this),
                 error: showError
