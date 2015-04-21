@@ -14,7 +14,7 @@ from pelicide.service import PelicideService
 
 
 @defer.inlineCallbacks
-def run(args, project):
+def start_service(root, project, path_prefix=''):
     def clean(tmp_path):
         print('Cleaning up {}'.format(tmp_path), file=sys.stderr)
         shutil.rmtree(tmp_path, True)
@@ -28,23 +28,15 @@ def run(args, project):
         project['pelicanconf'],
         {
             'OUTPUT_PATH': output_path,
-            'SITEURL': 'http://localhost:{}/site'.format(args.port),
+            'SITEURL': '%s/site' % path_prefix,
             'RELATIVE_URLS': False,
         },
     )
+    root.putChild('rpc', webserver.JsonRpcResource(PelicideService(runner)))
+    root.putChild('site', static.File(output_path))
+
     yield runner.start()
     yield runner.command('build')
-
-    r = static.File(os.path.join(os.path.dirname(__file__), 'ui'))
-    r.putChild('rpc', webserver.JsonRpcResource(PelicideService(runner)))
-    r.putChild('site', static.File(output_path))
-    try:
-        yield reactor.listenTCP(args.port, server.Site(r), interface='127.0.0.1')
-        print('Pelicide is running on port {port}. Visit http://127.0.0.1:{port}/'.format(port=args.port),
-              file=sys.stderr)
-    except error.CannotListenError as e:
-        print(e, file=sys.stderr)
-        reactor.stop()
 
 
 def parse_project(project_path):
@@ -76,6 +68,20 @@ def parse_project(project_path):
     }
 
 
+@defer.inlineCallbacks
+def run_web(args, project):
+    root = static.File(os.path.join(os.path.dirname(__file__), 'ui'))
+    start_service(root, project, 'http://localhost:{}'.format(args.port))
+    try:
+        yield reactor.listenTCP(args.port, server.Site(root), interface='127.0.0.1')
+        print('Pelicide is running on port {port}. Visit http://127.0.0.1:{port}/'.format(port=args.port),
+              file=sys.stderr)
+    except error.CannotListenError as e:
+        print(e, file=sys.stderr)
+        reactor.stop()
+
+
+@defer.inlineCallbacks
 def main():
     parser = argparse.ArgumentParser(description='An IDE for Pelican.')
     parser.add_argument('project', default=None, nargs='?', help='The pelicide project file to use.')
@@ -87,7 +93,7 @@ def main():
         sys.exit(1)
 
     project = parse_project(args.project)
-    reactor.callWhenRunning(run, args, project)
+    reactor.callWhenRunning(run_web, args, project)
     reactor.run()
 
 
