@@ -332,6 +332,7 @@ define([
         close: function(success) {
             var _close = $.proxy(function (){
                 w2ui['editor_main_toolbar'].disable('rebuild_page');
+                w2ui['editor_right_toolbar'].disable('update_preview');
                 $(w2ui['editor'].el('main')).empty();
                 this._editor.close();
                 this._editor = null;
@@ -398,6 +399,7 @@ define([
                         this._currentFormat = mode;
                         this._currentFile = file;
                         w2ui['editor_main_toolbar'].enable('rebuild_page');
+                        w2ui['editor_right_toolbar'].enable('update_preview');
                         this.updatePreview();
                     }, this),
                     error: showError
@@ -436,10 +438,9 @@ define([
                 this._previewMode = mode;
 
                 if (mode == 'render') {
-                    w2ui['editor_right_toolbar'].enable('update_preview');
-                    w2ui['editor'].content('right', '<iframe id="render" src="/site/index.html"></iframe>');
+                    w2ui['editor'].content('right', '<iframe id="render"></iframe>');
+                    this.updatePreview();
                 } else {
-                    w2ui['editor_right_toolbar'].disable('update_preview');
                     w2ui['editor'].content('right', '<div id="preview_container"><div id="preview"></div></div>');
                     this.updatePreview();
                 }
@@ -478,7 +479,16 @@ define([
                     preview.empty();
                 }
             } else {
-                $('#render')[0].contentWindow.location.reload(true);
+                var render = $('#render')[0];
+                if(this._currentFile && this._currentFile.url) {
+                    if(render.contentWindow.location.href == this._currentFile.url) {
+                        render.contentWindow.location.reload(true);
+                    } else {
+                        render.contentWindow.location.href = this._currentFile.url;
+                    }
+                } else {
+                    render.src = '';
+                }
             }
         },
 
