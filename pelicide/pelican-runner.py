@@ -39,7 +39,11 @@ def scan(pelican, settings):
 def build(pelican, settings, paths=None):
     context, generators = scan(pelican, settings)
 
-    output = {}
+    site_url = settings['SITEURL']
+    output_path = settings['OUTPUT_PATH']
+
+    urls = {}
+    selected = settings['WRITE_SELECTED'] = []
 
     for subdir, filename in (paths if paths is not None else []):
         path = os.sep.join(subdir + [filename])
@@ -47,9 +51,8 @@ def build(pelican, settings, paths=None):
         if content is None or not hasattr(content, 'url'):
             raise RuntimeError('Don\'t know how to build %s' % path)
 
-        output[path] = content.url
-
-    settings['WRITE_SELECTED'] = output.values()
+        urls[path] = site_url + '/' + content.url
+        selected.append(os.path.join(output_path, content.url.replace('/', os.sep)))
 
     writer = pelican.get_writer()
 
@@ -59,7 +62,7 @@ def build(pelican, settings, paths=None):
 
     signals.finalized.send(pelican)
 
-    return output
+    return urls
 
 
 def render(readers, fmt, content):
