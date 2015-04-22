@@ -29,7 +29,7 @@ define([
         _editor: null,
         _dirty: false,
         _currentFormat: null,
-        _currentPath: null,
+        _currentFile: null,
         _previewMode: null,
         _previewPending: false,
 
@@ -93,7 +93,7 @@ define([
                 onDblClick: jQuery.proxy(function (e) {
                     var file = this._content[e.target];
                     if (file !== undefined) {
-                        this.load(file.path);
+                        this.load(file);
                     }
                 }, this)
             }));
@@ -192,7 +192,7 @@ define([
             }
 
             this._dirty = dirty;
-            w2ui['editor_main_toolbar'].set('save', {disabled: self._editor === null || !dirty});
+            w2ui['editor_main_toolbar'].set('save', {disabled: this._editor === null || !dirty});
         },
 
         toggleSidebar: function (event) {
@@ -235,16 +235,16 @@ define([
                 });
 
                 files.sort(function (a, b) {
-                    return a.title.localeCompare(b.title);
+                    return a.name.localeCompare(b.name);
                 });
                 jQuery.each(files, function (i, file) {
                     var id = 'content_' + (++node_id);
                     content[id] = file;
                     sidebar.add(parent, {
                         id: id,
-                        text: file.title,
+                        text: file.name,
                         icon: 'fa fa-file-text-o',
-                        disabled: !check(file.path)
+                        disabled: !check(file.name)
                     });
                 });
             }
@@ -295,12 +295,13 @@ define([
         },
 
         rebuildPage: function () {
+            var file = this._currentFile;
             w2ui['editor_main_toolbar'].disable('rebuild_page');
 
-            if (self._editor !== null) {
-                this.save(function () {
+            if (file && this._editor !== null) {
+                this.save(jQuery.proxy(function () {
                     jQuery.jsonRPC.request('build', {
-                        params: [self._currentPath],
+                        params: [[[file.dir, file.name]]],
                         success: jQuery.proxy(function () {
                             w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: this._editor === null});
                         }, this),
@@ -309,13 +310,12 @@ define([
                             showError(e);
                         }, this)
                     });
-                });
+                }, this));
             }
         },
 
-        getFormat: function (path) {
-            var filename = path.split('/').pop(),
-                dot = filename.lastIndexOf('.');
+        getFormat: function (filename) {
+            var dot = filename.lastIndexOf('.');
 
             /* >0 because of dotfiles */
             if (dot > 0) {
@@ -336,7 +336,7 @@ define([
                 this._editor.close();
                 this._editor = null;
                 this._currentFormat = null;
-                this._currentPath = null;
+                this._currentFile = null;
                 this.dirty(false);
                 this.updatePreview();
                 success && success();
@@ -381,8 +381,8 @@ define([
             }
         },
 
-        load: function (path) {
-            var mode = this.getFormat(path),
+        load: function (file) {
+            var mode = this.getFormat(file.name),
                 editor = this.findEditor(mode);
 
             if (editor === undefined) {
@@ -392,11 +392,11 @@ define([
 
             this.close(jQuery.proxy(function() {
                 jQuery.jsonRPC.request('get_content', {
-                    params: [path],
+                    params: [file.dir, file.name],
                     success: jQuery.proxy(function (result) {
                         this._editor = new editor(this, w2ui['editor'].el('main'), result.result);
                         this._currentFormat = mode;
-                        this._currentPath = path;
+                        this._currentFile = file;
                         w2ui['editor_main_toolbar'].enable('rebuild_page');
                         this.updatePreview();
                     }, this),
@@ -410,7 +410,7 @@ define([
 
             if(this._editor) {
                 jQuery.jsonRPC.request('set_content', {
-                    params: [this._currentPath, this._editor.content()],
+                    params: [this._currentFile.dir, this._currentFile.name, this._editor.content()],
                     success: function() { success && success() },
                     error: $.proxy(function (e) {
                         this.dirty(true);

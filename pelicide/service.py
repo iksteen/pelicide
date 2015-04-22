@@ -27,8 +27,8 @@ class PelicideService(object):
     def json_rpc_list_extensions(self):
         return self.runner.command('extensions')
 
-    def json_rpc_build(self, filenames=None):
-        return self.runner.command('build', filenames)
+    def json_rpc_build(self, paths=None):
+        return self.runner.command('build', paths)
 
     def json_rpc_render(self, fmt, content):
         return self.runner.command('render', [fmt, content]).addCallback(lambda v: v['content'])
@@ -37,22 +37,18 @@ class PelicideService(object):
         def process(project_content):
             content = ({}, [])
             for node in project_content:
-                dirname, filename = os.path.split(node['path'])
-                if dirname:
-                    p = reduce(lambda a, b: a[0].setdefault(b, ({}, [])), dirname.split(os.sep), content)
-                else:
-                    p = content
+                p = reduce(lambda a, b: a[0].setdefault(b, ({}, [])), node['dir'], content)
                 p[1].append(node)
 
             return content
 
         return self.runner.command('scan').addCallback(process)
 
-    def json_rpc_get_content(self, path):
+    def json_rpc_get_content(self, subdir, filename):
         content_path = self.runner.settings['PATH']
         if not content_path.endswith(os.sep):
             content_path += os.sep
-        path = os.path.abspath(os.path.join(self.runner.settings['PATH'], path))
+        path = os.path.abspath(os.path.join(self.runner.settings['PATH'], os.sep.join(subdir + [filename])))
 
         if not path.startswith(content_path):
             raise IOError('File not in content path')
@@ -62,11 +58,11 @@ class PelicideService(object):
         with open(path, 'rb') as f:
             return f.read().decode('utf-8')
 
-    def json_rpc_set_content(self, path, content):
+    def json_rpc_set_content(self, subdir, filename, content):
         content_path = self.runner.settings['PATH']
         if not content_path.endswith(os.sep):
             content_path += os.sep
-        path = os.path.abspath(os.path.join(self.runner.settings['PATH'], path))
+        path = os.path.abspath(os.path.join(self.runner.settings['PATH'], os.sep.join(subdir + [filename])))
 
         if not path.startswith(content_path):
             raise IOError('File not in content path.')

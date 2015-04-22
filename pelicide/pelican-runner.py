@@ -36,17 +36,18 @@ def scan(pelican, settings):
     return context, generators
 
 
-def build(pelican, settings, filenames=None):
+def build(pelican, settings, paths=None):
     context, generators = scan(pelican, settings)
 
     output = {}
 
-    for filename in filenames if filenames is not None else []:
-        content = context['filenames'].get(filename)
+    for subdir, filename in (paths if paths is not None else []):
+        path = os.sep.join(subdir + [filename])
+        content = context['filenames'].get(path)
         if content is None or not hasattr(content, 'url'):
-            raise RuntimeError('Don\'t know how to build %s' % filename)
+            raise RuntimeError('Don\'t know how to build %s' % path)
 
-        output[filename] = content.url
+        output[path] = content.url
 
     settings['WRITE_SELECTED'] = output.values()
 
@@ -148,22 +149,21 @@ def run(config_file, init_settings):
             success(cmd_id, readers.extensions)
         elif cmd == 'scan':
             try:
-                def get_title(filename, content):
-                    title = getattr(content, 'metadata', {}).get('title')
-                    return striptags(title) if title else os.path.split(filename)[1]
-
                 context, _ = scan(pelican, settings)
-                project_content = [
-                    {
-                        'path': filename,
-                        'title': get_title(filename, content),
+                project_contents = []
+                for path, content in context['filenames'].items():
+                    subdir, filename = os.path.split(path)
+                    url = getattr(content, 'url', None)
+                    if url is not None:
+                        url = settings['SITEURL'] + '/' + url
+                    project_contents.append({
+                        'dir': subdir.split(os.sep) if subdir else [],
+                        'name': filename,
                         'type': content.__class__.__module__ + '.' + content.__class__.__name__,
-                        'url': getattr(content, 'url', None),
-                        'metadata': getattr(content, 'metadata', {})
-                    }
-                    for filename, content in context['filenames'].items()
-                ]
-                success(cmd_id, project_content)
+                        'url': url,
+                        'meta': getattr(content, 'metadata', {})
+                    })
+                success(cmd_id, project_contents)
             except Exception as e:
                 print_exc()
                 fail(cmd_id, str(e))
