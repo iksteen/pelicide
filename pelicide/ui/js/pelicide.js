@@ -170,6 +170,7 @@ define([
                                         this.previewMode('render');
                                     }, this)
                                 },
+                                {type: 'break'},
                                 {
                                     type: 'button',
                                     id: 'update_preview',
