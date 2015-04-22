@@ -148,6 +148,7 @@ define([
                     {
                         type: 'right',
                         size: '50%',
+                        overflow: 'hidden',
                         toolbar: {
                             items: [
                                 {
