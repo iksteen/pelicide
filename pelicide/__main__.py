@@ -40,11 +40,10 @@ def parse_project(project_path):
 @defer.inlineCallbacks
 def run_web(args, project):
     root = static.File(os.path.join(os.path.dirname(__file__), 'ui'))
-    start_service(root, project, 'http://localhost:{}'.format(args.port))
     try:
-        yield reactor.listenTCP(args.port, server.Site(root), interface='127.0.0.1')
-        print('Pelicide is running on port {port}. Visit http://127.0.0.1:{port}/'.format(port=args.port),
-              file=sys.stderr)
+        port = reactor.listenTCP(args.port, server.Site(root), interface='127.0.0.1')
+        yield start_service(root, project, 'http://localhost:{}'.format(port.getHost().port))
+        print('Pelicide is running. Please visit http://127.0.0.1:{}/'.format(port.getHost().port), file=sys.stderr)
     except error.CannotListenError as e:
         print(e, file=sys.stderr)
         reactor.stop()
