@@ -281,17 +281,19 @@ define([
         rebuildProject: function () {
             w2ui['layout_left_toolbar'].disable('rebuild');
 
-            this.save(function() {
+            this.save(jQuery.proxy(function() {
                 jQuery.jsonRPC.request('build', {
-                    success: function () {
+                    success: jQuery.proxy(function () {
                         w2ui['layout_left_toolbar'].enable('rebuild');
-                    },
+                        if (this.previewMode() == 'render')
+                            this.updatePreview();
+                    }, this),
                     error: function (e) {
                         w2ui['layout_left_toolbar'].enable('rebuild');
                         showError(e);
                     }
                 });
-            });
+            }, this));
         },
 
         rebuildPage: function () {
@@ -304,6 +306,9 @@ define([
                         params: [[[file.dir, file.name]]],
                         success: jQuery.proxy(function () {
                             w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: this._editor === null});
+                            if(this.previewMode() == 'render') {
+                                this.updatePreview();
+                            }
                         }, this),
                         error: jQuery.proxy(function (e) {
                             w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: this._editor === null});
