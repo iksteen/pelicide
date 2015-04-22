@@ -4,36 +4,35 @@ import os
 import shutil
 import sys
 import tempfile
-from twisted.internet import defer
+from fastjsonrpc.server import JSONRPCServer
 from twisted.web import static
-from txjsonrpc2.web import server as webserver
 from pelicide.runner import Runner
 
 
-class PelicideService(object):
+class PelicideService(JSONRPCServer):
     def __init__(self, runner):
+        JSONRPCServer.__init__(self)
         self.runner = runner
 
-    @defer.inlineCallbacks
-    def json_rpc_restart(self):
-        yield self.runner.restart()
+    def jsonrpc_restart(self):
+        return self.runner.restart().addCallback(lambda _: None)
 
-    def json_rpc_get_settings(self):
+    def jsonrpc_get_settings(self):
         return self.runner.settings
 
-    def json_rpc_set(self, key, value):
+    def jsonrpc_set(self, key, value):
         return self.runner.command('setting', [key, value])
 
-    def json_rpc_list_extensions(self):
+    def jsonrpc_list_extensions(self):
         return self.runner.command('extensions')
 
-    def json_rpc_build(self, paths=None):
+    def jsonrpc_build(self, paths=None):
         return self.runner.command('build', paths)
 
-    def json_rpc_render(self, fmt, content):
+    def jsonrpc_render(self, fmt, content):
         return self.runner.command('render', [fmt, content]).addCallback(lambda v: v['content'])
 
-    def json_rpc_list_content(self):
+    def jsonrpc_list_content(self):
         def process(project_content):
             content = ({}, [])
             for node in project_content:
@@ -44,7 +43,7 @@ class PelicideService(object):
 
         return self.runner.command('scan').addCallback(process)
 
-    def json_rpc_get_content(self, subdir, filename):
+    def jsonrpc_get_content(self, subdir, filename):
         content_path = self.runner.settings['PATH']
         if not content_path.endswith(os.sep):
             content_path += os.sep
@@ -58,7 +57,7 @@ class PelicideService(object):
         with open(path, 'rb') as f:
             return f.read().decode('utf-8')
 
-    def json_rpc_set_content(self, subdir, filename, content):
+    def jsonrpc_set_content(self, subdir, filename, content):
         content_path = self.runner.settings['PATH']
         if not content_path.endswith(os.sep):
             content_path += os.sep
@@ -71,7 +70,6 @@ class PelicideService(object):
             f.write(content.encode('utf-8'))
 
 
-@defer.inlineCallbacks
 def start_service(root, project, path_prefix=''):
     def clean(tmp_path):
         print('Cleaning up {}'.format(tmp_path), file=sys.stderr)
@@ -91,8 +89,11 @@ def start_service(root, project, path_prefix=''):
         },
     )
 
-    root.putChild('rpc', webserver.JsonRpcResource(PelicideService(runner)))
+    root.putChild('rpc', PelicideService(runner))
     root.putChild('site', static.File(output_path))
 
-    yield runner.start()
-    yield runner.command('build')
+    return runner.start().addCallback(
+        lambda _: runner.command('build')
+    ).addCallback(
+        lambda _: None
+    )
