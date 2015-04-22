@@ -207,16 +207,8 @@ define([
 
         loadProject: function () {
             var sidebar = w2ui['sidebar'],
-                nodes = sidebar.find('content', {}),
-                i;
-            for (i = 0; i < nodes.length; ++i) {
-                sidebar.remove(nodes[i].id);
-            }
-            sidebar.lock('Loading...', true);
+                node_id = 0;
 
-            this._content = {};
-
-            var node_id = 0;
             function addContentNodes(content, parent, dirs, files, check) {
                 var dirnames = [];
                 for(var dirname in dirs) {
@@ -251,33 +243,41 @@ define([
                 });
             }
 
-            jQuery.jsonRPC.request('get_settings', {
-                success: function (result) {
-                    if (result.result['SITENAME']) {
-                        document.title = result.result['SITENAME'] + ' (Pelicide)';
-                        sidebar.set('content', {
-                            text: result.result['SITENAME']
-                        });
-                    }
-                },
-                error: showError
-            });
+            this.close(jQuery.proxy(function () {
+                sidebar.lock('Loading...', true);
 
-            jQuery.jsonRPC.request('list_content', {
-                success: jQuery.proxy(function (result) {
-                    addContentNodes(
-                        this._content,
-                        'content',
-                        result.result[0],
-                        result.result[1],
-                        jQuery.proxy(function (filename) {
-                            return this.findEditor(this.getFormat(filename)) !== undefined;
-                        }, this)
-                    );
-                    sidebar.unlock();
-                }, this),
-                error: showError
-            });
+                sidebar.remove.apply(sidebar, sidebar.find('content', {}));
+                this._content = {};
+
+                jQuery.jsonRPC.request('get_settings', {
+                    success: function (result) {
+                        if (result.result['SITENAME']) {
+                            document.title = result.result['SITENAME'] + ' (Pelicide)';
+                            sidebar.set('content', {
+                                text: result.result['SITENAME']
+                            });
+                        }
+                    },
+                    error: showError
+                });
+
+                jQuery.jsonRPC.request('list_content', {
+                    success: jQuery.proxy(function (result) {
+                        addContentNodes(
+                            this._content,
+                            'content',
+                            result.result[0],
+                            result.result[1],
+                            jQuery.proxy(function (filename) {
+                                return this.findEditor(this.getFormat(filename)) !== undefined;
+                            }, this)
+                        );
+
+                        sidebar.unlock();
+                    }, this),
+                    error: showError
+                });
+            }, this));
         },
 
         rebuildProject: function () {
