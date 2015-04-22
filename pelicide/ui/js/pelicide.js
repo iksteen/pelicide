@@ -486,15 +486,30 @@ define([
                     preview.empty();
                 }
             } else {
-                var render = $('#render')[0];
                 if(this._currentFile && this._currentFile.url) {
-                    if(render.contentWindow.location.href == this._currentFile.url) {
-                        render.contentWindow.location.reload(true);
-                    } else {
-                        render.contentWindow.location.href = this._currentFile.url;
-                    }
+                    var file=this._currentFile,
+                        old_frame=$('#render'),
+                        new_frame = $('<iframe>').appendTo(old_frame.parent());
+
+                    new_frame.one('load', function () {
+                        try {
+                            // Try to preserve the old scroll position.
+                            var old_doc = old_frame.contents();
+                            if (old_doc.prop('location') == file.url) {
+                                var old_body = old_doc.find('body'),
+                                    top = old_body.scrollTop(),
+                                    left = old_body.scrollLeft();
+                                new_frame.contents().find('body').scrollTop(top).scrollLeft(left);
+                            }
+                        } catch (e) {
+                            // If the user navigated away from the service application, a cross origin
+                            // frame access exception will be raised.
+                        }
+                        old_frame.remove();
+                        new_frame.attr('id', 'render');
+                    }).attr('src', file.url);
                 } else {
-                    render.src = '';
+                    $('#render').attr('src', '');
                 }
             }
         },
