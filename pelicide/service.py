@@ -70,6 +70,12 @@ class PelicideService(JSONRPCServer):
             f.write(content.encode('utf-8'))
 
 
+class NoCacheFile(static.File):
+    def _setContentHeaders(self, request, size=None):
+        static.File._setContentHeaders(self, request, size)
+        request.setHeader('cache-control', 'private, max-age=0, no-cache')
+
+
 def start_service(root, project, path_prefix=''):
     def clean(tmp_path):
         print('Cleaning up {}'.format(tmp_path), file=sys.stderr)
@@ -90,7 +96,7 @@ def start_service(root, project, path_prefix=''):
     )
 
     root.putChild('rpc', PelicideService(runner))
-    root.putChild('site', static.File(output_path))
+    root.putChild('site', NoCacheFile(output_path))
 
     return runner.start().addCallback(
         lambda _: runner.command('build')
