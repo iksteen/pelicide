@@ -33,15 +33,7 @@ class PelicideService(JSONRPCServer):
         return self.runner.command('render', [fmt, content]).addCallback(lambda v: v['content'])
 
     def jsonrpc_list_content(self):
-        def process(project_content):
-            content = ({}, [])
-            for node in project_content:
-                p = reduce(lambda a, b: a[0].setdefault(b, ({}, [])), node['dir'], content)
-                p[1].append(node)
-
-            return content
-
-        return self.runner.command('scan').addCallback(process)
+        return self.runner.command('scan')
 
     def jsonrpc_get_content(self, subdir, filename):
         content_path = self.runner.settings['PATH']

@@ -85,9 +85,25 @@ define([
                     {
                         id: 'content',
                         text: 'Content',
-                        img: 'icon-folder',
                         expanded: true,
-                        group: true
+                        group: true,
+                        nodes: [
+                            {
+                                id: 'articles',
+                                text: 'Articles',
+                                icon: 'fa fa-folder'
+                            },
+                            {
+                                id: 'pages',
+                                text: 'Pages',
+                                icon: 'fa fa-folder'
+                            },
+                            {
+                                id: 'other',
+                                text: 'Other',
+                                icon: 'fa fa-folder'
+                            }
+                        ]
                     }
                 ],
                 onDblClick: jQuery.proxy(function (e) {
@@ -207,34 +223,69 @@ define([
 
         loadProject: function () {
             var sidebar = w2ui['sidebar'],
-                node_id = 0;
+                node_id = 0,
+                path_nodes = {};
 
-            function addContentNodes(content, parent, dirs, files, check) {
-                var dirnames = [];
-                for(var dirname in dirs) {
-                    if (dirs.hasOwnProperty(dirname))
-                        dirnames.push(dirname);
-                }
-                dirnames.sort(function (a, b) {
-                    return a.localeCompare(b);
-                });
-                jQuery.each(dirnames, function (i, dirname) {
-                    var id = 'content_' + (++node_id);
-                    sidebar.add(parent, {
-                        id: id,
-                        text: dirname,
-                        icon: 'fa fa-folder-o'
-                    });
-                    addContentNodes(content, id, dirs[dirname][0], dirs[dirname][1], check);
+            function getNodeForPath(parent, path) {
+                var node=path_nodes[parent];
+
+                jQuery.each(path, function(i, elem) {
+                    if(node.nodes.hasOwnProperty(elem)) {
+                        node = node.nodes[elem];
+                    } else {
+                        var id = 'content_' + (++node_id);
+                        sidebar.add(node.id, {
+                            id: id,
+                            text: elem,
+                            icon: 'fa fa-folder-o'
+                        });
+                        node.nodes[elem] = {
+                            id: id,
+                            nodes: {}
+                        };
+                        node = node.nodes[elem];
+                    }
                 });
 
+                return node.id;
+            }
+
+            function addContentNodes(content, parent, files, check) {
+                /* Sort paths */
+                var paths = [];
+                jQuery.each(files, function (i, file) {
+                    if (jQuery.inArray(file.dir, paths) == -1)
+                        paths.push(file.dir);
+                });
+                paths.sort(function (a, b) {
+                    var i = 0,
+                        n = Math.min(a.length, b.length);
+
+                    for (i = 0; i < n; ++i) {
+                        var c = a[i].localeCompare(b[i]);
+                        if(c)
+                            return c;
+                    }
+
+                    return (a.length < b.length) ? -1 : ((a.length == b.length) ? 0 : -1);
+                });
+                /* Create path nodes */
+                jQuery.each(paths, function (i, path) {
+                    getNodeForPath(parent, path);
+                });
+
+                /* Sort files by name */
                 files.sort(function (a, b) {
                     return a.name.localeCompare(b.name);
                 });
+
+                /* Create nodes for all content */
                 jQuery.each(files, function (i, file) {
-                    var id = 'content_' + (++node_id);
+                    var id = 'content_' + (++node_id),
+                        path_node = getNodeForPath(parent, file.dir);
+
                     content[id] = file;
-                    sidebar.add(parent, {
+                    sidebar.add(path_node, {
                         id: id,
                         text: file.name,
                         icon: 'fa fa-file-text-o',
@@ -246,16 +297,21 @@ define([
             this.close(jQuery.proxy(function () {
                 sidebar.lock('Loading...', true);
 
-                sidebar.remove.apply(sidebar, sidebar.find('content', {}));
                 this._content = {};
+                jQuery.each(sidebar.find({parent: sidebar.get('content')}), function (i, node) {
+                    sidebar.remove.apply(sidebar, sidebar.find(node, {}));
+                    path_nodes[node.id] = {
+                        id: node.id,
+                        nodes: {}
+                    }
+                });
 
                 jQuery.jsonRPC.request('get_settings', {
                     success: function (result) {
                         if (result.result['SITENAME']) {
                             document.title = result.result['SITENAME'] + ' (Pelicide)';
-                            sidebar.set('content', {
-                                text: result.result['SITENAME']
-                            });
+                            sidebar.get('content').text = result.result['SITENAME'];
+                            sidebar.refresh('content');
                         }
                     },
                     error: showError
@@ -263,15 +319,34 @@ define([
 
                 jQuery.jsonRPC.request('list_content', {
                     success: jQuery.proxy(function (result) {
-                        addContentNodes(
-                            this._content,
-                            'content',
-                            result.result[0],
-                            result.result[1],
-                            jQuery.proxy(function (filename) {
-                                return this.findEditor(this.getFormat(filename)) !== undefined;
-                            }, this)
-                        );
+                        var files = {
+                                articles: [],
+                                pages: [],
+                                other: []
+                            },
+                            content = this._content;
+
+                        jQuery.each(result.result, function (i, file) {
+                            if(file.type == 'pelican.contents.Article')
+                                files.articles.push(file);
+                            else if(file.type == 'pelican.contents.Page')
+                                files.pages.push(file);
+                            else
+                                files.other.push(file);
+                        });
+
+                        var check = jQuery.proxy(function (filename) {
+                            return this.findEditor(this.getFormat(filename)) !== undefined;
+                        }, this);
+
+                        jQuery.each(['articles', 'pages', 'other'], function (i, type) {
+                            addContentNodes(
+                                content,
+                                type,
+                                files[type],
+                                check
+                            );
+                        });
 
                         sidebar.unlock();
                     }, this),
