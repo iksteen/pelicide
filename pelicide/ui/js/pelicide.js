@@ -213,11 +213,11 @@ define([
             w2ui['editor_main_toolbar'].set('save', {disabled: this._editor === null || !dirty});
         },
 
-        toggleSidebar: function (event) {
+        toggleSidebar: function () {
             w2ui['layout'].toggle('left');
         },
 
-        togglePreview: function (event) {
+        togglePreview: function () {
             w2ui['editor'].toggle('right');
         },
 
@@ -258,10 +258,8 @@ define([
                         paths.push(file.dir);
                 });
                 paths.sort(function (a, b) {
-                    var i = 0,
-                        n = Math.min(a.length, b.length);
-
-                    for (i = 0; i < n; ++i) {
+                    var n = Math.min(a.length, b.length);
+                    for (var i = 0; i < n; ++i) {
                         var c = a[i].localeCompare(b[i]);
                         if(c)
                             return c;
@@ -269,6 +267,7 @@ define([
 
                     return (a.length < b.length) ? -1 : ((a.length == b.length) ? 0 : -1);
                 });
+
                 /* Create path nodes */
                 jQuery.each(paths, function (i, path) {
                     getNodeForPath(parent, path);
