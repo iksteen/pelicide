@@ -17,7 +17,7 @@ define([
 
         scan: function (file) {
             if (file.type == 'pelican.contents.Article') {
-                return ['articles'].concat(file.dir);
+                return ['articles', file.meta.category];
             }
         }
     };
