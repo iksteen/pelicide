@@ -609,12 +609,12 @@ define([
                     }, 25);
                 }
             });
-        },
+        }
+    };
 
-        register: function(editor) {
-            for (var i = 0; i < editor.formats.length; ++i) {
-                this._editors[editor.formats[i]] = editor;
-            }
+    Pelicide.registerEditor = function (editor) {
+        for (var i = 0; i < editor.formats.length; ++i) {
+            Pelicide.prototype._editors[editor.formats[i]] = editor;
         }
     };
 
