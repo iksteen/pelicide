@@ -8,6 +8,14 @@ from twisted.web import server, static
 from pelicide.service import start_service
 
 
+CONTENT_TYPES = {
+    '.html': 'text/html',
+    '.css': 'text/css',
+    '.js': 'application/javascript',
+    '.woff2': 'application/font-woff2',
+}
+
+
 def parse_project(project_path):
     if project_path:
         project_path = os.path.abspath(os.path.expanduser(project_path))
@@ -51,6 +59,10 @@ def run_web(args, project):
 
 @defer.inlineCallbacks
 def main():
+    for ext, content_type in CONTENT_TYPES.items():
+        if ext not in static.File.contentTypes:
+            static.File.contentTypes[ext] = content_type
+
     parser = argparse.ArgumentParser(description='An IDE for Pelican.')
     parser.add_argument('project', default=None, nargs='?', help='The pelicide project file to use.')
     parser.add_argument('--port', '-p', type=int, default=6300, help='The port to host the IDE on.')
