@@ -57,7 +57,6 @@ def run_web(args, project):
         reactor.stop()
 
 
-@defer.inlineCallbacks
 def main():
     for ext, content_type in CONTENT_TYPES.items():
         if ext not in static.File.contentTypes:
