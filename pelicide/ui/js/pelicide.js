@@ -305,7 +305,15 @@ define([
 
                 self._content = {};
                 jQuery.each(sidebar.find({parent: sidebar.get('content')}), function (i, node) {
-                    sidebar.remove.apply(sidebar, sidebar.find(node, {}));
+                    /* Remove all nodes below the content type node. */
+                    sidebar.remove.apply(
+                        sidebar,
+                        sidebar.find(node, {}).map(
+                            function (e) {
+                                return e.id;
+                            })
+                    );
+                    /* Register path for the content type node. */
                     path_nodes[node.id] = {
                         id: node.id,
                         nodes: {}
