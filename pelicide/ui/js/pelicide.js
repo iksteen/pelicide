@@ -34,17 +34,21 @@ define([
         _previewPending: false,
 
         run: function (box) {
+            var self = this;
+
             this.initLayout(box);
             this.initSidebar();
             this.initEditorLayout();
 
-            setTimeout(jQuery.proxy(function () {
-                this.previewMode('draft');
-                this.loadProject();
-            }, this), 0);
+            setTimeout(function () {
+                self.previewMode('draft');
+                self.loadProject();
+            }, 0);
         },
 
         initLayout: function (box) {
+            var self = this;
+
             jQuery(box).w2layout({
                 name: 'layout',
                 panels: [
@@ -59,14 +63,14 @@ define([
                                     id: 'refresh',
                                     icon: 'fa fa-refresh',
                                     hint: 'Refresh project',
-                                    onClick: jQuery.proxy(this.loadProject, this)
+                                    onClick: function () { self.loadProject(); }
                                 },
                                 {
                                     type: 'button',
                                     id: 'rebuild',
                                     icon: 'fa fa-wrench',
                                     hint: 'Rebuild project',
-                                    onClick: jQuery.proxy(this.rebuildProject, this)
+                                    onClick: function () { self.rebuildProject(); }
                                 }
                             ]
                         }
@@ -79,6 +83,8 @@ define([
         },
 
         initSidebar: function () {
+            var self = this;
+
             w2ui['layout'].content('left', jQuery().w2sidebar({
                 name: 'sidebar',
                 nodes: [
@@ -106,16 +112,18 @@ define([
                         ]
                     }
                 ],
-                onDblClick: jQuery.proxy(function (e) {
-                    var file = this._content[e.target];
+                onDblClick: function (e) {
+                    var file = self._content[e.target];
                     if (file !== undefined) {
-                        this.load(file);
+                        self.load(file);
                     }
-                }, this)
+                }
             }));
         },
 
         initEditorLayout: function () {
+            var self = this;
+
             jQuery().w2layout({
                 name: 'editor',
                 panels: [
@@ -130,7 +138,7 @@ define([
                                     icon: 'fa fa-bars',
                                     hint: 'Toggle sidebar',
                                     checked: true,
-                                    onClick: jQuery.proxy(this.toggleSidebar, this)
+                                    onClick: function () { self.togglePreview(); }
                                 },
                                 {type: 'break'},
                                 {
@@ -139,7 +147,7 @@ define([
                                     disabled: true,
                                     icon: 'fa fa-save',
                                     hint: 'Save',
-                                    onClick: jQuery.proxy(function() { this.save(); }, this)
+                                    onClick: function () { self.save(); }
                                 },
                                 {
                                     type: 'button',
@@ -147,7 +155,7 @@ define([
                                     icon: 'fa fa-wrench',
                                     hint: 'Rebuild page',
                                     disabled: true,
-                                    onClick: jQuery.proxy(this.rebuildPage, this)
+                                    onClick: function () { self.rebuildPage(); }
                                 },
                                 {type: 'spacer'},
                                 {
@@ -156,7 +164,7 @@ define([
                                     icon: 'fa fa-eye',
                                     hint: 'Toggle preview',
                                     checked: true,
-                                    onClick: jQuery.proxy(this.togglePreview, this)
+                                    onClick: function () { self.togglePreview(); }
                                 }
                             ]
                         }
@@ -173,18 +181,14 @@ define([
                                     group: '1',
                                     caption: 'Draft',
                                     checked: true,
-                                    onClick: jQuery.proxy(function () {
-                                        this.previewMode('draft');
-                                    }, this)
+                                    onClick: function () { self.previewMode('draft'); }
                                 },
                                 {
                                     type: 'radio',
                                     id: 'render',
                                     group: '1',
                                     caption: 'Render',
-                                    onClick: jQuery.proxy(function () {
-                                        this.previewMode('render');
-                                    }, this)
+                                    onClick: function () { self.previewMode('render'); }
                                 },
                                 {type: 'break'},
                                 {
@@ -193,7 +197,7 @@ define([
                                     icon: 'fa fa-refresh',
                                     hint: 'Refresh',
                                     disabled: true,
-                                    onClick: jQuery.proxy(this.updatePreview, this)
+                                    onClick: function () { self.updatePreview(); }
                                 }
                             ]
                         }
@@ -222,7 +226,8 @@ define([
         },
 
         loadProject: function () {
-            var sidebar = w2ui['sidebar'],
+            var self = this,
+                sidebar = w2ui['sidebar'],
                 node_id = 0,
                 path_nodes = {};
 
@@ -250,7 +255,7 @@ define([
                 return node.id;
             }
 
-            function addContentNodes(content, parent, files, check) {
+            function addContentNodes(parent, files) {
                 /* Sort paths */
                 var paths = [];
                 jQuery.each(files, function (i, file) {
@@ -283,20 +288,20 @@ define([
                     var id = 'content_' + (++node_id),
                         path_node = getNodeForPath(parent, file.dir);
 
-                    content[id] = file;
+                    self._content[id] = file;
                     sidebar.add(path_node, {
                         id: id,
                         text: file.name,
                         icon: 'fa fa-file-text-o',
-                        disabled: !check(file.name)
+                        disabled: self.findEditor(self.getFormat(file.name)) === undefined
                     });
                 });
             }
 
-            this.close(jQuery.proxy(function () {
+            this.close(function () {
                 sidebar.lock('Loading...', true);
 
-                this._content = {};
+                self._content = {};
                 jQuery.each(sidebar.find({parent: sidebar.get('content')}), function (i, node) {
                     sidebar.remove.apply(sidebar, sidebar.find(node, {}));
                     path_nodes[node.id] = {
@@ -317,13 +322,12 @@ define([
                 });
 
                 jQuery.jsonRPC.request('list_content', {
-                    success: jQuery.proxy(function (result) {
+                    success: function (result) {
                         var files = {
                                 articles: [],
                                 pages: [],
                                 other: []
-                            },
-                            content = this._content;
+                            };
 
                         jQuery.each(result.result, function (i, file) {
                             if(file.type == 'pelican.contents.Article')
@@ -334,64 +338,61 @@ define([
                                 files.other.push(file);
                         });
 
-                        var check = jQuery.proxy(function (filename) {
-                            return this.findEditor(this.getFormat(filename)) !== undefined;
-                        }, this);
-
                         jQuery.each(['articles', 'pages', 'other'], function (i, type) {
                             addContentNodes(
-                                content,
                                 type,
-                                files[type],
-                                check
+                                files[type]
                             );
                         });
 
                         sidebar.unlock();
-                    }, this),
+                    },
                     error: showError
                 });
-            }, this));
+            });
         },
 
         rebuildProject: function () {
+            var self = this;
+
             w2ui['layout_left_toolbar'].disable('rebuild');
 
-            this.save(jQuery.proxy(function() {
+            this.save(function() {
                 jQuery.jsonRPC.request('build', {
-                    success: jQuery.proxy(function () {
+                    success: function () {
                         w2ui['layout_left_toolbar'].enable('rebuild');
-                        if (this.previewMode() == 'render')
-                            this.updatePreview();
-                    }, this),
+                        if (self.previewMode() == 'render')
+                            self.updatePreview();
+                    },
                     error: function (e) {
                         w2ui['layout_left_toolbar'].enable('rebuild');
                         showError(e);
                     }
                 });
-            }, this));
+            });
         },
 
         rebuildPage: function () {
-            var file = this._currentFile;
+            var self = this,
+                file = this._currentFile;
             w2ui['editor_main_toolbar'].disable('rebuild_page');
 
             if (file && this._editor !== null) {
-                this.save(jQuery.proxy(function () {
+                this.save(function () {
                     jQuery.jsonRPC.request('build', {
                         params: [[[file.dir, file.name]]],
-                        success: jQuery.proxy(function () {
-                            w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: this._editor === null});
-                            if(this.previewMode() == 'render') {
-                                this.updatePreview();
+                        success: function () {
+                            w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: self._editor === null});
+                            if(self.previewMode() == 'render') {
+                                self.updatePreview();
                             }
-                        }, this),
-                        error: jQuery.proxy(function (e) {
-                            w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: this._editor === null});
+                        },
+                        error: function (e) {
+                            w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: self._editor === null});
                             showError(e);
-                        }, this)
+                        }
                     });
-                }, this));
+                });
             }
         },
 
@@ -411,23 +412,23 @@ define([
         },
 
         close: function(success) {
-            var _close = $.proxy(function (){
+            var self = this;
+
+            function _close() {
                 w2ui['editor_main_toolbar'].disable('rebuild_page');
                 w2ui['editor_right_toolbar'].disable('update_preview');
                 $(w2ui['editor'].el('main')).empty();
-                this._editor.close();
-                this._editor = null;
-                this._currentFormat = null;
-                this._currentFile = null;
-                this.dirty(false);
-                this.updatePreview();
+                self._editor.close();
+                self._editor = null;
+                self._currentFormat = null;
+                self._currentFile = null;
+                self.dirty(false);
+                self.updatePreview();
                 success && success();
-            }, this);
+            }
 
             if (this._editor !== null) {
                 if(this.dirty()) {
-                    var save=$.proxy(this.save, this);
-
                     $().w2popup({
                         title: 'Confirm close',
                         width: 450,
@@ -446,7 +447,7 @@ define([
                                     w2popup.close();
 
                                     if(result == 'save') {
-                                        save(function () {
+                                        self.save(function () {
                                             _close();
                                         });
                                     } else if(result == 'discard')
@@ -464,7 +465,8 @@ define([
         },
 
         load: function (file) {
-            var mode = this.getFormat(file.name),
+            var self = this,
+                mode = this.getFormat(file.name),
                 editor = this.findEditor(mode);
 
             if (editor === undefined) {
@@ -472,33 +474,35 @@ define([
                 return;
             }
 
-            this.close(jQuery.proxy(function() {
+            this.close(function() {
                 jQuery.jsonRPC.request('get_content', {
                     params: [file.dir, file.name],
-                    success: jQuery.proxy(function (result) {
-                        this._editor = new editor(this, w2ui['editor'].el('main'), result.result);
-                        this._currentFormat = mode;
-                        this._currentFile = file;
+                    success: function (result) {
+                        self._editor = new editor(self, w2ui['editor'].el('main'), result.result);
+                        self._currentFormat = mode;
+                        self._currentFile = file;
                         w2ui['editor_main_toolbar'].enable('rebuild_page');
                         w2ui['editor_right_toolbar'].enable('update_preview');
-                        this.updatePreview();
-                    }, this),
+                        self.updatePreview();
+                    },
                     error: showError
                 });
-            }, this));
+            });
         },
 
         save: function (success) {
+            var self = this;
+
             this.dirty(false);
 
             if(this._editor) {
                 jQuery.jsonRPC.request('set_content', {
                     params: [this._currentFile.dir, this._currentFile.name, this._editor.content()],
                     success: function() { success && success() },
-                    error: $.proxy(function (e) {
-                        this.dirty(true);
+                    error: function (e) {
+                        self.dirty(true);
                         showError(e);
-                    }, this)
+                    }
                 });
             } else {
                 success && success();
@@ -529,12 +533,14 @@ define([
         },
 
         schedulePreview: function () {
+            var self = this;
+
             if (this.previewMode() == 'draft' && !this._previewPending) {
                 this._previewPending = true;
-                setTimeout(jQuery.proxy(function () {
-                    this._previewPending = false;
-                    this.updatePreview();
-                }, this), this.previewDelay);
+                setTimeout(function () {
+                    self._previewPending = false;
+                    self.updatePreview();
+                }, this.previewDelay);
             }
         },
 
@@ -591,16 +597,16 @@ define([
         setUpPreviewScrollSync: function (el) {
             var pending = false;
 
-            jQuery(el).on('scroll', function () {
+            el = jQuery(el);
+            el.on('scroll', function (e) {
                 if (!pending) {
                     pending = true;
-                    setTimeout(jQuery.proxy(function () {
-                        var el = jQuery(this),
-                            target = jQuery('#preview_container'),
+                    setTimeout(function () {
+                        var target = jQuery('#preview_container'),
                             f = el.scrollTop() / (el.prop('scrollHeight') - el.prop('offsetHeight'));
                         target.scrollTop(f * (target.prop('scrollHeight') - target.prop('offsetHeight')));
                         pending = false;
-                    }, this), 25);
+                    }, 25);
                 }
             });
         },
