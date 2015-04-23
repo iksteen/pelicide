@@ -16,7 +16,9 @@ define([
         },
 
         scan: function (file) {
-            return file.type == 'pelican.contents.Article' ? 'articles' : null;
+            if (file.type == 'pelican.contents.Article') {
+                return ['articles'].concat(file.dir);
+            }
         }
     };
 

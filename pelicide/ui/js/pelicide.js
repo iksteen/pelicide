@@ -231,10 +231,13 @@ define([
             var self = this,
                 sidebar = w2ui['sidebar'],
                 node_id = 0,
-                path_nodes = {};
+                path_nodes = {
+                    id: 'content',
+                    nodes: {}
+                };
 
-            function getNodeForPath(parent, path) {
-                var node=path_nodes[parent];
+            function getNodeForPath(path) {
+                var node=path_nodes;
 
                 jQuery.each(path, function(i, elem) {
                     if(node.nodes.hasOwnProperty(elem)) {
@@ -257,12 +260,11 @@ define([
                 return node.id;
             }
 
-            function addContentNodes(parent, files) {
+            function addContentNodes(items) {
                 /* Sort paths */
                 var paths = [];
-                jQuery.each(files, function (i, file) {
-                    if (jQuery.inArray(file.dir, paths) == -1)
-                        paths.push(file.dir);
+                jQuery.each(items, function (i, item) {
+                    paths.push(item.path);
                 });
                 paths.sort(function (a, b) {
                     var n = Math.min(a.length, b.length);
@@ -277,25 +279,26 @@ define([
 
                 /* Create path nodes */
                 jQuery.each(paths, function (i, path) {
-                    getNodeForPath(parent, path);
+                    getNodeForPath(path);
                 });
 
                 /* Sort files by name */
-                files.sort(function (a, b) {
-                    return a.name.localeCompare(b.name);
+                items.sort(function (a, b) {
+                    return a.file.name.localeCompare(b.file.name);
                 });
 
                 /* Create nodes for all content */
-                jQuery.each(files, function (i, file) {
+                jQuery.each(items, function (i, item) {
                     var id = 'content_' + (++node_id),
-                        path_node = getNodeForPath(parent, file.dir);
+                        path_node = getNodeForPath(item.path);
 
-                    self._content[id] = file;
+                    self._content[id] = item.file;
+
                     sidebar.add(path_node, {
                         id: id,
-                        text: file.name,
+                        text: item.file.name,
                         icon: 'fa fa-file-text-o',
-                        disabled: self.findEditor(self.getFormat(file.name)) === undefined
+                        disabled: self.findEditor(self.getFormat(item.file.name)) === undefined
                     });
                 });
             }
@@ -314,7 +317,7 @@ define([
                             })
                     );
                     /* Register path for the content type node. */
-                    path_nodes[node.id] = {
+                    path_nodes.nodes[node.id] = {
                         id: node.id,
                         nodes: {}
                     }
@@ -333,36 +336,31 @@ define([
 
                 jQuery.jsonRPC.request('list_content', {
                     success: function (result) {
-                        var files = {
-                                other: []
-                            };
+                        var items = [];
 
                         jQuery.each(result.result, function (i, file) {
                             var added = false;
+
                             jQuery.each(self._contentTypes, function (i, contentType) {
-                                var type = contentType.scan(file);
-                                if (type) {
-                                    if (! files.hasOwnProperty(type)) {
-                                        files[type] = [file];
-                                    } else {
-                                        files[type].push(file);
-                                    }
+                                var path = contentType.scan(file);
+                                if (path !== undefined) {
+                                    items.push({
+                                        path: path,
+                                        file: file
+                                    });
                                     added = true;
                                     return false;
                                 }
                             });
-                            if(! added)
-                                files.other.push(file);
+                            if(! added) {
+                                items.push({
+                                    path: ['other'].concat(file.dir),
+                                    file: file
+                                });
+                            }
                         });
 
-                        for(var type in files) {
-                            if (files.hasOwnProperty(type)) {
-                                addContentNodes(
-                                    type,
-                                    files[type]
-                                );
-                            }
-                        }
+                        addContentNodes(items);
 
                         sidebar.unlock();
                     },
