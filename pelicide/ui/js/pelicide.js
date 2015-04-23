@@ -20,9 +20,14 @@ define([
     }
 
     function Pelicide() {
+        var self = this;
+        jQuery.each(Pelicide.contentTypes, function(i, ContentType) {
+            self._contentTypes.push(new ContentType(self));
+        })
     }
 
     Pelicide.prototype = {
+        _contentTypes: [],
         previewDelay: 50,
         _editors: {},
         _content: {},
@@ -41,6 +46,16 @@ define([
             this.initEditorLayout();
 
             setTimeout(function () {
+                jQuery.each(self._contentTypes, function (i, contentType) {
+                    contentType.init();
+                });
+
+                self.createContentTypeNode({
+                    id: 'other',
+                    text: 'Other',
+                    icon: 'fa fa-folder'
+                });
+
                 self.previewMode('draft');
                 self.loadProject();
             }, 0);
@@ -92,24 +107,7 @@ define([
                         id: 'content',
                         text: 'Content',
                         expanded: true,
-                        group: true,
-                        nodes: [
-                            {
-                                id: 'articles',
-                                text: 'Articles',
-                                icon: 'fa fa-folder'
-                            },
-                            {
-                                id: 'pages',
-                                text: 'Pages',
-                                icon: 'fa fa-folder'
-                            },
-                            {
-                                id: 'other',
-                                text: 'Other',
-                                icon: 'fa fa-folder'
-                            }
-                        ]
+                        group: true
                     }
                 ],
                 onDblClick: function (e) {
@@ -206,6 +204,10 @@ define([
             });
 
             w2ui['layout'].content('main', w2ui['editor']);
+        },
+
+        createContentTypeNode: function(node) {
+            w2ui['sidebar'].add('content', [node]);
         },
 
         dirty: function(dirty) {
@@ -324,26 +326,35 @@ define([
                 jQuery.jsonRPC.request('list_content', {
                     success: function (result) {
                         var files = {
-                                articles: [],
-                                pages: [],
                                 other: []
                             };
 
                         jQuery.each(result.result, function (i, file) {
-                            if(file.type == 'pelican.contents.Article')
-                                files.articles.push(file);
-                            else if(file.type == 'pelican.contents.Page')
-                                files.pages.push(file);
-                            else
+                            var added = false;
+                            jQuery.each(self._contentTypes, function (i, contentType) {
+                                var type = contentType.scan(file);
+                                if (type) {
+                                    if (! files.hasOwnProperty(type)) {
+                                        files[type] = [file];
+                                    } else {
+                                        files[type].push(file);
+                                    }
+                                    added = true;
+                                    return false;
+                                }
+                            });
+                            if(! added)
                                 files.other.push(file);
                         });
 
-                        jQuery.each(['articles', 'pages', 'other'], function (i, type) {
-                            addContentNodes(
-                                type,
-                                files[type]
-                            );
-                        });
+                        for(var type in files) {
+                            if (files.hasOwnProperty(type)) {
+                                addContentNodes(
+                                    type,
+                                    files[type]
+                                );
+                            }
+                        }
 
                         sidebar.unlock();
                     },
@@ -616,6 +627,11 @@ define([
         for (var i = 0; i < editor.formats.length; ++i) {
             Pelicide.prototype._editors[editor.formats[i]] = editor;
         }
+    };
+
+    Pelicide.contentTypes = [];
+    Pelicide.registerContentType = function (contentType) {
+        Pelicide.contentTypes.push(contentType);
     };
 
     return Pelicide;

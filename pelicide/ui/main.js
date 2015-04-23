@@ -16,8 +16,9 @@ require([
     'jquery_jsonrpc',
     'js/pelicide',
     'js/md-editor',
-    'js/rst-editor'
-], function(jQuery, _, Pelicide, MDEditor, RSTEditor) {
+    'js/rst-editor',
+    'js/article-content'
+], function(jQuery, _, Pelicide, MDEditor, RSTEditor, ArticleContent) {
     // Set up jquery-jsonrpc default endpoint.
     jQuery.jsonRPC.setup({
         endPoint: '/rpc'
@@ -26,6 +27,7 @@ require([
     // Register plugins.
     Pelicide.registerEditor(MDEditor);
     Pelicide.registerEditor(RSTEditor);
+    Pelicide.registerContentType(ArticleContent);
 
     // Set up Pelicide UI.
     var pelicide = new Pelicide();
