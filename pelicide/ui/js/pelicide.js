@@ -20,26 +20,40 @@ define([
         w2alert(getErrorMessage(e));
     }
 
-    function Pelicide() {
-        var self = this;
-        jQuery.each(Pelicide.contentTypes, function(i, ContentType) {
-            self._contentTypes.push(new ContentType(self));
-        })
+    function Pelicide(options) {
+        options = jQuery.extend({}, {
+            previewDelay: 50,
+            contentTypes: [],
+            editors: []
+        }, options);
+
+        this._otherContentId = null;
+        this._editor = null;
+        this._dirty = false;
+        this._currentFormat = null;
+        this._currentFile = null;
+        this._previewDelay = options.previewDelay;
+        this._previewMode = null;
+        this._previewPending = false;
+
+        var i;
+
+        this._contentTypes = [];
+        for (i = 0; i < options.contentTypes.length; ++i)
+            this._contentTypes.push(new options.contentTypes[i](this));
+
+        this._editors = {};
+        for (i = 0; i < options.editors.length; ++i) {
+            var editor = options.editors[i];
+            for (var j = 0; j < editor.formats.length; ++j) {
+                this._editors[editor.formats[j]] = editor;
+            }
+        }
+
         this.sidebar = new Sidebar(this);
     }
 
     Pelicide.prototype = {
-        _contentTypes: [],
-        previewDelay: 50,
-        _editors: {},
-        _otherContentId: null,
-        _editor: null,
-        _dirty: false,
-        _currentFormat: null,
-        _currentFile: null,
-        _previewMode: null,
-        _previewPending: false,
-
         run: function (box) {
             var layout = this.initLayout(box);
             this.initEditorLayout();
@@ -469,7 +483,7 @@ define([
                 setTimeout(function () {
                     self._previewPending = false;
                     self.updatePreview();
-                }, this.previewDelay);
+                }, this._previewDelay);
             }
         },
 
@@ -539,17 +553,6 @@ define([
                 }
             });
         }
-    };
-
-    Pelicide.registerEditor = function (editor) {
-        for (var i = 0; i < editor.formats.length; ++i) {
-            Pelicide.prototype._editors[editor.formats[i]] = editor;
-        }
-    };
-
-    Pelicide.contentTypes = [];
-    Pelicide.registerContentType = function (contentType) {
-        Pelicide.contentTypes.push(contentType);
     };
 
     return Pelicide;

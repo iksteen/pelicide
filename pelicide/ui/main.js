@@ -24,13 +24,16 @@ require([
         endPoint: '/rpc'
     });
 
-    // Register plugins.
-    Pelicide.registerEditor(MDEditor);
-    Pelicide.registerEditor(RSTEditor);
-    Pelicide.registerContentType(ArticleContent);
-
     // Set up Pelicide UI.
-    var pelicide = new Pelicide();
+    var pelicide = new Pelicide({
+        contentTypes: [
+            ArticleContent
+        ],
+        editors: [
+            MDEditor,
+            RSTEditor
+        ]
+    });
 
     // Start Pelicide UI when DOM is ready.
     jQuery(function() {
