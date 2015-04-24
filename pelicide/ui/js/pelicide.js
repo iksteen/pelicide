@@ -33,12 +33,11 @@ define([
         run: function (box) {
             var self = this,
                 layout = this.initLayout(box);
-            this.initEditorLayout();
 
             /* Run this as a timeout to allow the DOM to settle. */
             setTimeout(function () {
                 /* Initialise the editor and preview panel. */
-                self.editor.create(w2ui['editor'].el('main'));
+                self.editor.create(w2ui['editor'].el('main'), w2ui['editor_main_toolbar']);
                 self.preview.create(w2ui['editor'].el('right'), w2ui['editor_right_toolbar']);
 
                 /* Set up event handlers. */
@@ -64,95 +63,83 @@ define([
             this.loadProject();
         },
 
-        initLayout: function (box) {
-            var self = this;
+        _ensureToolbarItems: function(layout, items) {
+            if (layout.toolbar === undefined) {
+                layout.toolbar = { items: [] }
+            } else if(layout.toolbar.items === undefined) {
+                layout.toolbar.items = [];
+            }
+            return layout;
+        },
 
-            return jQuery(box).w2layout({
+        initLayout: function (box) {
+            var self = this,
+                sidebarLayout = this._ensureToolbarItems(this.sidebar.layout() || {}),
+                editorLayout = this._ensureToolbarItems(this.editor.layout());
+
+            sidebarLayout.toolbar.items = [
+                {
+                    type: 'button',
+                    id: 'refresh',
+                    icon: 'fa fa-refresh',
+                    hint: 'Refresh project',
+                    onClick: function () { self.loadProject(); }
+                },
+                {
+                    type: 'button',
+                    id: 'rebuild',
+                    icon: 'fa fa-wrench',
+                    hint: 'Rebuild project',
+                    onClick: function () { self.rebuildProject(); }
+                }
+            ].concat(sidebarLayout.toolbar.items);
+
+            jQuery(box).w2layout({
                 name: 'layout',
                 panels: [
-                    {
+                    jQuery.extend(sidebarLayout, {
                         type: 'left',
                         size: 240,
-                        resizable: true,
-                        toolbar: {
-                            items: [
-                                {
-                                    type: 'button',
-                                    id: 'refresh',
-                                    icon: 'fa fa-refresh',
-                                    hint: 'Refresh project',
-                                    onClick: function () { self.loadProject(); }
-                                },
-                                {
-                                    type: 'button',
-                                    id: 'rebuild',
-                                    icon: 'fa fa-wrench',
-                                    hint: 'Rebuild project',
-                                    onClick: function () { self.rebuildProject(); }
-                                }
-                            ]
-                        }
-                    },
+                        resizable: true
+                    }),
                     {
                         type: 'main'
                     }
                 ]
             });
-        },
 
-        initEditorLayout: function () {
-            var self = this;
+            editorLayout.toolbar.items = [
+                {
+                    type: 'check',
+                    id: 'sidebar',
+                    icon: 'fa fa-bars',
+                    hint: 'Toggle sidebar',
+                    checked: true,
+                    onClick: function () { self.toggleSidebar(); }
+                },
+                {type: 'break'}
+            ].concat(editorLayout.toolbar.items, [
+                {type: 'spacer'},
+                {
+                    type: 'check',
+                    id: 'preview',
+                    icon: 'fa fa-eye',
+                    hint: 'Toggle preview',
+                    checked: true,
+                    onClick: function () { self.togglePreview(); }
+                }
+            ]);
 
             jQuery().w2layout({
                 name: 'editor',
                 panels: [
-                    {
-                        type: 'main',
-                        size: '50%',
-                        toolbar: {
-                            items: [
-                                {
-                                    type: 'check',
-                                    id: 'sidebar',
-                                    icon: 'fa fa-bars',
-                                    hint: 'Toggle sidebar',
-                                    checked: true,
-                                    onClick: function () { self.togglePreview(); }
-                                },
-                                {type: 'break'},
-                                {
-                                    type: 'button',
-                                    id: 'save',
-                                    disabled: true,
-                                    icon: 'fa fa-save',
-                                    hint: 'Save',
-                                    onClick: function () { self.editor.save(); }
-                                },
-                                {
-                                    type: 'button',
-                                    id: 'rebuild_page',
-                                    icon: 'fa fa-wrench',
-                                    hint: 'Rebuild page',
-                                    disabled: true,
-                                    onClick: function () { self.rebuildPage(); }
-                                },
-                                {type: 'spacer', id: 'editor_insert_point'},
-                                {
-                                    type: 'check',
-                                    id: 'preview',
-                                    icon: 'fa fa-eye',
-                                    hint: 'Toggle preview',
-                                    checked: true,
-                                    onClick: function () { self.togglePreview(); }
-                                }
-                            ]
-                        }
-                    },
+                    jQuery.extend({}, editorLayout, { type: 'main', size: '50%' }),
                     jQuery.extend({}, this.preview.layout(), { type: 'right', size: '50%' })
                 ]
             });
-
             w2ui['layout'].content('main', w2ui['editor']);
+
+            return w2ui['layout'];
         },
 
         toggleSidebar: function () {
@@ -277,41 +264,6 @@ define([
                     }
                 });
             });
-        },
-
-        rebuildPage: function () {
-            var self = this,
-                state = this.editor.state();
-
-            w2ui['editor_main_toolbar'].disable('rebuild_page');
-
-            if (state) {
-                var eventData = {
-                    type: 'rebuild-page',
-                    phase: 'before',
-                    target: this,
-                    onComplete: function() {
-                        w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: self._editor === null});
-                    }
-                };
-                this.trigger(eventData);
-                if (eventData.isCancelled === true) {
-                    eventData.onComplete();
-                }
-
-                this.editor.save(function () {
-                    jQuery.jsonRPC.request('build', {
-                        params: [[[state.file.dir, state.file.name]]],
-                        success: function () {
-                            self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
-                        },
-                        error: function (e) {
-                            self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
-                            Util.alert(e);
-                        }
-                    });
-                });
-            }
         }
     };
     jQuery.extend(Pelicide.prototype, w2utils.event);

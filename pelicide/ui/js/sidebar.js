@@ -11,6 +11,8 @@ define([
     }
 
     Sidebar.prototype = {
+        layout: function() {},
+
         create: function() {
             this._sidebar = jQuery().w2sidebar({
                 name: 'sidebar',

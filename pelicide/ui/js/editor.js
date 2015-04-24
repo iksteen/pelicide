@@ -25,8 +25,36 @@ define([
     }
 
     Editor.prototype = {
-        create: function (box) {
+        layout: function () {
+            var self = this;
+
+            return {
+                toolbar: {
+                    items: [
+                        {
+                            type: 'button',
+                            id: 'save',
+                            disabled: true,
+                            icon: 'fa fa-save',
+                            hint: 'Save',
+                            onClick: function () { self.save(); }
+                        },
+                        {
+                            type: 'button',
+                            id: 'rebuild_page',
+                            icon: 'fa fa-wrench',
+                            hint: 'Rebuild page',
+                            disabled: true,
+                            onClick: function () { self.rebuild(); }
+                        }
+                    ]
+                }
+            };
+        },
+
+        create: function (box, toolbar) {
             this._box = box;
+            this._toolbar = toolbar;
         },
 
         getEditor: function (filename) {
@@ -178,6 +206,41 @@ define([
                 }
             } else {
                 success && success();
+            }
+        },
+
+        rebuild: function () {
+            var self = this,
+                state = this.state();
+
+            this._toolbar.disable('rebuild_page');
+
+            if (state) {
+                var eventData = {
+                    type: 'rebuild-page',
+                    phase: 'before',
+                    target: this,
+                    onComplete: function() {
+                        self._toolbar.set('rebuild_page', {disabled: self._editor === null});
+                    }
+                };
+                this.trigger(eventData);
+                if (eventData.isCancelled === true) {
+                    eventData.onComplete();
+                }
+
+                this.save(function () {
+                    jQuery.jsonRPC.request('build', {
+                        params: [[[state.file.dir, state.file.name]]],
+                        success: function () {
+                            self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+                        },
+                        error: function (e) {
+                            self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                            Util.alert(e);
+                        }
+                    });
+                });
             }
         }
     };

@@ -67,7 +67,7 @@ define([
                 if (self.mode() == 'render')
                     self.update();
             });
-            this.pelicide.on({ type: 'rebuild-page', execute: 'after' }, function () {
+            this.pelicide.editor.on({ type: 'rebuild-page', execute: 'after' }, function () {
                 if (self.mode() == 'render')
                     self.update();
             });
