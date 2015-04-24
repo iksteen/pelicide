@@ -25,7 +25,7 @@ define([
                 onDblClick: jQuery.proxy(function (event) {
                     var file = this._content[event.target];
                     if (file !== undefined) {
-                        this.pelicide.load(file);
+                        this.pelicide.editor.open(file);
                     }
                 }, this)
             });
@@ -143,7 +143,7 @@ define([
                 id: id,
                 text: file.name,
                 icon: 'fa fa-file-text-o',
-                disabled: !this.pelicide.findEditor(this.pelicide.getFormat(file.name))
+                disabled: !this.pelicide.editor.getEditor(file.name)
             });
 
             this._content[id] = file;

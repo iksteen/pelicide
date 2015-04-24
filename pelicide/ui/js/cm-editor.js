@@ -17,10 +17,10 @@ define([
         }
 
         // Mark dirty and schedule preview update on content changes
-        this._codeMirror.on('change', $.proxy(function() {
-            this.dirty(true);
-            this.schedulePreview();
-        }, pelicide));
+        this._codeMirror.on('change', function() {
+            pelicide.editor.dirty(true);
+            pelicide.schedulePreview();
+        });
 
         // Sync preview scrolling
         pelicide.setUpPreviewScrollSync(this._codeMirror.getScrollerElement());

@@ -1,24 +1,11 @@
 define([
+    'js/util',
     'js/sidebar',
+    'js/editor',
     'jquery',
     'jquery_jsonrpc',
     'w2ui'
-], function(Sidebar, jQuery) {
-
-    function getErrorMessage(e) {
-        if(e.error) {
-            if(e.error.message !== undefined)
-                return e.error.message;
-            else
-                return e.error;
-        }
-        else
-            return e;
-    }
-
-    function showError(e) {
-        w2alert(getErrorMessage(e));
-    }
+], function(Util, Sidebar, Editor, jQuery) {
 
     function Pelicide(options) {
         options = jQuery.extend({}, {
@@ -28,10 +15,6 @@ define([
         }, options);
 
         this._otherContentId = null;
-        this._editor = null;
-        this._dirty = false;
-        this._currentFormat = null;
-        this._currentFile = null;
         this._previewDelay = options.previewDelay;
         this._previewMode = null;
         this._previewPending = false;
@@ -42,21 +25,34 @@ define([
         for (i = 0; i < options.contentTypes.length; ++i)
             this._contentTypes.push(new options.contentTypes[i](this));
 
-        this._editors = {};
-        for (i = 0; i < options.editors.length; ++i) {
-            var editor = options.editors[i];
-            for (var j = 0; j < editor.formats.length; ++j) {
-                this._editors[editor.formats[j]] = editor;
-            }
-        }
-
         this.sidebar = new Sidebar(this);
+        this.editor = new Editor(this, options.editors);
     }
 
     Pelicide.prototype = {
         run: function (box) {
-            var layout = this.initLayout(box);
+            var self = this,
+                layout = this.initLayout(box);
             this.initEditorLayout();
+
+            /* Run this as a timeout to allow the DOM to settle. */
+            setTimeout(function () {
+                /* Initialise the editor */
+                self.editor.create(w2ui['editor'].el('main'));
+                self.editor.on('dirty', function (e) {
+                    w2ui['editor_main_toolbar'].set('save', {disabled: !e.dirty});
+                });
+                self.editor.on({ type: 'open', execute: 'after' }, function (e) {
+                    w2ui['editor_main_toolbar'].enable('rebuild_page');
+                    w2ui['editor_right_toolbar'].enable('update_preview');
+                    self.updatePreview();
+                });
+                self.editor.on({ type: 'close', execute: 'after' }, function (e) {
+                    w2ui['editor_main_toolbar'].disable('rebuild_page');
+                    w2ui['editor_right_toolbar'].disable('update_preview');
+                    self.updatePreview();
+                });
+            }, 0);
 
             /* Initialise sidebar and content type plugins. */
             layout.content('left', this.sidebar.create());
@@ -132,7 +128,7 @@ define([
                                     disabled: true,
                                     icon: 'fa fa-save',
                                     hint: 'Save',
-                                    onClick: function () { self.save(); }
+                                    onClick: function () { self.editor.save(); }
                                 },
                                 {
                                     type: 'button',
@@ -142,7 +138,7 @@ define([
                                     disabled: true,
                                     onClick: function () { self.rebuildPage(); }
                                 },
-                                {type: 'spacer'},
+                                {type: 'spacer', id: 'editor_insert_point'},
                                 {
                                     type: 'check',
                                     id: 'preview',
@@ -193,15 +189,6 @@ define([
             w2ui['layout'].content('main', w2ui['editor']);
         },
 
-        dirty: function(dirty) {
-            if(dirty === undefined) {
-                return this._editor && this._dirty;
-            }
-
-            this._dirty = dirty;
-            w2ui['editor_main_toolbar'].set('save', {disabled: this._editor === null || !dirty});
-        },
-
         toggleSidebar: function () {
             w2ui['layout'].toggle('left');
         },
@@ -238,7 +225,7 @@ define([
                 }
             }
 
-            this.close(function () {
+            this.editor.close(function () {
                 self.sidebar.lock('Loading...', true);
                 self.sidebar.clear();
 
@@ -251,7 +238,7 @@ define([
                     },
                     error: function (e) {
                         self.sidebar.contentTitle(null);
-                        showError(e);
+                        Util.alert(e);
                     }
                 });
 
@@ -289,7 +276,7 @@ define([
 
                     error: function (e) {
                         self.sidebar.unlock();
-                        showError(e);
+                        Util.alert(e);
                     }
                 });
             });
@@ -300,7 +287,7 @@ define([
 
             w2ui['layout_left_toolbar'].disable('rebuild');
 
-            this.save(function() {
+            this.editor.save(function() {
                 jQuery.jsonRPC.request('build', {
                     success: function () {
                         w2ui['layout_left_toolbar'].enable('rebuild');
@@ -309,7 +296,7 @@ define([
                     },
                     error: function (e) {
                         w2ui['layout_left_toolbar'].enable('rebuild');
-                        showError(e);
+                        Util.alert(e);
                     }
                 });
             });
@@ -317,13 +304,14 @@ define([
 
         rebuildPage: function () {
             var self = this,
-                file = this._currentFile;
+                state = this.editor.state();
+
             w2ui['editor_main_toolbar'].disable('rebuild_page');
 
-            if (file && this._editor !== null) {
-                this.save(function () {
+            if (state) {
+                this.editor.save(function () {
                     jQuery.jsonRPC.request('build', {
-                        params: [[[file.dir, file.name]]],
+                        params: [[[state.file.dir, state.file.name]]],
                         success: function () {
                             w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: self._editor === null});
                             if(self.previewMode() == 'render') {
@@ -332,123 +320,10 @@ define([
                         },
                         error: function (e) {
                             w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: self._editor === null});
-                            showError(e);
+                            Util.alert(e);
                         }
                     });
                 });
-            }
-        },
-
-        getFormat: function (filename) {
-            var dot = filename.lastIndexOf('.');
-
-            /* >0 because of dotfiles */
-            if (dot > 0) {
-                return filename.substring(dot + 1);
-            } else {
-                return '';
-            }
-        },
-
-        findEditor: function (mode) {
-            return this._editors[mode] || this._editors[''];
-        },
-
-        close: function(success) {
-            var self = this;
-
-            function _close() {
-                w2ui['editor_main_toolbar'].disable('rebuild_page');
-                w2ui['editor_right_toolbar'].disable('update_preview');
-                $(w2ui['editor'].el('main')).empty();
-                self._editor.close();
-                self._editor = null;
-                self._currentFormat = null;
-                self._currentFile = null;
-                self.dirty(false);
-                self.updatePreview();
-                success && success();
-            }
-
-            if (this._editor !== null) {
-                if(this.dirty()) {
-                    $().w2popup({
-                        title: 'Confirm close',
-                        width: 450,
-                        height: 220,
-                        body: '<div class="w2ui-centered w2ui-confirm-msg" style="font-size: 13px;">' +
-                              '<p>The content of the currently opened file has changed.</p>' +
-                              '<p>Are you sure you want to close this file?</p></div>',
-                        buttons: '<button value="save" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Save</button>' +
-                                 '<button value="discard" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Discard</button>' +
-                                 '<button value="cancel" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Cancel</button>',
-                        onOpen: function() {
-                            setTimeout(function() {
-                                $('.px-confirm-close').on('click', function(event) {
-                                    var result=$(event.target).val();
-
-                                    w2popup.close();
-
-                                    if(result == 'save') {
-                                        self.save(function () {
-                                            _close();
-                                        });
-                                    } else if(result == 'discard')
-                                        _close();
-                                });
-                            }, 0);
-                        }
-                    });
-                } else {
-                    _close();
-                }
-            } else {
-                success && success();
-            }
-        },
-
-        load: function (file) {
-            var self = this,
-                mode = this.getFormat(file.name),
-                editor = this.findEditor(mode);
-
-            if (editor === undefined) {
-                w2alert('No editor is registered for this file type.', 'Unknown file type');
-                return;
-            }
-
-            this.close(function() {
-                jQuery.jsonRPC.request('get_content', {
-                    params: [file.dir, file.name],
-                    success: function (result) {
-                        self._editor = new editor(self, w2ui['editor'].el('main'), result.result);
-                        self._currentFormat = mode;
-                        self._currentFile = file;
-                        w2ui['editor_main_toolbar'].enable('rebuild_page');
-                        w2ui['editor_right_toolbar'].enable('update_preview');
-                        self.updatePreview();
-                    },
-                    error: showError
-                });
-            });
-        },
-
-        save: function (success) {
-            var self = this;
-
-            this.dirty(false);
-
-            if(this._editor) {
-                jQuery.jsonRPC.request('set_content', {
-                    params: [this._currentFile.dir, this._currentFile.name, this._editor.content()],
-                    success: function() { success && success() },
-                    error: function (e) {
-                        self.dirty(true);
-                        showError(e);
-                    }
-                });
-            } else {
-                success && success();
             }
         },
 
@@ -488,13 +363,14 @@ define([
         },
 
         updatePreview: function () {
-            if(this.previewMode() != 'render') {
-                var content = this._editor && this._editor.content(),
-                    preview = jQuery('#preview');
+            var state = this.editor.state();
 
-                if (content) {
+            if(this.previewMode() != 'render') {
+                var preview = jQuery('#preview');
+
+                if (state) {
                     jQuery.jsonRPC.request('render', {
-                        params: [this._currentFormat, content],
+                        params: [state.mode, state.content],
                         success: function (result) {
                             preview.html(result.result);
                         },
@@ -509,16 +385,15 @@ define([
                     preview.empty();
                 }
             } else {
-                if(this._currentFile && this._currentFile.url) {
-                    var file=this._currentFile,
-                        old_frame=$('#render'),
+                if(state && state.file.url) {
+                    var old_frame=$('#render'),
                         new_frame = $('<iframe>').appendTo(old_frame.parent());
 
                     new_frame.one('load', function () {
                         try {
                             // Try to preserve the old scroll position.
                             var old_doc = old_frame.contents();
-                            if (old_doc.prop('location') == file.url) {
+                            if (old_doc.prop('location') == state.file.url) {
                                 var old_body = old_doc.find('body'),
                                     top = old_body.scrollTop(),
                                     left = old_body.scrollLeft();
@@ -530,7 +405,7 @@ define([
                         }
                         old_frame.remove();
                         new_frame.attr('id', 'render');
-                    }).attr('src', file.url);
+                    }).attr('src', state.file.url);
                 } else {
                     $('#render').attr('src', '');
                 }
