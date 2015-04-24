@@ -49,7 +49,7 @@ define([
             };
         },
 
-        create: function (box, toolbar) {
+        render: function (box, toolbar) {
             this._box = box;
             this._toolbar = toolbar;
 

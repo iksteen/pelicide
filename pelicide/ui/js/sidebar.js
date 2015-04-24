@@ -5,6 +5,8 @@ define([
     function Sidebar(pelicide) {
         this.pelicide = pelicide;
 
+        this._sidebar = null;
+
         this._id = 0;
         this._paths = {};
         this._content = {};
@@ -13,7 +15,7 @@ define([
     Sidebar.prototype = {
         layout: function() {},
 
-        create: function() {
+        render: function(box) {
             this._sidebar = jQuery().w2sidebar({
                 name: 'sidebar',
                 nodes: [
@@ -31,10 +33,9 @@ define([
                     }
                 }, this)
             });
+            this._sidebar.render(box);
 
             this.clear();
-
-            return this._sidebar;
         },
 
         lock: function(/* arguments */) {

@@ -31,14 +31,23 @@ define([
 
     Pelicide.prototype = {
         run: function (box) {
-            var self = this,
-                layout = this.initLayout(box);
+            var self = this;
+
+            /* Initialise the layout. */
+            this.render(box);
 
             /* Run this as a timeout to allow the DOM to settle. */
             setTimeout(function () {
-                /* Initialise the editor and preview panel. */
-                self.editor.create(w2ui['editor'].el('main'), w2ui['editor_main_toolbar']);
-                self.preview.create(w2ui['editor'].el('right'), w2ui['editor_right_toolbar']);
+                /* Initialise the sidebar, editor and preview panel. */
+                self.sidebar.render(w2ui['layout'].el('left'), w2ui['editor_left_toolbar']);
+                self.editor.render(w2ui['editor'].el('main'), w2ui['editor_main_toolbar']);
+                self.preview.render(w2ui['editor'].el('right'), w2ui['editor_right_toolbar']);
+
+                /* Initialise content type plugins. */
+                jQuery.each(self._contentTypes, function (i, contentType) {
+                    contentType.init();
+                });
+                self._otherContentId = self.sidebar.addContentType('Other');
 
                 /* Set up event handlers. */
                 self.editor.on('dirty', function (e) {
@@ -50,17 +59,9 @@ define([
                 self.editor.on({ type: 'close', execute: 'after' }, function (e) {
                     w2ui['editor_main_toolbar'].disable('rebuild_page');
                 });
+
+                self.loadProject();
             }, 0);
-
-            /* Initialise sidebar and content type plugins. */
-            layout.content('left', this.sidebar.create());
-
-            jQuery.each(this._contentTypes, function (i, contentType) {
-                contentType.init();
-            });
-            this._otherContentId = this.sidebar.addContentType('Other');
-
-            this.loadProject();
         },
 
         _ensureToolbarItems: function(layout, items) {
@@ -72,69 +73,72 @@ define([
             return layout;
         },
 
-        initLayout: function (box) {
+        render: function (box) {
             var self = this,
                 sidebarLayout = this._ensureToolbarItems(this.sidebar.layout() || {}),
-                editorLayout = this._ensureToolbarItems(this.editor.layout());
+                editorLayout = this._ensureToolbarItems(this.editor.layout() || {}),
+                previewLayout = this._ensureToolbarItems(this.preview.layout() || {});
 
-            sidebarLayout.toolbar.items = [
-                {
-                    type: 'button',
-                    id: 'refresh',
-                    icon: 'fa fa-refresh',
-                    hint: 'Refresh project',
-                    onClick: function () { self.loadProject(); }
-                },
-                {
-                    type: 'button',
-                    id: 'rebuild',
-                    icon: 'fa fa-wrench',
-                    hint: 'Rebuild project',
-                    onClick: function () { self.rebuildProject(); }
-                }
-            ].concat(sidebarLayout.toolbar.items);
+            sidebarLayout.toolbar.items = [].concat(
+                [
+                    {
+                        type: 'button',
+                        id: 'refresh',
+                        icon: 'fa fa-refresh',
+                        hint: 'Refresh project',
+                        onClick: function () { self.loadProject(); }
+                    },
+                    {
+                        type: 'button',
+                        id: 'rebuild',
+                        icon: 'fa fa-wrench',
+                        hint: 'Rebuild project',
+                        onClick: function () { self.rebuildProject(); }
+                    }
+                ],
+                sidebarLayout.toolbar.items
+            );
+
+            editorLayout.toolbar.items = [].concat(
+                [
+                    {
+                        type: 'check',
+                        id: 'sidebar',
+                        icon: 'fa fa-bars',
+                        hint: 'Toggle sidebar',
+                        checked: true,
+                        onClick: function () { self.toggleSidebar(); }
+                    },
+                    {type: 'break'}
+                ],
+                editorLayout.toolbar.items,
+                [
+                    {type: 'spacer'},
+                    {
+                        type: 'check',
+                        id: 'preview',
+                        icon: 'fa fa-eye',
+                        hint: 'Toggle preview',
+                        checked: true,
+                        onClick: function () { self.togglePreview(); }
+                    }
+                ]
+            );
 
             jQuery(box).w2layout({
                 name: 'layout',
                 panels: [
-                    jQuery.extend(sidebarLayout, {
-                        type: 'left',
-                        size: 240,
-                        resizable: true
-                    }),
-                    {
-                        type: 'main'
-                    }
+                    //{ type: 'left' },
+                    jQuery.extend(sidebarLayout, { type: 'left', size: 240, resizable: true }),
+                    { type: 'main' }
                 ]
             });
-
-            editorLayout.toolbar.items = [
-                {
-                    type: 'check',
-                    id: 'sidebar',
-                    icon: 'fa fa-bars',
-                    hint: 'Toggle sidebar',
-                    checked: true,
-                    onClick: function () { self.toggleSidebar(); }
-                },
-                {type: 'break'}
-            ].concat(editorLayout.toolbar.items, [
-                {type: 'spacer'},
-                {
-                    type: 'check',
-                    id: 'preview',
-                    icon: 'fa fa-eye',
-                    hint: 'Toggle preview',
-                    checked: true,
-                    onClick: function () { self.togglePreview(); }
-                }
-            ]);
 
             jQuery().w2layout({
                 name: 'editor',
                 panels: [
                     jQuery.extend({}, editorLayout, { type: 'main', size: '50%' }),
-                    jQuery.extend({}, this.preview.layout(), { type: 'right', size: '50%' })
+                    jQuery.extend({}, previewLayout, { type: 'right', size: '50%' })
                 ]
             });
             w2ui['layout'].content('main', w2ui['editor']);
