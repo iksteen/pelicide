@@ -19,11 +19,11 @@ define([
         // Mark dirty and schedule preview update on content changes
         this._codeMirror.on('change', function() {
             pelicide.editor.dirty(true);
-            pelicide.schedulePreview();
+            pelicide.preview.schedule();
         });
 
         // Sync preview scrolling
-        pelicide.setUpPreviewScrollSync(this._codeMirror.getScrollerElement());
+        pelicide.preview.setUpScrollSync(this._codeMirror.getScrollerElement());
     }
 
     CMEditor.prototype = {
