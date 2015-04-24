@@ -15,6 +15,7 @@ define([
             editors: []
         }, options);
 
+        this.handlers = [];
         this._otherContentId = null;
 
         var i;
@@ -252,15 +253,26 @@ define([
 
             w2ui['layout_left_toolbar'].disable('rebuild');
 
+            var eventData = {
+                type: 'rebuild-project',
+                phase: 'before',
+                target: this,
+                onComplete: function () {
+                    w2ui['layout_left_toolbar'].enable('rebuild');
+                }
+            };
+            this.trigger(eventData);
+            if (eventData.isCancelled === true) {
+                eventData.onComplete();
+            }
+
             this.editor.save(function() {
                 jQuery.jsonRPC.request('build', {
                     success: function () {
-                        w2ui['layout_left_toolbar'].enable('rebuild');
-                        if (self.mode() == 'render')
-                            self.update();
+                        self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
                     },
                     error: function (e) {
-                        w2ui['layout_left_toolbar'].enable('rebuild');
+                        self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
                         Util.alert(e);
                     }
                 });
@@ -274,17 +286,27 @@ define([
             w2ui['editor_main_toolbar'].disable('rebuild_page');
 
             if (state) {
+                var eventData = {
+                    type: 'rebuild-page',
+                    phase: 'before',
+                    target: this,
+                    onComplete: function() {
+                        w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: self._editor === null});
+                    }
+                };
+                this.trigger(eventData);
+                if (eventData.isCancelled === true) {
+                    eventData.onComplete();
+                }
+
                 this.editor.save(function () {
                     jQuery.jsonRPC.request('build', {
                         params: [[[state.file.dir, state.file.name]]],
                         success: function () {
-                            w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: self._editor === null});
-                            if(self.preview.mode() == 'render') {
-                                self.preview.update();
-                            }
+                            self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
                         },
                         error: function (e) {
-                            w2ui['editor_main_toolbar'].set('rebuild_page', {disabled: self._editor === null});
+                            self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
                             Util.alert(e);
                         }
                     });
@@ -292,6 +314,7 @@ define([
             }
         }
     };
+    jQuery.extend(Pelicide.prototype, w2utils.event);
 
     return Pelicide;
 });

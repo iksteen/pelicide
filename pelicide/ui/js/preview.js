@@ -55,13 +55,21 @@ define([
 
             var self = this;
 
-            this.pelicide.editor.on({ type: 'open', execute: 'after' }, function (e) {
+            this.pelicide.editor.on({ type: 'open', execute: 'after' }, function () {
                 toolbar.enable('update_preview');
                 self.update();
             });
-            this.pelicide.editor.on({ type: 'close', execute: 'after' }, function (e) {
+            this.pelicide.editor.on({ type: 'close', execute: 'after' }, function () {
                 toolbar.disable('update_preview');
                 self.update();
+            });
+            this.pelicide.on({ type: 'rebuild-project', execute: 'after' }, function () {
+                if (self.mode() == 'render')
+                    self.update();
+            });
+            this.pelicide.on({ type: 'rebuild-page', execute: 'after' }, function () {
+                if (self.mode() == 'render')
+                    self.update();
             });
 
             this.mode('draft');
