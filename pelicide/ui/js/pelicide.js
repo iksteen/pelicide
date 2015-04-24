@@ -1,8 +1,9 @@
 define([
+    'js/sidebar',
     'jquery',
     'jquery_jsonrpc',
     'w2ui'
-], function(jQuery, _, _) {
+], function(Sidebar, jQuery) {
 
     function getErrorMessage(e) {
         if(e.error) {
@@ -24,13 +25,14 @@ define([
         jQuery.each(Pelicide.contentTypes, function(i, ContentType) {
             self._contentTypes.push(new ContentType(self));
         })
+        this.sidebar = new Sidebar(this);
     }
 
     Pelicide.prototype = {
         _contentTypes: [],
         previewDelay: 50,
         _editors: {},
-        _content: {},
+        _otherContentId: null,
         _editor: null,
         _dirty: false,
         _currentFormat: null,
@@ -39,32 +41,25 @@ define([
         _previewPending: false,
 
         run: function (box) {
-            var self = this;
-
-            this.initLayout(box);
-            this.initSidebar();
+            var layout = this.initLayout(box);
             this.initEditorLayout();
 
-            setTimeout(function () {
-                jQuery.each(self._contentTypes, function (i, contentType) {
-                    contentType.init();
-                });
+            /* Initialise sidebar and content type plugins. */
+            layout.content('left', this.sidebar.create());
 
-                self.createContentTypeNode({
-                    id: 'other',
-                    text: 'Other',
-                    icon: 'fa fa-folder'
-                });
+            jQuery.each(this._contentTypes, function (i, contentType) {
+                contentType.init();
+            });
+            this._otherContentId = this.sidebar.addContentType('Other');
 
-                self.previewMode('draft');
-                self.loadProject();
-            }, 0);
+            this.previewMode('draft');
+            this.loadProject();
         },
 
         initLayout: function (box) {
             var self = this;
 
-            jQuery(box).w2layout({
+            return jQuery(box).w2layout({
                 name: 'layout',
                 panels: [
                     {
@@ -95,28 +90,6 @@ define([
                     }
                 ]
             });
-        },
-
-        initSidebar: function () {
-            var self = this;
-
-            w2ui['layout'].content('left', jQuery().w2sidebar({
-                name: 'sidebar',
-                nodes: [
-                    {
-                        id: 'content',
-                        text: 'Content',
-                        expanded: true,
-                        group: true
-                    }
-                ],
-                onDblClick: function (e) {
-                    var file = self._content[e.target];
-                    if (file !== undefined) {
-                        self.load(file);
-                    }
-                }
-            }));
         },
 
         initEditorLayout: function () {
@@ -206,10 +179,6 @@ define([
             w2ui['layout'].content('main', w2ui['editor']);
         },
 
-        createContentTypeNode: function(node) {
-            w2ui['sidebar'].add('content', [node]);
-        },
-
         dirty: function(dirty) {
             if(dirty === undefined) {
                 return this._editor && this._dirty;
@@ -228,143 +197,86 @@ define([
         },
 
         loadProject: function () {
-            var self = this,
-                sidebar = w2ui['sidebar'],
-                node_id = 0,
-                path_nodes = {
-                    id: 'content',
-                    nodes: {}
-                };
-
-            function getNodeForPath(path) {
-                var node=path_nodes;
-
-                jQuery.each(path, function(i, elem) {
-                    if(node.nodes.hasOwnProperty(elem)) {
-                        node = node.nodes[elem];
-                    } else {
-                        var id = 'content_' + (++node_id);
-                        sidebar.add(node.id, {
-                            id: id,
-                            text: elem,
-                            icon: 'fa fa-folder-o'
-                        });
-                        node.nodes[elem] = {
-                            id: id,
-                            nodes: {}
-                        };
-                        node = node.nodes[elem];
-                    }
-                });
-
-                return node.id;
-            }
+            var self = this;
 
             function addContentNodes(items) {
-                /* Sort paths */
-                var paths = [];
-                jQuery.each(items, function (i, item) {
-                    paths.push(item.path);
-                });
-                paths.sort(function (a, b) {
-                    var n = Math.min(a.length, b.length);
+                /* Sort items by path and file name. */
+                items.sort(function (a, b) {
+                    var n = Math.min(a.path.length, b.path.length);
                     for (var i = 0; i < n; ++i) {
-                        var c = a[i].localeCompare(b[i]);
+                        var c = a.path[i].localeCompare(b.path[i]);
                         if(c)
                             return c;
                     }
 
-                    return (a.length < b.length) ? -1 : ((a.length == b.length) ? 0 : -1);
+                    if (a.path.length < b.path.length)
+                        return -1;
+                    else if (a.length > b.length)
+                        return 1;
+                    else
+                        return a.file.name.localeCompare(b.file.name);
                 });
 
-                /* Create path nodes */
-                jQuery.each(paths, function (i, path) {
-                    getNodeForPath(path);
-                });
-
-                /* Sort files by name */
-                items.sort(function (a, b) {
-                    return a.file.name.localeCompare(b.file.name);
-                });
-
-                /* Create nodes for all content */
-                jQuery.each(items, function (i, item) {
-                    var id = 'content_' + (++node_id),
-                        path_node = getNodeForPath(item.path);
-
-                    self._content[id] = item.file;
-
-                    sidebar.add(path_node, {
-                        id: id,
-                        text: item.file.name,
-                        icon: 'fa fa-file-text-o',
-                        disabled: self.findEditor(self.getFormat(item.file.name)) === undefined
-                    });
-                });
+                /* Create nodes for all content items */
+                for(var i = 0; i < items.length; ++i) {
+                    var item = items[i];
+                    self.sidebar.addFile(item.path, item.file);
+                }
             }
 
             this.close(function () {
-                sidebar.lock('Loading...', true);
-
-                self._content = {};
-                jQuery.each(sidebar.find({parent: sidebar.get('content')}), function (i, node) {
-                    /* Remove all nodes below the content type node. */
-                    sidebar.remove.apply(
-                        sidebar,
-                        sidebar.find(node, {}).map(
-                            function (e) {
-                                return e.id;
-                            })
-                    );
-                    /* Register path for the content type node. */
-                    path_nodes.nodes[node.id] = {
-                        id: node.id,
-                        nodes: {}
-                    }
-                });
+                self.sidebar.lock('Loading...', true);
+                self.sidebar.clear();
 
                 jQuery.jsonRPC.request('get_settings', {
                     success: function (result) {
                         if (result.result['SITENAME']) {
                             document.title = result.result['SITENAME'] + ' (Pelicide)';
-                            sidebar.get('content').text = result.result['SITENAME'];
-                            sidebar.refresh('content');
+                            self.sidebar.contentTitle(result.result['SITENAME']);
                         }
                     },
-                    error: showError
+                    error: function (e) {
+                        self.sidebar.contentTitle(null);
+                        showError(e);
+                    }
                 });
 
                 jQuery.jsonRPC.request('list_content', {
                     success: function (result) {
                         var items = [];
 
-                        jQuery.each(result.result, function (i, file) {
-                            var added = false;
+                        for (var i = 0; i < result.result.length; ++i) {
+                            var file = result.result[i];
 
-                            jQuery.each(self._contentTypes, function (i, contentType) {
-                                var path = contentType.scan(file);
+                            for (var j = 0; j < self._contentTypes.length; ++j) {
+                                var contentType = self._contentTypes[j],
+                                    path = contentType.scan(file);
+
                                 if (path !== undefined) {
                                     items.push({
-                                        path: path,
+                                        path: ['content'].concat(path),
                                         file: file
                                     });
-                                    added = true;
-                                    return false;
+                                    break;
                                 }
-                            });
-                            if(! added) {
+                            }
+                            if (j == self._contentTypes.length) {
                                 items.push({
-                                    path: ['other'].concat(file.dir),
+                                    path: ['content', self._otherContentId].concat(file.dir),
                                     file: file
                                 });
                             }
-                        });
+                        }
 
                         addContentNodes(items);
 
-                        sidebar.unlock();
+                        self.sidebar.unlock();
                     },
-                    error: showError
+
+                    error: function (e) {
+                        self.sidebar.unlock();
+                        showError(e);
+                    }
                 });
             });
         },

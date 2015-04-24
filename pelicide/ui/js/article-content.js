@@ -7,17 +7,15 @@ define([
     }
 
     ArticleContent.prototype = {
+        _nodeId: null,
+
         init: function () {
-            this.pelicide.createContentTypeNode({
-                id: 'articles',
-                text: 'Articles',
-                icon: 'fa fa-folder'
-            })
+            this._nodeId = this.pelicide.sidebar.addContentType('Articles');
         },
 
         scan: function (file) {
             if (file.type == 'pelican.contents.Article') {
-                return ['articles', file.meta.category];
+                return [this._nodeId, file.meta.category];
             }
         }
     };
