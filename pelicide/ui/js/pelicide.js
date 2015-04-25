@@ -39,7 +39,7 @@ define([
             /* Run this as a timeout to allow the DOM to settle. */
             setTimeout(function () {
                 /* Initialise the sidebar, editor and preview panel. */
-                self.sidebar.render(w2ui['layout'].el('left'), w2ui['editor_left_toolbar']);
+                self.sidebar.render(w2ui['layout'].el('left'), w2ui['layout_left_toolbar']);
                 self.editor.render(w2ui['editor'].el('main'), w2ui['editor_main_toolbar']);
                 self.preview.render(w2ui['editor'].el('right'), w2ui['editor_right_toolbar']);
 

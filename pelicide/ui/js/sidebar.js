@@ -6,6 +6,8 @@ define([
         this.pelicide = pelicide;
 
         this._sidebar = null;
+        this._box = null;
+        this._toolbar = null;
 
         this._id = 0;
         this._paths = {};
@@ -14,8 +16,10 @@ define([
 
     Sidebar.prototype = {
         layout: function() {},
+        render: function(box, toolbar) {
+            this._box = box;
+            this._toolbar = toolbar;
 
-        render: function(box) {
             this._sidebar = jQuery().w2sidebar({
                 name: 'sidebar',
                 nodes: [
