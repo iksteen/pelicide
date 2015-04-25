@@ -5,6 +5,7 @@ define([
     function Sidebar(pelicide) {
         this.pelicide = pelicide;
 
+        this.handlers = [];
         this._sidebar = null;
         this._box = null;
         this._toolbar = null;
@@ -158,6 +159,7 @@ define([
             return id;
         }
     };
+    jQuery.extend(Sidebar.prototype, w2utils.event);
 
     return Sidebar;
 });
