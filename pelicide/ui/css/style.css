@@ -36,9 +36,8 @@ body, html {
 }
 
 #preview {
-    font-size: 1em;
-    color: #002240;
-    font-family: Helvetica, arial, sans-serif;
+    font: 300 0.95em/1.5 Tahoma, Verdana, Arial, Helvetica, sans-serif;
+    color: #444;
 }
 
 #render {
