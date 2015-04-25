@@ -43,6 +43,14 @@ define([
                             hint: 'Refresh',
                             disabled: true,
                             onClick: function () { self.update(); }
+                        },
+                        {
+                            type: 'button',
+                            id: 'external_preview',
+                            icon: 'fa fa-external-link',
+                            hint: 'Open in new window',
+                            disabled: true,
+                            onClick: function () { self.external(); }
                         }
                     ]
                 }
@@ -60,10 +68,12 @@ define([
             });
             this.pelicide.editor.on({ type: 'open', execute: 'after' }, function () {
                 toolbar.enable('update_preview');
+                toolbar.enable('external_preview');
                 self.update();
             });
             this.pelicide.editor.on({ type: 'close', execute: 'after' }, function () {
                 toolbar.disable('update_preview');
+                toolbar.disable('external_preview');
                 self.update();
             });
             this.pelicide.project.on({ type: 'rebuild', execute: 'after' }, function () {
@@ -163,6 +173,12 @@ define([
                     $('#render').attr('src', '');
                 }
             }
+        },
+
+        external: function () {
+            var state = this.pelicide.editor.state();
+            if (state && state.file.url)
+                window.open(state.file.url);
         },
 
         setUpScrollSync: function (el) {
