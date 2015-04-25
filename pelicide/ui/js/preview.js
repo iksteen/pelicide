@@ -66,7 +66,7 @@ define([
                 toolbar.disable('update_preview');
                 self.update();
             });
-            this.pelicide.sidebar.on({ type: 'rebuild', execute: 'after' }, function () {
+            this.pelicide.project.on({ type: 'rebuild', execute: 'after' }, function () {
                 if (self.mode() == 'render')
                     self.update();
             });

@@ -3,7 +3,7 @@ define([
     'jquery',
     'w2ui'
 ], function(Util, jQuery) {
-    function Sidebar(pelicide, contentTypes) {
+    function Project(pelicide, contentTypes) {
         this.pelicide = pelicide;
 
         this.handlers = [];
@@ -21,7 +21,7 @@ define([
         this._otherContentId = null;
     }
 
-    Sidebar.prototype = {
+    Project.prototype = {
         layout: function() {
             var self = this;
 
@@ -52,7 +52,7 @@ define([
             this._toolbar = toolbar;
 
             this._sidebar = jQuery().w2sidebar({
-                name: 'sidebar',
+                name: 'project',
                 nodes: [
                     {
                         id: 'content',
@@ -306,7 +306,7 @@ define([
             });
         }
     };
-    jQuery.extend(Sidebar.prototype, w2utils.event);
+    jQuery.extend(Project.prototype, w2utils.event);
 
-    return Sidebar;
+    return Project;
 });

@@ -1,12 +1,12 @@
 define([
     'js/util',
-    'js/sidebar',
+    'js/project',
     'js/editor',
     'js/preview',
     'jquery',
     'jquery_jsonrpc',
     'w2ui'
-], function(Util, Sidebar, Editor, Preview, jQuery) {
+], function(Util, Project, Editor, Preview, jQuery) {
 
     function Pelicide(options) {
         options = jQuery.extend({}, {
@@ -17,7 +17,7 @@ define([
 
         this.handlers = [];
 
-        this.sidebar = new Sidebar(this, options.contentTypes);
+        this.project = new Project(this, options.contentTypes);
         this.editor = new Editor(this, options.editors);
         this.preview = new Preview(this, options.previewDelay);
     }
@@ -31,8 +31,8 @@ define([
 
             /* Run this as a timeout to allow the DOM to settle. */
             setTimeout(function () {
-                /* Initialise the sidebar, editor and preview panel. */
-                self.sidebar.render(w2ui['layout'].el('left'), w2ui['layout_left_toolbar']);
+                /* Initialise the project, editor and preview panel. */
+                self.project.render(w2ui['layout'].el('left'), w2ui['layout_left_toolbar']);
                 self.editor.render(w2ui['editor'].el('main'), w2ui['editor_main_toolbar']);
                 self.preview.render(w2ui['editor'].el('right'), w2ui['editor_right_toolbar']);
             }, 0);
@@ -49,7 +49,7 @@ define([
 
         layout: function (box) {
             var self = this,
-                sidebarLayout = this._ensureToolbarItems(this.sidebar.layout() || {}),
+                projectLayout = this._ensureToolbarItems(this.project.layout() || {}),
                 editorLayout = this._ensureToolbarItems(this.editor.layout() || {}),
                 previewLayout = this._ensureToolbarItems(this.preview.layout() || {});
 
@@ -57,11 +57,11 @@ define([
                 [
                     {
                         type: 'check',
-                        id: 'sidebar',
+                        id: 'project',
                         icon: 'fa fa-bars',
-                        hint: 'Toggle sidebar',
+                        hint: 'Toggle project view',
                         checked: true,
-                        onClick: function () { self.toggleSidebar(); }
+                        onClick: function () { self.toggleProject(); }
                     },
                     {type: 'break'}
                 ],
@@ -82,7 +82,7 @@ define([
             jQuery().w2layout({
                 name: 'layout',
                 panels: [
-                    jQuery.extend({}, sidebarLayout, { type: 'left', size: 240, resizable: true }),
+                    jQuery.extend({}, projectLayout, { type: 'left', size: 240, resizable: true }),
                     { type: 'main' }
                 ]
             });
@@ -99,7 +99,7 @@ define([
             return w2ui['layout'];
         },
 
-        toggleSidebar: function () {
+        toggleProject: function () {
             w2ui['layout'].toggle('left');
         },
 
