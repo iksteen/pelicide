@@ -55,6 +55,9 @@ define([
 
             var self = this;
 
+            this.pelicide.editor.on({ type: 'change', execute: 'after' }, function () {
+                self.schedule();
+            });
             this.pelicide.editor.on({ type: 'open', execute: 'after' }, function () {
                 toolbar.enable('update_preview');
                 self.update();

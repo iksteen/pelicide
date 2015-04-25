@@ -72,6 +72,11 @@ define([
             return editor ? { mode: mode,  class: editor } : null;
         },
 
+        change: function() {
+            this.dirty(true);
+            this.trigger({ type: 'change', phase: 'after', target: this });
+        },
+
         dirty: function (dirty) {
             if(arguments.length === 0)
                 return this._dirty;
@@ -117,7 +122,7 @@ define([
                     success: function (result) {
                         self._currentFile = file;
                         self._currentMode = editor.mode;
-                        self._editor = new editor.class(self.pelicide, self._box, result.result);
+                        self._editor = new editor.class(self, self._box, result.result);
 
                         self._toolbar.enable('rebuild_page');
 

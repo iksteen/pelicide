@@ -1,7 +1,7 @@
 define([
     'cm/lib/codemirror'
 ], function(CodeMirror) {
-    function CMEditor(pelicide, parent_el, content) {
+    function CMEditor(editor, parent_el, content) {
         /* Set up CodeMirror */
         this._codeMirror = CodeMirror(
             parent_el,
@@ -16,21 +16,22 @@ define([
             CodeMirror.autoLoadMode(this._codeMirror, this.mode);
         }
 
-        // Mark dirty and schedule preview update on content changes
+        // Notify editor component of change.
         this._codeMirror.on('change', function() {
-            pelicide.editor.dirty(true);
-            pelicide.preview.schedule();
+            editor.change();
         });
 
         // Sync preview scrolling
-        pelicide.preview.setUpScrollSync(this._codeMirror.getScrollerElement());
+        editor.pelicide.preview.setUpScrollSync(this._codeMirror.getScrollerElement());
     }
 
     CMEditor.prototype = {
         mode: 'text/plain',
+
         close: function() {
             this._codeMirror = null;
         },
+
         content: function() {
             return this._codeMirror.getValue();
         }
