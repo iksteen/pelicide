@@ -81,6 +81,9 @@ define([
             if(arguments.length === 0)
                 return this._dirty;
 
+            if(dirty == this._dirty)
+                return;
+
             var eventData = { type: 'dirty', phase: 'before', target: this, dirty: dirty };
 
             this.trigger(eventData);
@@ -126,11 +129,14 @@ define([
 
                         self._toolbar.enable('rebuild_page');
 
-                        self.trigger(jQuery.extend(eventData, { 'phase': 'after' }));
+                        self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: true }));
 
                         success && success();
                     },
-                    error: Util.alert
+                    error: function (e) {
+                        self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: false, error: e }));
+                        Util.alert(e);
+                    }
                 });
             });
         },
@@ -147,12 +153,13 @@ define([
                 jQuery.jsonRPC.request('set_content', {
                     params: [this._currentFile.dir, this._currentFile.name, this._editor.content()],
                     success: function() {
-                        self.trigger(jQuery.extend(eventData, { 'phase': 'after' }));
+                        self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: true }));
                         self.dirty(false);
                         success && success();
                     },
                     error: function (e) {
                         self.dirty(oldDirty);
+                        self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: false, error: e }));
                         Util.alert(e);
                     }
                 });
@@ -172,7 +179,7 @@ define([
                 self._currentFile = null;
                 self._currentMode = null;
                 jQuery(self._box).empty();
-                self.trigger(jQuery.extend(eventData, { phase: 'after' }));
+                self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
                 success && success();
             }
 
@@ -205,6 +212,8 @@ define([
                                     } else if(result == 'discard') {
                                         self.dirty(false);
                                         _close();
+                                    } else {
+                                        self.trigger(jQuery.extend(eventData, { phase: 'after', success: false }));
                                     }
                                 });
                             }, 0);
@@ -236,6 +245,7 @@ define([
                 this.trigger(eventData);
                 if (eventData.isCancelled === true) {
                     eventData.onComplete();
+                    return;
                 }
 
                 this.save(function () {
