@@ -27,7 +27,7 @@ define([
             var self = this;
 
             /* Initialise the layout. */
-            this.render(box);
+            this.layout().render(box);
 
             /* Run this as a timeout to allow the DOM to settle. */
             setTimeout(function () {
@@ -47,7 +47,7 @@ define([
             return layout;
         },
 
-        render: function (box) {
+        layout: function (box) {
             var self = this,
                 sidebarLayout = this._ensureToolbarItems(this.sidebar.layout() || {}),
                 editorLayout = this._ensureToolbarItems(this.editor.layout() || {}),
@@ -79,11 +79,10 @@ define([
                 ]
             );
 
-            jQuery(box).w2layout({
+            jQuery().w2layout({
                 name: 'layout',
                 panels: [
-                    //{ type: 'left' },
-                    jQuery.extend(sidebarLayout, { type: 'left', size: 240, resizable: true }),
+                    jQuery.extend({}, sidebarLayout, { type: 'left', size: 240, resizable: true }),
                     { type: 'main' }
                 ]
             });
