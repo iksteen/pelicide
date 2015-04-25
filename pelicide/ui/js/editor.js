@@ -82,6 +82,7 @@ define([
             if (eventData.isCancelled === true) return;
 
             this._dirty = dirty;
+            this._toolbar.set('save', {disabled: !dirty});
 
             this.trigger(jQuery.extend(eventData, { phase: 'after' }))
         },
@@ -117,6 +118,8 @@ define([
                         self._currentFile = file;
                         self._currentMode = editor.mode;
                         self._editor = new editor.class(self.pelicide, self._box, result.result);
+
+                        self._toolbar.enable('rebuild_page');
 
                         self.trigger(jQuery.extend(eventData, { 'phase': 'after' }));
 
@@ -158,6 +161,7 @@ define([
             var eventData = { type: 'close', phase: 'before', target: this, file: this._currentFile };
 
             function _close() {
+                self._toolbar.disable('rebuild_page');
                 self._editor.close();
                 self._editor = null;
                 self._currentFile = null;

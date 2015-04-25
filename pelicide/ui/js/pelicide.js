@@ -35,17 +35,6 @@ define([
                 self.sidebar.render(w2ui['layout'].el('left'), w2ui['layout_left_toolbar']);
                 self.editor.render(w2ui['editor'].el('main'), w2ui['editor_main_toolbar']);
                 self.preview.render(w2ui['editor'].el('right'), w2ui['editor_right_toolbar']);
-
-                /* Set up event handlers. */
-                self.editor.on('dirty', function (e) {
-                    w2ui['editor_main_toolbar'].set('save', {disabled: !e.dirty});
-                });
-                self.editor.on({ type: 'open', execute: 'after' }, function (e) {
-                    w2ui['editor_main_toolbar'].enable('rebuild_page');
-                });
-                self.editor.on({ type: 'close', execute: 'after' }, function (e) {
-                    w2ui['editor_main_toolbar'].disable('rebuild_page');
-                });
             }, 0);
         },
 
