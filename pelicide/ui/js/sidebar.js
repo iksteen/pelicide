@@ -1,8 +1,9 @@
 define([
+    'js/util',
     'jquery',
     'w2ui'
-], function(jQuery) {
-    function Sidebar(pelicide) {
+], function(Util, jQuery) {
+    function Sidebar(pelicide, contentTypes) {
         this.pelicide = pelicide;
 
         this.handlers = [];
@@ -10,13 +11,42 @@ define([
         this._box = null;
         this._toolbar = null;
 
+        this._contentTypes = [];
+        for (var i = 0; i < contentTypes.length; ++i)
+            this._contentTypes.push(new contentTypes[i](this));
+
         this._id = 0;
         this._paths = {};
         this._content = {};
+        this._otherContentId = null;
     }
 
     Sidebar.prototype = {
-        layout: function() {},
+        layout: function() {
+            var self = this;
+
+            return {
+                toolbar: {
+                    items: [
+                        {
+                            type: 'button',
+                            id: 'refresh',
+                            icon: 'fa fa-refresh',
+                            hint: 'Reload project',
+                            onClick: function () { self.reload(); }
+                        },
+                        {
+                            type: 'button',
+                            id: 'rebuild',
+                            icon: 'fa fa-wrench',
+                            hint: 'Rebuild project',
+                            onClick: function () { self.rebuild(); }
+                        }
+                    ]
+                }
+            };
+        },
+
         render: function(box, toolbar) {
             this._box = box;
             this._toolbar = toolbar;
@@ -41,14 +71,14 @@ define([
             this._sidebar.render(box);
 
             this.clear();
-        },
 
-        lock: function(/* arguments */) {
-            this._sidebar.lock.apply(this._sidebar, arguments);
-        },
+            /* Initialise content type plugins. */
+            for(var i = 0; i < this._contentTypes.length; ++i) {
+                this._contentTypes[i].init();
+            }
+            this._otherContentId = this.addContentType('Other');
 
-        unlock: function(/* arguments */) {
-            this._sidebar.unlock.apply(this._sidebar, arguments);
+            this.reload();
         },
 
         _newId: function() {
@@ -157,6 +187,123 @@ define([
             this._content[id] = file;
 
             return id;
+        },
+
+        reload: function () {
+            var self = this;
+
+            function addContentNodes(items) {
+                /* Sort items by path and file name. */
+                items.sort(function (a, b) {
+                    var n = Math.min(a.path.length, b.path.length);
+                    for (var i = 0; i < n; ++i) {
+                        var c = a.path[i].localeCompare(b.path[i]);
+                        if(c)
+                            return c;
+                    }
+
+                    if (a.path.length < b.path.length)
+                        return -1;
+                    else if (a.length > b.length)
+                        return 1;
+                    else
+                        return a.file.name.localeCompare(b.file.name);
+                });
+
+                /* Create nodes for all content items */
+                for(var i = 0; i < items.length; ++i) {
+                    var item = items[i];
+                    self.addFile(item.path, item.file);
+                }
+            }
+
+            this.pelicide.editor.close(function () {
+                self._sidebar.lock('Loading...', true);
+                self.clear();
+
+                jQuery.jsonRPC.request('get_settings', {
+                    success: function (result) {
+                        if (result.result['SITENAME']) {
+                            document.title = result.result['SITENAME'] + ' (Pelicide)';
+                            self.contentTitle(result.result['SITENAME']);
+                        }
+                    },
+                    error: function (e) {
+                        self.contentTitle(null);
+                        Util.alert(e);
+                    }
+                });
+
+                jQuery.jsonRPC.request('list_content', {
+                    success: function (result) {
+                        var items = [];
+
+                        for (var i = 0; i < result.result.length; ++i) {
+                            var file = result.result[i];
+
+                            for (var j = 0; j < self._contentTypes.length; ++j) {
+                                var contentType = self._contentTypes[j],
+                                    path = contentType.scan(file);
+
+                                if (path !== undefined) {
+                                    items.push({
+                                        path: ['content'].concat(path),
+                                        file: file
+                                    });
+                                    break;
+                                }
+                            }
+                            if (j == self._contentTypes.length) {
+                                items.push({
+                                    path: ['content', self._otherContentId].concat(file.dir),
+                                    file: file
+                                });
+                            }
+                        }
+
+                        addContentNodes(items);
+
+                        self._sidebar.unlock();
+                    },
+
+                    error: function (e) {
+                        self._sidebar.unlock();
+                        Util.alert(e);
+                    }
+                });
+            });
+        },
+
+        rebuild: function () {
+            var self = this;
+
+            this._toolbar.disable('rebuild');
+
+            var eventData = {
+                type: 'rebuild',
+                phase: 'before',
+                target: this,
+                onComplete: function () {
+                    self._toolbar.enable('rebuild');
+                }
+            };
+            this.trigger(eventData);
+            if (eventData.isCancelled === true) {
+                eventData.onComplete();
+                return;
+            }
+
+            this.pelicide.editor.save(function() {
+                jQuery.jsonRPC.request('build', {
+                    success: function () {
+                        self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+                    },
+                    error: function (e) {
+                        self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                        Util.alert(e);
+                    }
+                });
+            });
         }
     };
     jQuery.extend(Sidebar.prototype, w2utils.event);

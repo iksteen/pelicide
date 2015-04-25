@@ -2,15 +2,15 @@ define([
     'jquery'
 ], function(jQuery) {
 
-    function ArticleContent(pelicide) {
-        this.pelicide = pelicide;
+    function ArticleContent(sidebar) {
+        this.sidebar = sidebar;
     }
 
     ArticleContent.prototype = {
         _nodeId: null,
 
         init: function () {
-            this._nodeId = this.pelicide.sidebar.addContentType('Articles');
+            this._nodeId = this.sidebar.addContentType('Articles');
         },
 
         scan: function (file) {
