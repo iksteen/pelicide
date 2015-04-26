@@ -43,6 +43,15 @@ define([
                             icon: 'fa fa-wrench',
                             hint: 'Rebuild project',
                             onClick: function () { self.rebuild(); }
+                        },
+                        { type: 'break' },
+                        {
+                            type: 'menu',
+                            id: 'create',
+                            icon: 'fa fa-plus',
+                            disabled: true,
+                            hint: 'Create content',
+                            items: []
                         }
                     ]
                 }
@@ -50,6 +59,8 @@ define([
         },
 
         render: function(box, toolbar) {
+            var self = this;
+
             this._box = box;
             this._toolbar = toolbar;
 
@@ -79,6 +90,13 @@ define([
                 this._contentTypes[i].init();
             }
             this._otherContentId = this.addContentType('Other');
+
+            /* Connect click event for create content menu. */
+            this._toolbar.on('click', function (e) {
+                if(e.item && e.item.type == 'menu' && e.subItem && e.subItem.onClick) {
+                    e.subItem.onClick(e);
+                }}
+            );
 
             this.reload();
         },
@@ -147,6 +165,17 @@ define([
             };
 
             return id;
+        },
+
+        addCreateContent: function(item) {
+            var id = this._newId(),
+                items = this._toolbar.get('create').items;
+
+            items.push(jQuery.extend({}, item, { id: id }));
+            this._toolbar.set('create', {
+                disabled: false,
+                items: items
+            });
         },
 
         ensurePath: function (path) {
