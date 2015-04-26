@@ -98,4 +98,4 @@ class Runner(object):
         if success:
             d.callback(args)
         else:
-            d.errback(defer.fail(RuntimeError(args)))
+            d.errback(RuntimeError(args))
