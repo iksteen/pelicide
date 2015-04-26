@@ -3,7 +3,8 @@ require.config({
         jquery: 'components/jquery/dist/jquery.min',
         jquery_jsonrpc: 'components/jquery-jsonrpc/jquery.jsonrpc',
         w2ui: 'components/w2ui/w2ui-1.4.2.min',
-        cm: 'components/codemirror'
+        cm: 'components/codemirror',
+        unorm: 'components/unorm/lib/unorm'
     },
     shim: {
         jquery_jsonrpc: ['jquery'],

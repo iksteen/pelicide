@@ -13,6 +13,7 @@
     "jquery-jsonrpc": "~0.1.1",
     "codemirror": "~5.1.0",
     "fontawesome": "~4.3.0",
-    "requirejs": "~2.1.17"
+    "requirejs": "~2.1.17",
+    "unorm": "~1.3.3"
   }
 }
