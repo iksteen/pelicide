@@ -274,7 +274,7 @@ define([
                 }
             }
 
-            this.pelicide.editor.close(function () {
+            this.pelicide.editor.close().then(function () {
                 self._sidebar.lock('Loading...', true);
                 self.clear();
 
@@ -323,6 +323,8 @@ define([
                     self._sidebar.unlock();
                     Util.alert(e);
                 });
+            }, function () {
+                /* Consume close dialog cancellation. */
             });
         },
 

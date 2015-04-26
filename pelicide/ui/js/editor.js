@@ -119,8 +119,8 @@ define([
             this.trigger(eventData);
             if (eventData.isCancelled === true) return;
 
-            this.close(function() {
-                API.get_content(file.dir, file.name).then(function (content) {
+            this.close().then(function() {
+                return API.get_content(file.dir, file.name).then(function (content) {
                     self._currentFile = file;
                     self._currentMode = editor.mode;
                     self._editor = new editor.class(self, self._box, content);
@@ -130,10 +130,12 @@ define([
                     self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: true }));
 
                     success && success();
-                }, function(e) {
-                    self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: false, error: e }));
-                    Util.alert(e);
                 });
+            }, function () {
+                /* Consume close dialog cancellation. */
+            }).catch(function (e) {
+                self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: false, error: e }));
+                Util.alert(e);
             });
         },
 
@@ -160,26 +162,33 @@ define([
             }
         },
 
-        close: function(success) {
+        close: function() {
             var self = this;
             var eventData = { type: 'close', phase: 'before', target: this, file: this._currentFile };
 
-            function _close() {
-                self._toolbar.disable('rebuild_page');
-                self._editor.close();
-                self._editor = null;
-                self._currentFile = null;
-                self._currentMode = null;
-                jQuery(self._box).empty();
-                self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
-                success && success();
+            if (this._editor === null) {
+                return Promise.resolve();
             }
 
-            if (this._editor !== null) {
-                this.trigger(eventData);
-                if (eventData.isCancelled === true) return;
+            return new Promise(function (resolve, reject) {
+                function _close() {
+                    self._toolbar.disable('rebuild_page');
+                    self._editor.close();
+                    self._editor = null;
+                    self._currentFile = null;
+                    self._currentMode = null;
+                    jQuery(self._box).empty();
+                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+                    resolve();
+                }
 
-                if(this.dirty()) {
+                self.trigger(eventData);
+                if (eventData.isCancelled === true) {
+                    reject('cancelled');
+                    return;
+                }
+
+                if(self.dirty()) {
                     jQuery().w2popup({
                         title: 'Confirm close',
                         width: 450,
@@ -190,33 +199,33 @@ define([
                         buttons: '<button value="save" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Save</button>' +
                                  '<button value="discard" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Discard</button>' +
                                  '<button value="cancel" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Cancel</button>',
-                        onOpen: function() {
-                            setTimeout(function() {
+                        onOpen: function (event) {
+                            event.onComplete = function() {
                                 $('.px-confirm-close').on('click', function(event) {
-                                    var result=$(event.target).val();
-
-                                    w2popup.close();
-
-                                    if(result == 'save') {
-                                        self.save(function () {
-                                            _close();
-                                        });
-                                    } else if(result == 'discard') {
-                                        self.dirty(false);
-                                        _close();
-                                    } else {
-                                        self.trigger(jQuery.extend(eventData, { phase: 'after', success: false }));
-                                    }
+                                    w2popup.close({result: $(event.target).val()});
                                 });
-                            }, 0);
+                            };
+                        },
+                        onClose: function (event) {
+                            var result = event.options.result;
+
+                            if(result == 'save') {
+                                self.save(function () {
+                                    _close();
+                                });
+                            } else if(result == 'discard') {
+                                self.dirty(false);
+                                _close();
+                            } else {
+                                self.trigger(jQuery.extend(eventData, { phase: 'after', success: false }));
+                                reject('cancelled');
+                            }
                         }
                     });
                 } else {
                     _close();
                 }
-            } else {
-                success && success();
-            }
+            });
         },
 
         rebuild: function () {
