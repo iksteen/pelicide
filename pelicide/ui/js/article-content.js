@@ -82,15 +82,14 @@ define([
                         filename = record.slug + '.' + record.format.id,
                         body = self.project.pelicide.editor.editors[record.format.id].templates.article(record);
 
-                    return API.set_content(path, filename, body).then(function () {
-                        self.project.reload(function () {
-                            self.project.pelicide.editor.open(self.project.getFile(path, filename));
-                        });
-                    });
-                }, function () {
+                    return API.set_content(path, filename, body)
+                        .then(function () { return self.project.reload() })
+                        .then(function () { return self.project.getFile(path, filename); })
+                        .then(function (file) { self.project.pelicide.editor.open(file); });
+                }, function (e) {
                     /* Consume dialog cancellation. */
                 });
-            }).catch(Util.alert)
+            }).catch(function (e) { if (e !== 'cancelled') Util.alert(e) })
         }
     };
 

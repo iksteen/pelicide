@@ -36,7 +36,7 @@ define([
                             id: 'refresh',
                             icon: 'fa fa-refresh',
                             hint: 'Reload project',
-                            onClick: function () { self.reload(); }
+                            onClick: function () { self.reload().catch(function (e) { if (e !== 'cancelled') Util.alert(e); }) }
                         },
                         {
                             type: 'button',
@@ -102,7 +102,7 @@ define([
             /* Select node after opening a file. */
             this.pelicide.editor.on({type: 'open', execute: 'after'}, function (e) { self.select(e.file); });
 
-            this.reload();
+            this.reload().catch(Util.alert);
         },
 
         _newId: function() {
@@ -246,7 +246,7 @@ define([
             this._sidebar.select(node);
         },
 
-        reload: function (success) {
+        reload: function () {
             var self = this;
 
             function addContentNodes(items) {
@@ -274,7 +274,7 @@ define([
                 }
             }
 
-            this.pelicide.editor.close().then(function () {
+            return this.pelicide.editor.close().then(function () {
                 self._sidebar.lock('Loading...', true);
                 self.clear();
 
@@ -284,11 +284,11 @@ define([
                         self.contentTitle(settings['SITENAME']);
                     }
                 }, function (e) {
-                        self.contentTitle(null);
-                        Util.alert(e);
+                    self.contentTitle(null);
+                    Util.alert(e);
                 });
 
-                API.list_content().then(function (content) {
+                return API.list_content().then(function (content) {
                     var items = [];
 
                     for (var i = 0; i < content.length; ++i) {
@@ -317,14 +317,10 @@ define([
                     addContentNodes(items);
 
                     self._sidebar.unlock();
-
-                    success && success();
                 }, function (e) {
                     self._sidebar.unlock();
-                    Util.alert(e);
+                    return Promise.reject(e);
                 });
-            }, function () {
-                /* Consume close dialog cancellation. */
             });
         },
 
