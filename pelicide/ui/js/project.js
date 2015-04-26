@@ -189,7 +189,7 @@ define([
             return id;
         },
 
-        reload: function () {
+        reload: function (success) {
             var self = this;
 
             function addContentNodes(items) {
@@ -264,6 +264,8 @@ define([
                         addContentNodes(items);
 
                         self._sidebar.unlock();
+
+                        success && success();
                     },
 
                     error: function (e) {
