@@ -98,6 +98,9 @@ define([
                 }}
             );
 
+            /* Select node after opening a file. */
+            this.pelicide.editor.on({type: 'open', execute: 'after'}, function (e) { self.select(e.file); });
+
             this.reload();
         },
 
@@ -234,6 +237,12 @@ define([
                 }
             });
             return categories;
+        },
+
+        select: function (file) {
+            var node = this._files[file.dir.concat([file.name]).join('/')];
+            this._sidebar.expandParents(node);
+            this._sidebar.select(node);
         },
 
         reload: function (success) {
