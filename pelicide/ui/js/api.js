@@ -1,9 +1,7 @@
 define([
-    'rsvp',
     'jquery',
     'jquery_jsonrpc'
-], function(RSVP, jQuery) {
-
+], function(jQuery) {
     var API_CALLS = ['restart', 'get_settings', 'get', 'set', 'list_extensions', 'build', 'render',
                      'list_content', 'get_content', 'set_content'];
 
@@ -21,16 +19,14 @@ define([
 
     API.prototype = {
         _request: function (method, params) {
-            var self = this;
+            if(this._endpoint === null) {
+                return Promise.reject('No API endpoint configured.');
+            }
 
-            return new RSVP.Promise(function(resolve, reject) {
-                if(self._endpoint === null) {
-                    reject('No endpoint configured.');
-                    return;
-                }
-
+            var endPoint = this._endpoint;
+            return new Promise(function(resolve, reject) {
                 jQuery.jsonRPC.request(method, {
-                    endPoint: self._endpoint,
+                    endPoint: endPoint,
                     params: params,
                     success: function (r) { resolve(r.result); },
                     error: function (e) { reject(e); }
