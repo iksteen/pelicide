@@ -20,6 +20,9 @@ class PelicideService(JSONRPCServer):
     def jsonrpc_get_settings(self):
         return self.runner.settings
 
+    def jsonrpc_get(self, key):
+        return self.runner.command('setting', [key])
+
     def jsonrpc_set(self, key, value):
         return self.runner.command('setting', [key, value])
 
