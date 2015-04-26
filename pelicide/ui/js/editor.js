@@ -11,7 +11,7 @@ define([
         this.handlers = [];
         this._box = null;
         this._dirty = false;
-        this._editors = {};
+        this.editors = {};
         this._editor = null;
         this._currentFile = null;
         this._currentMode = null;
@@ -19,7 +19,7 @@ define([
         for (i = 0; i < editors.length; ++i) {
             var editor = editors[i];
             for (var j = 0; j < editor.formats.length; ++j) {
-                this._editors[editor.formats[j]] = editor;
+                this.editors[editor.formats[j]] = editor;
             }
         }
     }
@@ -68,7 +68,7 @@ define([
                 mode = '';
             }
 
-            var editor = this._editors[mode];
+            var editor = this.editors[mode];
             return editor ? { mode: mode,  class: editor } : null;
         },
 
