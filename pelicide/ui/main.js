@@ -3,6 +3,7 @@ require.config({
         jquery: 'components/jquery/dist/jquery.min',
         jquery_jsonrpc: 'components/jquery-jsonrpc/jquery.jsonrpc',
         jquery_dateFormat: 'components/jquery-dateFormat/dist/jquery-dateFormat.min',
+        rsvp: 'components/rsvp/rsvp.min',
         w2ui: 'components/w2ui/w2ui-1.4.2.min',
         cm: 'components/codemirror',
         unorm: 'components/unorm/lib/unorm'
@@ -16,16 +17,14 @@ require.config({
 
 require([
     'jquery',
-    'jquery_jsonrpc',
     'js/pelicide',
     'js/md-editor',
     'js/rst-editor',
-    'js/article-content'
-], function(jQuery, _, Pelicide, MDEditor, RSTEditor, ArticleContent) {
-    // Set up jquery-jsonrpc default endpoint.
-    jQuery.jsonRPC.setup({
-        endPoint: '/rpc'
-    });
+    'js/article-content',
+    'js/api'
+], function(jQuery, Pelicide, MDEditor, RSTEditor, ArticleContent, API) {
+    // Set up API endpoint.
+    API.configure('/rpc');
 
     // Set up Pelicide UI.
     var pelicide = new Pelicide({

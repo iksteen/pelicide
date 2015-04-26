@@ -1,9 +1,9 @@
 define([
     'js/util',
+    'js/api',
     'jquery',
-    'jquery_jsonrpc',
     'w2ui'
-], function(Util, jQuery) {
+], function(Util, API, jQuery) {
 
     function Editor(pelicide, editors) {
         this.pelicide = pelicide;
@@ -120,23 +120,19 @@ define([
             if (eventData.isCancelled === true) return;
 
             this.close(function() {
-                jQuery.jsonRPC.request('get_content', {
-                    params: [file.dir, file.name],
-                    success: function (result) {
-                        self._currentFile = file;
-                        self._currentMode = editor.mode;
-                        self._editor = new editor.class(self, self._box, result.result);
+                API.get_content(file.dir, file.name).then(function (content) {
+                    self._currentFile = file;
+                    self._currentMode = editor.mode;
+                    self._editor = new editor.class(self, self._box, content);
 
-                        self._toolbar.enable('rebuild_page');
+                    self._toolbar.enable('rebuild_page');
 
-                        self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: true }));
+                    self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: true }));
 
-                        success && success();
-                    },
-                    error: function (e) {
-                        self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: false, error: e }));
-                        Util.alert(e);
-                    }
+                    success && success();
+                }, function(e) {
+                    self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: false, error: e }));
+                    Util.alert(e);
                 });
             });
         },
@@ -150,18 +146,14 @@ define([
                 this.trigger(eventData);
                 if (eventData.isCancelled === true) return;
 
-                jQuery.jsonRPC.request('set_content', {
-                    params: [this._currentFile.dir, this._currentFile.name, this._editor.content()],
-                    success: function() {
-                        self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: true }));
-                        self.dirty(false);
-                        success && success();
-                    },
-                    error: function (e) {
-                        self.dirty(oldDirty);
-                        self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: false, error: e }));
-                        Util.alert(e);
-                    }
+                API.set_content(this._currentFile.dir, this._currentFile.name, this._editor.content()).then(function () {
+                    self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: true }));
+                    self.dirty(false);
+                    success && success();
+                }, function (e) {
+                    self.dirty(oldDirty);
+                    self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: false, error: e }));
+                    Util.alert(e);
                 });
             } else {
                 success && success();
@@ -249,15 +241,11 @@ define([
                 }
 
                 this.save(function () {
-                    jQuery.jsonRPC.request('build', {
-                        params: [[[state.file.dir, state.file.name]]],
-                        success: function () {
-                            self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
-                        },
-                        error: function (e) {
-                            self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
-                            Util.alert(e);
-                        }
+                    API.build([[state.file.dir, state.file.name]]).then(function () {
+                        self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+                    }, function (e) {
+                        self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                        Util.alert(e);
                     });
                 });
             }

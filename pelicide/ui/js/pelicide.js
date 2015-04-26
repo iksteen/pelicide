@@ -4,7 +4,6 @@ define([
     'js/editor',
     'js/preview',
     'jquery',
-    'jquery_jsonrpc',
     'w2ui'
 ], function(Util, Project, Editor, Preview, jQuery) {
 

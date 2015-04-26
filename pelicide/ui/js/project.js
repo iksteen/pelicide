@@ -1,8 +1,9 @@
 define([
     'js/util',
+    'js/api',
     'jquery',
     'w2ui'
-], function(Util, jQuery) {
+], function(Util, API, jQuery) {
     function Project(pelicide, contentTypes) {
         this.pelicide = pelicide;
 
@@ -277,57 +278,50 @@ define([
                 self._sidebar.lock('Loading...', true);
                 self.clear();
 
-                jQuery.jsonRPC.request('get_settings', {
-                    success: function (result) {
-                        if (result.result['SITENAME']) {
-                            document.title = result.result['SITENAME'] + ' (Pelicide)';
-                            self.contentTitle(result.result['SITENAME']);
-                        }
-                    },
-                    error: function (e) {
+                API.get_settings().then(function (settings) {
+                    if (settings['SITENAME']) {
+                        document.title = settings['SITENAME'] + ' (Pelicide)';
+                        self.contentTitle(settings['SITENAME']);
+                    }
+                }, function (e) {
                         self.contentTitle(null);
                         Util.alert(e);
-                    }
                 });
 
-                jQuery.jsonRPC.request('list_content', {
-                    success: function (result) {
-                        var items = [];
+                API.list_content().then(function (content) {
+                    var items = [];
 
-                        for (var i = 0; i < result.result.length; ++i) {
-                            var file = result.result[i];
+                    for (var i = 0; i < content.length; ++i) {
+                        var file = content[i];
 
-                            for (var j = 0; j < self._contentTypes.length; ++j) {
-                                var contentType = self._contentTypes[j],
-                                    path = contentType.scan(file);
+                        for (var j = 0; j < self._contentTypes.length; ++j) {
+                            var contentType = self._contentTypes[j],
+                                path = contentType.scan(file);
 
-                                if (path !== undefined) {
-                                    items.push({
-                                        path: ['content'].concat(path),
-                                        file: file
-                                    });
-                                    break;
-                                }
-                            }
-                            if (j == self._contentTypes.length) {
+                            if (path !== undefined) {
                                 items.push({
-                                    path: ['content', self._otherContentId].concat(file.dir),
+                                    path: ['content'].concat(path),
                                     file: file
                                 });
+                                break;
                             }
                         }
-
-                        addContentNodes(items);
-
-                        self._sidebar.unlock();
-
-                        success && success();
-                    },
-
-                    error: function (e) {
-                        self._sidebar.unlock();
-                        Util.alert(e);
+                        if (j == self._contentTypes.length) {
+                            items.push({
+                                path: ['content', self._otherContentId].concat(file.dir),
+                                file: file
+                            });
+                        }
                     }
+
+                    addContentNodes(items);
+
+                    self._sidebar.unlock();
+
+                    success && success();
+                }, function (e) {
+                    self._sidebar.unlock();
+                    Util.alert(e);
                 });
             });
         },
@@ -352,14 +346,11 @@ define([
             }
 
             this.pelicide.editor.save(function() {
-                jQuery.jsonRPC.request('build', {
-                    success: function () {
-                        self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
-                    },
-                    error: function (e) {
-                        self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
-                        Util.alert(e);
-                    }
+                API.build().then(function () {
+                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+                }, function (e) {
+                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                    Util.alert(e);
                 });
             });
         }

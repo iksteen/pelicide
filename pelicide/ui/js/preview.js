@@ -1,9 +1,9 @@
 define([
     'js/util',
+    'js/api',
     'jquery',
-    'jquery_jsonrpc',
     'w2ui'
-], function(Util, jQuery) {
+], function(Util, API, jQuery) {
 
     function Preview(pelicide, previewDelay) {
         this.pelicide = pelicide;
@@ -132,18 +132,14 @@ define([
                 var preview = jQuery('#preview');
 
                 if (state) {
-                    jQuery.jsonRPC.request('render', {
-                        params: [state.mode, state.content],
-                        success: function (result) {
-                            preview.html(result.result);
-                        },
-                        error: function(error) {
-                            preview.empty().append(
-                                '<h3 style="color: red">Render failed:</h3>',
-                                jQuery('<p>').html(error.error.message)
-                            );
-                        }
-                    })
+                    API.render(state.mode, state.content).then(function (html) {
+                        preview.html(html);
+                    }, function (e) {
+                        preview.empty().append(
+                            '<h3 style="color: red">Render failed:</h3>',
+                            jQuery('<p>').html(error.error.message)
+                        );
+                    });
                 } else {
                     preview.empty();
                 }
