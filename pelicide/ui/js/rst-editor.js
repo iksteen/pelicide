@@ -17,6 +17,17 @@ define([
     );
 
     RSTEditor.formats = ['rst'];
+    RSTEditor.templates = {
+        article: function (record) {
+            var titleLen = record.title.length;
+            return record.title + '\n' +
+                (new Array(titleLen + 1).join('#')) + '\n\n' +
+                ':date: ' + record.date + '\n' +
+                ':tags: \n' +
+                ':category: ' + record.category + '\n' +
+                ':slug: ' + record.slug + '\n\n';
+        }
+    };
 
     return RSTEditor;
 });

@@ -18,8 +18,12 @@ define([
 
     MDEditor.formats = ['md', 'markdown', 'mdown'];
     MDEditor.templates = {
-        article: {
-            body: 'Title: {title}\nDate: {date}\nTags:\nCategory: {category}\nSlug: {slug}\nAuthor:\n\n'
+        article: function (record) {
+            return 'Title: ' + record.title + '\n' +
+                'Date: ' + record.date + '\n' +
+                'Tags:\n' +
+                'Category: ' + record.category + '\n' +
+                'Slug: ' + record.slug + '\n\n';
         }
     };
 

@@ -107,16 +107,9 @@ define([
             });
 
             var self = this,
-                path = record.create_in.split('/'),
+                path = record.create_in ? record.create_in.split('/') : [],
                 filename = record.slug + '.' + record.format.id,
-                body = this.project.pelicide.editor.editors[record.format.id].templates.article.body;
-
-            if (path.length == 1 && path[0] == '')
-                path = [];
-
-            jQuery.each(record, function(k, v) {
-                body = body.replace('{' + k + '}', v);
-            });
+                body = this.project.pelicide.editor.editors[record.format.id].templates.article(record);
 
             jQuery.jsonRPC.request('set_content', {
                 params: [path, filename, body],
