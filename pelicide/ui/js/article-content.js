@@ -22,8 +22,7 @@ define([
                 if (e.templates && e.templates.article)
                     formats.push(f);
             });
-
-            $().w2form({
+            this._form = $().w2form({
                 name: 'create_article',
                 style: 'border: 0px; background-color: transparent;',
                 fields: [
@@ -32,17 +31,13 @@ define([
                     {field: 'format', type: 'list', required: true, options: {items: formats}, html: {caption: 'Format', attr: 'style="width: 250px"'}},
                     {field: 'create_in', type: 'combo', html: {caption: 'Create in:', attr: 'style="width: 250px"'}}
                 ],
+                record: {},
                 actions: {
                     Cancel: function () {
-                        this.clear();
-                        w2popup.close();
+                        this.cancel();
                     },
                     Create: function () {
-                        if (this.validate(true).length == 0) {
-                            w2popup.close();
-                            self.createContent(this.record);
-                            this.clear();
-                        }
+                        this.ok();
                     }
                 }
             });
@@ -63,55 +58,39 @@ define([
         },
 
         create: function () {
-            var self = this;
+            var self = this,
+                categories = this.project.categories();
 
             API.get('ARTICLE_PATHS').then(function (article_paths) {
-                var form = w2ui['create_article'];
+                self._form.set('category', {options: {items: categories}});
+                self._form.set('create_in', {options: {items: article_paths}});
+                self._form.record = {
+                    format: self._form.get('format').options.items[0],
+                    create_in: article_paths[0]
+                };
 
-                form.record.format = form.get('format').options.items[0];
-                form.set('create_in', {options: {items: article_paths}});
-                form.record.create_in = article_paths[0];
-                form.set('category', {options: {items: self.project.categories()}});
-
-                w2popup.open({
+                return Util.dialog({
                     title: 'Create article',
-                    body: '<div id="create_article_form" style="width: 100%; height: 100%;"></div>',
-                    style: 'padding: 15px 0px 0px 0px',
-                    width: 500,
-                    height: 300,
-                    showMax: true,
-                    onToggle: function (event) {
-                        $(form.box).hide();
-                        event.onComplete = function () {
-                            $(form.box).show();
-                            form.resize();
-                        }
-                    },
-                    onOpen: function (event) {
-                        event.onComplete = function () {
-                            $('#w2ui-popup').find('#create_article_form').w2render(form);
-                        }
-                    }
+                    form: self._form
+                }).then(function (record) {
+                    jQuery.extend(record, {
+                        slug: Util.slugify(record.title),
+                        date: jQuery.format.date(new Date(), 'yyyy-MM-dd HH:mm')
+                    });
+
+                    var path = record.create_in ? record.create_in.split('/') : [],
+                        filename = record.slug + '.' + record.format.id,
+                        body = self.project.pelicide.editor.editors[record.format.id].templates.article(record);
+
+                    return API.set_content(path, filename, body).then(function () {
+                        self.project.reload(function () {
+                            self.project.pelicide.editor.open(self.project.getFile(path, filename));
+                        });
+                    });
+                }, function () {
+                    /* Consume dialog cancellation. */
                 });
-            }, Util.alert);
-        },
-
-        createContent: function (record) {
-            jQuery.extend(record, {
-                slug: Util.slugify(record.title),
-                date: jQuery.format.date(new Date(), 'yyyy-MM-dd HH:mm')
-            });
-
-            var self = this,
-                path = record.create_in ? record.create_in.split('/') : [],
-                filename = record.slug + '.' + record.format.id,
-                body = this.project.pelicide.editor.editors[record.format.id].templates.article(record);
-
-            API.set_content(path, filename, body).then(function () {
-                self.project.reload(function () {
-                    self.project.pelicide.editor.open(self.project.getFile(path, filename));
-                });
-            }, Util.alert);
+            }).catch(Util.alert)
         }
     };
 
