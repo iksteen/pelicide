@@ -17,6 +17,12 @@ define([
     );
 
     MDEditor.formats = ['md', 'markdown', 'mdown'];
+    MDEditor.templates = {
+        article: {
+            body: 'Title: {title}\nDate: {date}\nTags:\nCategory: {category}\nSlug: {slug}\nAuthor:\n\n'
+        }
+    };
+
 
     return MDEditor;
 });

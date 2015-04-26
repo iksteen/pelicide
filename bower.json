@@ -14,6 +14,7 @@
     "codemirror": "~5.1.0",
     "fontawesome": "~4.3.0",
     "requirejs": "~2.1.17",
-    "unorm": "~1.3.3"
+    "unorm": "~1.3.3",
+    "jquery-dateFormat": "~1.0.2"
   }
 }
