@@ -18,6 +18,8 @@ define([
         this._id = 0;
         this._paths = {};
         this._content = {};
+        this._files = {};
+
         this._otherContentId = null;
     }
 
@@ -95,6 +97,7 @@ define([
                 }
             };
             this._content = {};
+            this._files = {};
 
             var contentChildren=this._sidebar.find({
                 parent: this._sidebar.get('content')
@@ -185,8 +188,13 @@ define([
             });
 
             this._content[id] = file;
+            this._files[file.dir.concat([file.name]).join('/')] = id;
 
             return id;
+        },
+
+        getFile: function(dir, filename) {
+            return this._content[this._files[dir.concat([filename]).join('/')]];
         },
 
         reload: function (success) {
