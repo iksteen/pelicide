@@ -37,7 +37,7 @@ define([
                             disabled: true,
                             icon: 'fa fa-save',
                             hint: 'Save',
-                            onClick: function () { self.save(); }
+                            onClick: function () { self.save().catch(Util.alert); }
                         },
                         {
                             type: 'button',
@@ -139,27 +139,34 @@ define([
             });
         },
 
-        save: function (success) {
-            var self = this,
-                oldDirty = this.dirty();
+        save: function () {
+            var self = this;
 
-            if(this._editor !== null) {
-                var eventData = { type: 'save', phase: 'before', target: this, file: this._currentFile };
-                this.trigger(eventData);
-                if (eventData.isCancelled === true) return;
+            if(this._editor === null) {
+                return Promise.resolve();
+            }
 
-                API.set_content(this._currentFile.dir, this._currentFile.name, this._editor.content()).then(function () {
+            return new Promise(function (resolve, reject) {
+                var eventData = {type: 'save', phase: 'before', target: self, file: self._currentFile};
+                self.trigger(eventData);
+                if (eventData.isCancelled) {
+                    reject('cancelled');
+                    return;
+                }
+
+                API.set_content(
+                    self._currentFile.dir,
+                    self._currentFile.name,
+                    self._editor.content()
+                ).then(function () {
                     self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: true }));
                     self.dirty(false);
-                    success && success();
+                    resolve();
                 }, function (e) {
-                    self.dirty(oldDirty);
                     self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: false, error: e }));
-                    Util.alert(e);
+                    reject(e);
                 });
-            } else {
-                success && success();
-            }
+            });
         },
 
         close: function() {
@@ -210,9 +217,7 @@ define([
                             var result = event.options.result;
 
                             if(result == 'save') {
-                                self.save(function () {
-                                    _close();
-                                });
+                                self.save().then(_close, reject);
                             } else if(result == 'discard') {
                                 self.dirty(false);
                                 _close();
@@ -249,13 +254,13 @@ define([
                     return;
                 }
 
-                this.save(function () {
-                    API.build([[state.file.dir, state.file.name]]).then(function () {
-                        self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
-                    }, function (e) {
-                        self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
-                        Util.alert(e);
-                    });
+                this.save().then(function () {
+                    return API.build([[state.file.dir, state.file.name]]);
+                }).then(function () {
+                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+                }, function (e) {
+                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                    Util.alert(e);
                 });
             }
         }

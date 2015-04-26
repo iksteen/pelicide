@@ -347,13 +347,13 @@ define([
                 return;
             }
 
-            this.pelicide.editor.save(function() {
-                API.build().then(function () {
-                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
-                }, function (e) {
-                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
-                    Util.alert(e);
-                });
+            this.pelicide.editor.save().then(function () {
+                return API.build();
+            }).then(function () {
+                self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+            }, function (e) {
+                self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                Util.alert(e);
             });
         }
     };
