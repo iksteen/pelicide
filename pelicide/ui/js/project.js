@@ -226,6 +226,16 @@ define([
             return this._content[this._files[dir.concat([filename]).join('/')]];
         },
 
+        categories: function () {
+            var categories = [];
+            jQuery.each(this._content, function (k, file) {
+                if (jQuery.inArray(file.meta.category, categories) === -1) {
+                    categories.push(file.meta.category);
+                }
+            });
+            return categories;
+        },
+
         reload: function (success) {
             var self = this;
 
