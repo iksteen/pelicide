@@ -22,7 +22,7 @@ define([
             return 'Title: ' + record.title + '\n' +
                 'Date: ' + record.date + '\n' +
                 'Tags:\n' +
-                'Category: ' + record.category + '\n' +
+                (record.category ? ('Category: ' + record.category + '\n') : '') +
                 'Slug: ' + record.slug + '\n\n';
         }
     };

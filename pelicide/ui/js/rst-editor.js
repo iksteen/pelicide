@@ -24,7 +24,7 @@ define([
                 (new Array(titleLen + 1).join('#')) + '\n\n' +
                 ':date: ' + record.date + '\n' +
                 ':tags: \n' +
-                ':category: ' + record.category + '\n' +
+                (record.category ? (':category: ' + record.category + '\n') : '') +
                 ':slug: ' + record.slug + '\n\n';
         }
     };
