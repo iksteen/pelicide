@@ -23,6 +23,9 @@ define([
 
         // Sync preview scrolling
         editor.pelicide.preview.setUpScrollSync(this._codeMirror.getScrollerElement());
+
+        // Set focus to editor widget.
+        this._codeMirror.focus();
     }
 
     CMEditor.prototype = {
