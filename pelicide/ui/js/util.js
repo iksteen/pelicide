@@ -39,8 +39,8 @@ define([
                             }
                         },
                         onClose: function (e) {
-                            if(!e.options.result) {
-                                reject('cancelled');
+                            if (!e.options.result) {
+                                reject();
                             } else {
                                 resolve(e.options.result);
                             }
