@@ -61,18 +61,21 @@ define([
             var self = this,
                 categories = this.project.categories();
 
-            API.get('ARTICLE_PATHS').then(function (article_paths) {
-                self._form.set('category', {options: {items: categories}});
-                self._form.set('create_in', {options: {items: article_paths}});
-                self._form.record = {
-                    format: self._form.get('format').options.items[0],
-                    create_in: article_paths[0]
-                };
+            return API.get('ARTICLE_PATHS')
+                .then(function (article_paths) {
+                    self._form.set('category', {options: {items: categories}});
+                    self._form.set('create_in', {options: {items: article_paths}});
+                    self._form.record = {
+                        format: self._form.get('format').options.items[0],
+                        create_in: article_paths[0]
+                    };
 
-                return Util.dialog({
-                    title: 'Create article',
-                    form: self._form
-                }).then(function (record) {
+                    return Util.dialog({
+                        title: 'Create article',
+                        form: self._form
+                    })
+                })
+                .then(function (record) {
                     jQuery.extend(record, {
                         slug: Util.slugify(record.title),
                         date: jQuery.format.date(new Date(), 'yyyy-MM-dd HH:mm')
@@ -82,12 +85,14 @@ define([
                         filename = record.slug + '.' + record.format.id,
                         body = self.project.pelicide.editor.editors[record.format.id].templates.article(record);
 
-                    return API.set_content(path, filename, body)
+                    return self.project.pelicide.editor.close()
+                        .then(function() { return API.set_content(path, filename, body) })
                         .then(function () { return self.project.reload() })
-                        .then(function () { return self.project.getFile(path, filename); })
-                        .then(function (file) { return self.project.pelicide.editor.open(file); });
-                });
-            }).catch(function (e) { if (e !== 'cancelled') Util.alert(e) })
+                        .then(function () {
+                            return self.project.pelicide.editor.open(self.project.getFile(path, filename));
+                        });
+                })
+                .catch(function (e) { if (e) Util.alert(e); });
         }
     };
 
