@@ -21,7 +21,7 @@ define([
         article: function (record) {
             return 'Title: ' + record.title + '\n' +
                 'Date: ' + record.date + '\n' +
-                'Status: ' + record.status + '\n' +
+                'Status: ' + record.status.id + '\n' +
                 'Tags:\n' +
                 (record.category ? ('Category: ' + record.category + '\n') : '') +
                 'Slug: ' + record.slug + '\n\n';
