@@ -23,6 +23,7 @@ define([
             return record.title + '\n' +
                 (new Array(titleLen + 1).join('#')) + '\n\n' +
                 ':date: ' + record.date + '\n' +
+                ':status: ' + record.status.id + '\n' +
                 ':tags: \n' +
                 (record.category ? (':category: ' + record.category + '\n') : '') +
                 ':slug: ' + record.slug + '\n\n';

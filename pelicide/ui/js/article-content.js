@@ -7,6 +7,8 @@ define([
 
     function ArticleContent(project) {
         this.project = project;
+        this._draftNodeId = null;
+        this._publishedNodeId = null;
     }
 
     function getPathFromRecord(record) {
@@ -17,12 +19,11 @@ define([
     }
 
     ArticleContent.prototype = {
-        _nodeId: null,
-
         init: function () {
             var self = this;
 
-            this._nodeId = this.project.addContentType('Articles');
+            this._draftNodeId = this.project.addContentType('Draft articles');
+            this._publishedNodeId = this.project.addContentType('Published articles');
 
             var formats = [];
             jQuery.each(this.project.pelicide.editor.editors, function(f, e) {
@@ -35,6 +36,7 @@ define([
                 fields: [
                     {field: 'title', type: 'text', required: true, html: {caption: 'Title', attr: 'style="width: 250px"'}},
                     {field: 'category', type: 'combo', html: {caption: 'Category:', attr: 'style="width: 250px"'}},
+                    {field: 'status', type: 'list', required: true, options: {items: ['draft', 'published']}, html: {caption: 'Status', attr: 'style="width: 250px"'}},
                     {field: 'format', type: 'list', required: true, options: {items: formats}, html: {caption: 'Format', attr: 'style="width: 250px"'}},
                     {field: 'create_in', type: 'combo', html: {caption: 'Create in:', attr: 'style="width: 250px"'}}
                 ],
@@ -69,7 +71,10 @@ define([
 
         scan: function (file) {
             if (file.type == 'pelican.contents.Article') {
-                return [this._nodeId, file.meta.category];
+                if (file.status.toLowerCase() == 'draft')
+                    return [this._draftNodeId];
+                else
+                    return [this._publishedNodeId, file.meta.category];
             }
         },
 
@@ -82,6 +87,7 @@ define([
                     self._form.set('category', {options: {items: categories}});
                     self._form.set('create_in', {options: {items: article_paths}});
                     self._form.record = {
+                        status: 'draft',
                         format: self._form.get('format').options.items[0],
                         create_in: article_paths[0]
                     };

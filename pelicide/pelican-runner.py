@@ -164,6 +164,7 @@ def run(config_file, init_settings):
                         'name': filename,
                         'type': content.__class__.__module__ + '.' + content.__class__.__name__,
                         'url': url,
+                        'status': getattr(content, 'status', None),
                         'meta': getattr(content, 'metadata', {})
                     })
                 success(cmd_id, project_contents)
