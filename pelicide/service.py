@@ -54,14 +54,15 @@ class PelicideService(JSONRPCServer):
 
     def jsonrpc_set_content(self, subdir, filename, content):
         content_path = self.runner.settings['PATH']
-        if not content_path.endswith(os.sep):
-            content_path += os.sep
-        path = os.path.abspath(os.path.join(self.runner.settings['PATH'], os.sep.join(subdir + [filename])))
+        path = os.path.abspath(os.path.join(content_path, os.sep.join(subdir)))
 
-        if not path.startswith(content_path):
-            raise IOError('File not in content path.')
+        if not (path + os.sep).startswith(content_path + os.sep):
+            raise RuntimeError('File not in content path.')
 
-        with open(path, 'wb') as f:
+        if not os.path.isdir(path):
+            os.makedirs(path)
+
+        with open(os.path.join(path, filename), 'wb') as f:
             f.write(content.encode('utf-8'))
 
 
