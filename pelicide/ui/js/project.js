@@ -75,12 +75,12 @@ define([
                         group: true
                     }
                 ],
-                onDblClick: jQuery.proxy(function (event) {
-                    var file = this._content[event.target];
+                onDblClick: function (event) {
+                    var file = self._content[event.target];
                     if (file !== undefined) {
-                        this.pelicide.editor.open(file);
+                        self.pelicide.editor.open(file).catch(function (e) { if (e !== 'cancelled') Util.alert(e); });
                     }
-                }, this)
+                }
             });
             this._sidebar.render(box);
 

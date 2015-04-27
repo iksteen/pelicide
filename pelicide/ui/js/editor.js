@@ -106,21 +106,23 @@ define([
             };
         },
 
-        open: function (file, success) {
+        open: function (file) {
             var self = this,
                 editor = this.getEditor(file.name);
 
             if (!editor) {
-                w2alert('No editor is registered for this file type.', 'Unknown file type');
-                return;
+                return Promise.reject('No editor is registered for this file type.');
             }
 
             var eventData = { type: 'open', phase: 'before', target: this, file: file };
             this.trigger(eventData);
-            if (eventData.isCancelled === true) return;
+            if (eventData.isCancelled === true) {
+                return Promise.reject('cancelled');
+            }
 
-            this.close().then(function() {
-                return API.get_content(file.dir, file.name).then(function (content) {
+            return this.close()
+                .then(function() { return API.get_content(file.dir, file.name) })
+                .then(function (content) {
                     self._currentFile = file;
                     self._currentMode = editor.mode;
                     self._editor = new editor.class(self, self._box, content);
@@ -128,15 +130,12 @@ define([
                     self._toolbar.enable('rebuild_page');
 
                     self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: true }));
-
-                    success && success();
+                })
+                .catch(function (e) {
+                    self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: false, error: e }));
+                    if(e !== 'cancelled')
+                        return Promise.reject(e);
                 });
-            }, function () {
-                /* Consume close dialog cancellation. */
-            }).catch(function (e) {
-                self.trigger(jQuery.extend(eventData, { 'phase': 'after', success: false, error: e }));
-                Util.alert(e);
-            });
         },
 
         save: function () {

@@ -85,9 +85,7 @@ define([
                     return API.set_content(path, filename, body)
                         .then(function () { return self.project.reload() })
                         .then(function () { return self.project.getFile(path, filename); })
-                        .then(function (file) { self.project.pelicide.editor.open(file); });
-                }, function (e) {
-                    /* Consume dialog cancellation. */
+                        .then(function (file) { return self.project.pelicide.editor.open(file); });
                 });
             }).catch(function (e) { if (e !== 'cancelled') Util.alert(e) })
         }
