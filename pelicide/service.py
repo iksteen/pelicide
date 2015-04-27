@@ -45,9 +45,9 @@ class PelicideService(JSONRPCServer):
         path = os.path.abspath(os.path.join(self.runner.settings['PATH'], os.sep.join(subdir + [filename])))
 
         if not path.startswith(content_path):
-            raise IOError('File not in content path')
+            raise RuntimeError('File not in content path')
         if not os.path.isfile(path):
-            raise IOError('File not found')
+            raise RuntimeError('File not found')
 
         with open(path, 'rb') as f:
             return f.read().decode('utf-8')
