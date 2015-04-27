@@ -36,14 +36,14 @@ define([
                             id: 'refresh',
                             icon: 'fa fa-refresh',
                             hint: 'Reload project',
-                            onClick: function () { self.reload().catch(function (e) { if (e !== 'cancelled') Util.alert(e); }) }
+                            onClick: function () { self.reload().catch(Util.alert); }
                         },
                         {
                             type: 'button',
                             id: 'rebuild',
                             icon: 'fa fa-wrench',
                             hint: 'Rebuild project',
-                            onClick: function () { self.rebuild(); }
+                            onClick: function () { self.rebuild().catch(Util.alert); }
                         },
                         { type: 'break' },
                         {
@@ -78,7 +78,7 @@ define([
                 onDblClick: function (event) {
                     var file = self._content[event.target];
                     if (file !== undefined) {
-                        self.pelicide.editor.open(file).catch(function (e) { if (e !== 'cancelled') Util.alert(e); });
+                        self.pelicide.editor.open(file).catch(Util.alert);
                     }
                 }
             });
@@ -274,21 +274,24 @@ define([
                 }
             }
 
-            return this.pelicide.editor.close().then(function () {
-                self._sidebar.lock('Loading...', true);
-                self.clear();
+            return this.pelicide.editor.close()
+                .then(function () {
+                    self._sidebar.lock('Loading...', true);
+                    self.clear();
 
-                API.get_settings().then(function (settings) {
-                    if (settings['SITENAME']) {
-                        document.title = settings['SITENAME'] + ' (Pelicide)';
-                        self.contentTitle(settings['SITENAME']);
-                    }
-                }, function (e) {
-                    self.contentTitle(null);
-                    Util.alert(e);
-                });
+                    API.get_settings().then(function (settings) {
+                        if (settings['SITENAME']) {
+                            document.title = settings['SITENAME'] + ' (Pelicide)';
+                            self.contentTitle(settings['SITENAME']);
+                        }
+                    }, function (e) {
+                        self.contentTitle(null);
+                        Util.alert(e);
+                    });
 
-                return API.list_content().then(function (content) {
+                    return API.list_content();
+                })
+                .then(function (content) {
                     var items = [];
 
                     for (var i = 0; i < content.length; ++i) {
@@ -321,7 +324,6 @@ define([
                     self._sidebar.unlock();
                     return Promise.reject(e);
                 });
-            });
         },
 
         rebuild: function () {
@@ -340,17 +342,16 @@ define([
             this.trigger(eventData);
             if (eventData.isCancelled === true) {
                 eventData.onComplete();
-                return;
+                return Promise.reject();
             }
 
-            this.pelicide.editor.save().then(function () {
-                return API.build();
-            }).then(function () {
-                self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
-            }, function (e) {
-                self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
-                Util.alert(e);
-            });
+            return this.pelicide.editor.save()
+                .then(function () { return API.build(); })
+                .then(function () {
+                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+                }, function (e) {
+                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                });
         }
     };
     jQuery.extend(Project.prototype, w2utils.event);

@@ -13,7 +13,8 @@ define([
         },
 
         alert: function(e) {
-            w2alert(util.getErrorString(e));
+            if (e)
+                w2alert(util.getErrorString(e));
         },
 
         slugify: function (s) {

@@ -113,7 +113,7 @@ define([
                             return self.project.pelicide.editor.open(self.project.getFile(path.path, path.name));
                         });
                 })
-                .catch(function (e) { if (e) Util.alert(e); });
+                .catch(Util.alert);
         }
     };
 
