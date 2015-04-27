@@ -5,9 +5,11 @@ define([
     'w2ui'
 ], function(Util, API, jQuery) {
 
-    function Preview(pelicide, previewDelay) {
+    function Preview(pelicide, options) {
+        options = jQuery.extend({previewDelay: 50}, options);
+
         this.pelicide = pelicide;
-        this.delay = previewDelay;
+        this.delay = options.previewDelay;
         this._mode = null;
         this._pending = false;
     }

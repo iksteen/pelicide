@@ -4,17 +4,19 @@ define([
     'jquery',
     'w2ui'
 ], function(Util, API, jQuery) {
-    function Project(pelicide, contentTypes) {
-        this.pelicide = pelicide;
+    function Project(pelicide, options) {
+        options = jQuery.extend({sitename: '', contentTypes: []}, options);
 
+        this.pelicide = pelicide;
+        this._sitename = options.sitename;
         this.handlers = [];
         this._sidebar = null;
         this._box = null;
         this._toolbar = null;
 
         this._contentTypes = [];
-        for (var i = 0; i < contentTypes.length; ++i)
-            this._contentTypes.push(new contentTypes[i](this));
+        for (var i = 0; i < options.contentTypes.length; ++i)
+            this._contentTypes.push(new options.contentTypes[i](this));
 
         this._id = 0;
         this._paths = {};
@@ -70,7 +72,7 @@ define([
                 nodes: [
                     {
                         id: 'content',
-                        text: 'Content',
+                        text: this._sitename || 'Content',
                         expanded: true,
                         group: true
                     }
@@ -278,17 +280,6 @@ define([
                 .then(function () {
                     self._sidebar.lock('Loading...', true);
                     self.clear();
-
-                    API.get_settings().then(function (settings) {
-                        if (settings['SITENAME']) {
-                            document.title = settings['SITENAME'] + ' (Pelicide)';
-                            self.contentTitle(settings['SITENAME']);
-                        }
-                    }, function (e) {
-                        self.contentTitle(null);
-                        Util.alert(e);
-                    });
-
                     return API.list_content();
                 })
                 .then(function (content) {

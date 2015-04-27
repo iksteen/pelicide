@@ -5,9 +5,10 @@ define([
     'w2ui'
 ], function(Util, API, jQuery) {
 
-    function Editor(pelicide, editors) {
-        this.pelicide = pelicide;
+    function Editor(pelicide, options) {
+        options = jQuery.extend({editors: []}, options);
 
+        this.pelicide = pelicide;
         this.handlers = [];
         this._box = null;
         this._dirty = false;
@@ -16,8 +17,8 @@ define([
         this._currentFile = null;
         this._currentMode = null;
 
-        for (i = 0; i < editors.length; ++i) {
-            var editor = editors[i];
+        for (i = 0; i < options.editors.length; ++i) {
+            var editor = options.editors[i];
             for (var j = 0; j < editor.formats.length; ++j) {
                 this.editors[editor.formats[j]] = editor;
             }

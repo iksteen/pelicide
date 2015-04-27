@@ -8,17 +8,13 @@ define([
 ], function(Util, Project, Editor, Preview, jQuery) {
 
     function Pelicide(options) {
-        options = jQuery.extend({}, {
-            previewDelay: 50,
-            contentTypes: [],
-            editors: []
-        }, options);
+        options = options || {};
 
         this.handlers = [];
 
-        this.project = new Project(this, options.contentTypes);
-        this.editor = new Editor(this, options.editors);
-        this.preview = new Preview(this, options.previewDelay);
+        this.project = new Project(this, options);
+        this.editor = new Editor(this, options);
+        this.preview = new Preview(this, options);
     }
 
     Pelicide.prototype = {

@@ -21,24 +21,29 @@ require([
     'js/md-editor',
     'js/rst-editor',
     'js/article-content',
-    'js/api'
-], function(jQuery, Pelicide, MDEditor, RSTEditor, ArticleContent, API) {
+    'js/api',
+    'js/util'
+], function(jQuery, Pelicide, MDEditor, RSTEditor, ArticleContent, API, Util) {
     // Set up API endpoint.
     API.configure('/rpc');
 
-    // Set up Pelicide UI.
-    var pelicide = new Pelicide({
-        contentTypes: [
-            ArticleContent
-        ],
-        editors: [
-            MDEditor,
-            RSTEditor
-        ]
-    });
-
     // Start Pelicide UI when DOM is ready.
     jQuery(function() {
-        pelicide.run('#main_layout');
+        API.get('SITENAME').then(function (sitename) {
+            document.title = sitename + ' (Pelicide)';
+
+            // Set up and start Pelicide UI.
+            var pelicide = new Pelicide({
+                sitename: sitename || '',
+                contentTypes: [
+                    ArticleContent
+                ],
+                editors: [
+                    MDEditor,
+                    RSTEditor
+                ]
+            });
+            pelicide.run('#main_layout');
+        }).catch(Util.alert);
     });
 });
