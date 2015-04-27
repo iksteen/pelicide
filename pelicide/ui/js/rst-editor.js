@@ -7,9 +7,9 @@ define([
         CMEditor.call(this, pelicide, parent_el, content);
     }
 
-    RSTEditor.prototype = Object.create(CMEditor.prototype);
-    jQuery.extend(
-        RSTEditor.prototype,
+    RSTEditor.prototype = jQuery.extend(
+        {},
+        CMEditor.prototype,
         {
             constructor: RSTEditor,
             mode: 'rst'

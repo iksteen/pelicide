@@ -7,9 +7,9 @@ define([
         CMEditor.call(this, pelicide, parent_el, content);
     }
 
-    MDEditor.prototype = Object.create(CMEditor.prototype);
-    jQuery.extend(
-        MDEditor.prototype,
+    MDEditor.prototype = jQuery.extend(
+        {},
+        CMEditor.prototype,
         {
             constructor: MDEditor,
             mode: 'markdown'
