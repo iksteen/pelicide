@@ -9,6 +9,13 @@ define([
         this.project = project;
     }
 
+    function getPathFromRecord(record) {
+        return {
+            path: record.create_in ? record.create_in.split('/') : [],
+            name: Util.slugify(record.title) + '.' + record.format.id
+        }
+    }
+
     ArticleContent.prototype = {
         _nodeId: null,
 
@@ -38,6 +45,15 @@ define([
                     },
                     Create: function () {
                         this.ok();
+                    }
+                },
+                onValidate: function (event) {
+                    var path = getPathFromRecord(this.record);
+                    if (self.project.getFile(path.path, path.name) !== undefined) {
+                        event.errors.push({
+                            field: this.get('title'),
+                            error: 'File already exists'
+                        });
                     }
                 }
             });
@@ -81,15 +97,14 @@ define([
                         date: jQuery.format.date(new Date(), 'yyyy-MM-dd HH:mm')
                     });
 
-                    var path = record.create_in ? record.create_in.split('/') : [],
-                        filename = record.slug + '.' + record.format.id,
+                    var path = getPathFromRecord(record),
                         body = self.project.pelicide.editor.editors[record.format.id].templates.article(record);
 
                     return self.project.pelicide.editor.close()
-                        .then(function() { return API.set_content(path, filename, body) })
+                        .then(function() { return API.set_content(path.path, path.name, body) })
                         .then(function () { return self.project.reload() })
                         .then(function () {
-                            return self.project.pelicide.editor.open(self.project.getFile(path, filename));
+                            return self.project.pelicide.editor.open(self.project.getFile(path.path, path.name));
                         });
                 })
                 .catch(function (e) { if (e) Util.alert(e); });
