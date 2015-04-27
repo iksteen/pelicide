@@ -110,7 +110,7 @@ define([
                         .then(function() { return API.set_content(path.path, path.name, body) })
                         .then(function () { return self.project.reload() })
                         .then(function () {
-                            return self.project.pelicide.editor.open(self.project.getFile(path.path, path.name));
+                            return self.project.pelicide.editor.open(path.path, path.name);
                         });
                 })
                 .catch(Util.alert);

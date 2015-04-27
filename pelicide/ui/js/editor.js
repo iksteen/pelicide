@@ -107,6 +107,14 @@ define([
         },
 
         open: function (file) {
+            if (arguments.length == 2) {
+                file = this.pelicide.project.getFile(arguments[0], arguments[1]);
+            }
+
+            if (!file) {
+                return Promise.reject(new Error('File not found.'));
+            }
+
             var self = this,
                 editor = this.getEditor(file.name);
 
