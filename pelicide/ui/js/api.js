@@ -20,7 +20,7 @@ define([
     API.prototype = {
         _request: function (method, params) {
             if(this._endpoint === null) {
-                return Promise.reject('No API endpoint configured.');
+                return Promise.reject(new Error('No API endpoint configured.'));
             }
 
             var endPoint = this._endpoint;
@@ -29,7 +29,7 @@ define([
                     endPoint: endPoint,
                     params: params,
                     success: function (r) { resolve(r.result); },
-                    error: function (e) { reject(e); }
+                    error: function (e) { reject(new Error(e.error.message)); }
                 })
             });
         },

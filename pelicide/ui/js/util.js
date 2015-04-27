@@ -6,12 +6,8 @@ define([
     var combining = /[\u0300-\u036F]/g;
     var util = {
         getErrorString: function (e) {
-            if(e.error) {
-                if(e.error.message !== undefined)
-                    return e.error.message;
-                else
-                    return e.error;
-            }
+            if (e.message)
+                return e.message;
             else
                 return e;
         },

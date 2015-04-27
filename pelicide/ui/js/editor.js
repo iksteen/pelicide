@@ -111,7 +111,7 @@ define([
                 editor = this.getEditor(file.name);
 
             if (!editor) {
-                return Promise.reject('No editor is registered for this file type.');
+                return Promise.reject(new Error('No editor is registered for this file type.'));
             }
 
             var eventData = { type: 'open', phase: 'before', target: this, file: file };
