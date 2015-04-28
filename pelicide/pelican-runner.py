@@ -5,7 +5,7 @@ import sys
 import tempfile
 import jinja2.filters
 from pelican.log import init as log_init
-from pelican import get_instance, logging, signals, Readers, urlwrappers
+from pelican import get_instance, logging, signals, Readers, urlwrappers, contents
 from traceback import print_exc
 import datetime
 
@@ -36,7 +36,20 @@ def scan(pelican, settings):
     return context, generators
 
 
-def build(pelican, settings, paths=None):
+def fix_draft(settings, readers, context, path, content):
+    if isinstance(content, contents.Article) and content.status.lower() == 'draft':
+        # Work around drafts being articles in context['filenames']
+        return readers.read_file(
+            base_path=settings['PATH'],
+            path=path,
+            content_class=contents.Draft,
+            context=context
+        )
+    else:
+        return content
+
+
+def build(pelican, readers, settings, paths=None):
     context, generators = scan(pelican, settings)
 
     site_url = settings['SITEURL']
@@ -48,6 +61,7 @@ def build(pelican, settings, paths=None):
     for subdir, filename in (paths if paths is not None else []):
         path = os.sep.join(subdir + [filename])
         content = context['filenames'].get(path)
+        content = fix_draft(settings, readers, context, path, content)
         if content is None or not hasattr(content, 'url'):
             raise RuntimeError('Don\'t know how to build %s' % path)
 
@@ -155,6 +169,7 @@ def run(config_file, init_settings):
                 context, _ = scan(pelican, settings)
                 project_contents = []
                 for path, content in context['filenames'].items():
+                    content = fix_draft(settings, readers, context, path, content)
                     subdir, filename = os.path.split(path)
                     url = getattr(content, 'url', None)
                     if url is not None:
@@ -173,7 +188,7 @@ def run(config_file, init_settings):
                 fail(cmd_id, str(e))
         elif cmd == 'build':
             try:
-                output = build(pelican, settings, args)
+                output = build(pelican, readers, settings, args)
                 success(cmd_id, output)
             except Exception as e:
                 print_exc()

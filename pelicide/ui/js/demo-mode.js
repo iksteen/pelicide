@@ -20,7 +20,7 @@ define([
                     "slug": "welcome-to-pelicide",
                     "tags": ["pelicide", "demo"]
                 },
-                "type": "pelican.contents.Article",
+                "type": "pelican.contents.Draft",
                 "dir": []
             }
         ];

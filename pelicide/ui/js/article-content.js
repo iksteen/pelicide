@@ -71,10 +71,9 @@ define([
 
         scan: function (file) {
             if (file.type == 'pelican.contents.Article') {
-                if (file.status.toLowerCase() == 'draft')
-                    return [this._draftNodeId];
-                else
-                    return [this._publishedNodeId, file.meta.category];
+                return [this._publishedNodeId, file.meta.category];
+            } else if (file.type == 'pelican.contents.Draft') {
+                return [this._draftNodeId];
             }
         },
 
