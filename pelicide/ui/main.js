@@ -1,6 +1,8 @@
 require.config({
     deps: ['components/es6-promise/promise.min'],
     paths: {
+        // Uncomment the next line to activate demo mode.
+        //'js/api': 'js/demo-mode',
         jquery: 'components/jquery/dist/jquery.min',
         jquery_jsonrpc: 'components/jquery-jsonrpc/jquery.jsonrpc',
         jquery_dateFormat: 'components/jquery-dateFormat/dist/jquery-dateFormat.min',
@@ -44,6 +46,8 @@ require([
                 ]
             });
             pelicide.run('#main_layout');
+            // Uncomment the next line to automatically open the demo document.
+            //setTimeout(function () { pelicide.editor.open([], 'welcome-to-pelicide.md'); }, 0);
         }).catch(Util.alert);
     });
 });
