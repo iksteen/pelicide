@@ -342,6 +342,7 @@ define([
                     self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
                 }, function (e) {
                     self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                    return Promise.reject(e);
                 });
         }
     };
