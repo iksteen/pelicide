@@ -232,6 +232,16 @@ define([
             return this._content[this._files[dir.concat([filename]).join('/')]];
         },
 
+        pathForFile: function(file) {
+            for (var j = 0; j < this._contentTypes.length; ++j) {
+                var path = this._contentTypes[j].scan(file);
+                if (path !== undefined) {
+                    return ['content'].concat(path);
+                }
+            }
+            return ['content', this._otherContentId].concat(file.dir);
+        },
+
         categories: function () {
             var categories = [];
             jQuery.each(this._content, function (k, file) {
@@ -287,25 +297,10 @@ define([
 
                     for (var i = 0; i < content.length; ++i) {
                         var file = content[i];
-
-                        for (var j = 0; j < self._contentTypes.length; ++j) {
-                            var contentType = self._contentTypes[j],
-                                path = contentType.scan(file);
-
-                            if (path !== undefined) {
-                                items.push({
-                                    path: ['content'].concat(path),
-                                    file: file
-                                });
-                                break;
-                            }
-                        }
-                        if (j == self._contentTypes.length) {
-                            items.push({
-                                path: ['content', self._otherContentId].concat(file.dir),
-                                file: file
-                            });
-                        }
+                        items.push({
+                            path: self.pathForFile(file),
+                            file: file
+                        });
                     }
 
                     addContentNodes(items);
