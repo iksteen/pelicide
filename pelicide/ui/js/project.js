@@ -225,6 +225,8 @@ define([
             this._content[id] = file;
             this._files[file.dir.concat([file.name]).join('/')] = id;
 
+            this.trigger({ type: 'update', target: file });
+
             return id;
         },
 
