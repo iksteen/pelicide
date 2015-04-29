@@ -230,6 +230,15 @@ define([
             return id;
         },
 
+        removeFile: function(file) {
+            var path = file.dir.concat([file.name]).join('/'),
+                id = this._files[path];
+
+            this._sidebar.remove(id);
+            delete this._content[id];
+            delete this._files[path];
+        },
+
         getFile: function(dir, filename) {
             return this._content[this._files[dir.concat([filename]).join('/')]];
         },
