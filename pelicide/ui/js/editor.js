@@ -54,8 +54,22 @@ define([
         },
 
         render: function (box, toolbar) {
+            var self = this;
+
             this._box = box;
             this._toolbar = toolbar;
+
+            this.pelicide.project.on('update', function (event) {
+                if (self._currentFile === null)
+                    return;
+
+                var file = event.target,
+                    path = file.dir.concat([file.name]).join('/');
+
+                if (self._currentFile.dir.concat([self._currentFile.name]).join('/') == path) {
+                    self._currentFile = file;
+                }
+            });
         },
 
         getEditor: function (filename) {
