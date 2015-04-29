@@ -215,10 +215,19 @@ define([
         },
 
         addFile: function(path, file, icon) {
-            var parent = this.ensurePath(path),
-                id = this._newId();
+            var parent = this._sidebar.get(this.ensurePath(path)),
+                id = this._newId(),
+                before = null;
 
-            this._sidebar.add(parent, {
+            for (var i = 0; i < parent.nodes.length; ++i) {
+                var sibling = parent.nodes[i];
+                if (this._content.hasOwnProperty(sibling.id) && sibling.text.localeCompare(file.name) > 0) {
+                    before = sibling.id;
+                    break;
+                }
+            }
+
+            this._sidebar.insert(parent, before, {
                 id: id,
                 text: file.name,
                 icon: 'fa fa-file-text-o',
