@@ -128,17 +128,22 @@ def run(config_file, init_settings):
     output_path = init_settings.pop('OUTPUT_PATH', None)
     theme = init_settings.pop('THEME', None)
 
+    def get_attr(self, attr):
+        try:
+            return object.__getattribute__(self, attr)
+        except AttributeError:
+            return None
+
     args = type('args', (object,), {
         'settings': config_file,
         'path': path,
         'output': output_path,
         'theme': theme,
-        'delete_outputdir': None,
         'ignore_cache': True,
-        'cache_path': None,
-        'selected_paths': None,
         'verbosity': logging.DEBUG,
-    })
+        '__getattribute__': get_attr,
+    })()
+
     pelican, settings = get_instance(args)
     settings.update(init_settings)
     readers = Readers(settings)
