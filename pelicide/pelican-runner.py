@@ -8,6 +8,10 @@ from pelican.log import init as log_init
 from pelican import get_instance, logging, signals, Readers, urlwrappers, contents
 from traceback import print_exc
 import datetime
+try:
+    from pelican.readers import _DISCARD
+except ImportError:
+    _DISCARD = object()
 
 
 striptags = jinja2.filters.FILTERS['striptags']
@@ -195,8 +199,11 @@ def run(config_file, init_settings):
                 fail(cmd_id, str(e))
         elif cmd == 'render':
             try:
-                response = dict(zip(('content', 'metadata'), render(readers, *args)))
-                success(cmd_id, response)
+                content, metadata = render(readers, *args)
+                success(cmd_id, {
+                    'content': content,
+                    'metadata': {key: val for key, val in metadata.items() if val is not _DISCARD}
+                })
             except Exception as e:
                 print_exc()
                 fail(cmd_id, str(e))
