@@ -104,6 +104,9 @@ define([
             /* Select node after opening a file. */
             this.pelicide.editor.on({type: 'open', execute: 'after'}, function (e) { self.select(e.file); });
 
+            /* Update node path after saving a file. */
+            this.pelicide.editor.on({type: 'save', execute: 'after'}, function (e) { self.update(e.file); });
+
             this.reload().catch(Util.alert);
         },
 
@@ -267,6 +270,28 @@ define([
             var node = this._files[file.dir.concat([file.name]).join('/')];
             this._sidebar.expandParents(node);
             this._sidebar.select(node);
+        },
+
+        update: function (file) {
+            var self = this,
+                filePath = file.dir.concat([file.name]).join('/'),
+                nodePath = this.pathForFile(file).join('/');
+
+            return API.list_content()
+                .then(function (content) {
+                    for (var i = 0; i < content.length; ++i) {
+                        var f = content[i];
+                        if (f.dir.concat([f.name]).join('/') == filePath) {
+                            var newPath = self.pathForFile(f);
+                            if (newPath.join('/') !== nodePath) {
+                                self.removeFile(file);
+                                self.addFile(newPath, f);
+                                self.select(f);
+                            }
+                            return;
+                        }
+                    }
+                });
         },
 
         reload: function () {
