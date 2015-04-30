@@ -1,16 +1,16 @@
-define([
-    'js/util',
-    'js/api',
-    'jquery',
-    'vitmalina/w2ui'
-], function(Util, API, jQuery) {
-    API = API.default;
+import Util from 'js/util'
+import API from 'js/api'
+import jQuery from 'jquery'
+import _ from 'vitmalina/w2ui'
 
-    function Editor(pelicide, options) {
+export default class Editor {
+    constructor(pelicide, options) {
+        Object.assign(this, w2utils.event);
+
         options = jQuery.extend({editors: []}, options);
 
         this.pelicide = pelicide;
-        this.handlers = [];
+        this._handlers = [];
         this._box = null;
         this._dirty = false;
         this.editors = {};
@@ -18,268 +18,252 @@ define([
         this._currentFile = null;
         this._currentMode = null;
 
-        for (i = 0; i < options.editors.length; ++i) {
-            var editor = options.editors[i];
-            for (var j = 0; j < editor.formats.length; ++j) {
-                this.editors[editor.formats[j]] = editor;
+        for (let editor of options.editors.values()) {
+            for (let format of editor.formats.values()) {
+                this.editors[format] = editor;
             }
         }
     }
 
-    Editor.prototype = {
-        layout: function () {
-            var self = this;
-
-            return {
-                toolbar: {
-                    items: [
-                        {
-                            type: 'button',
-                            id: 'save',
-                            disabled: true,
-                            icon: 'fa fa-save',
-                            hint: 'Save',
-                            onClick: function () { self.save().catch(Util.alert); }
-                        },
-                        {
-                            type: 'button',
-                            id: 'rebuild_page',
-                            icon: 'fa fa-wrench',
-                            hint: 'Rebuild page',
-                            disabled: true,
-                            onClick: function () { self.rebuild().catch(Util.alert); }
-                        }
-                    ]
-                }
-            };
-        },
-
-        render: function (box, toolbar) {
-            var self = this;
-
-            this._box = box;
-            this._toolbar = toolbar;
-
-            this.pelicide.project.on('update', function (event) {
-                if (self._currentFile === null)
-                    return;
-
-                var file = event.target,
-                    path = file.dir.concat([file.name]).join('/');
-
-                if (self._currentFile.dir.concat([self._currentFile.name]).join('/') == path) {
-                    self._currentFile = file;
-                }
-            });
-        },
-
-        getEditor: function (filename) {
-            var dot = filename.lastIndexOf('.'),
-                mode = '';
-
-            /* >0 because of dotfiles */
-            if (dot > 0) {
-                mode = filename.substring(dot + 1);
-            } else {
-                mode = '';
+    layout() {
+        return {
+            toolbar: {
+                items: [
+                    {
+                        type: 'button',
+                        id: 'save',
+                        disabled: true,
+                        icon: 'fa fa-save',
+                        hint: 'Save',
+                        onClick: () => this.save().catch(Util.alert)
+                    },
+                    {
+                        type: 'button',
+                        id: 'rebuild_page',
+                        icon: 'fa fa-wrench',
+                        hint: 'Rebuild page',
+                        disabled: true,
+                        onClick: () => this.rebuild().catch(Util.alert)
+                    }
+                ]
             }
+        };
+    }
 
-            var editor = this.editors[mode];
-            return editor ? { mode: mode,  class: editor } : null;
-        },
+    render(box, toolbar) {
+        this._box = box;
+        this._toolbar = toolbar;
 
-        change: function() {
-            this.dirty(true);
-            this.trigger({ type: 'change', phase: 'after', target: this });
-        },
-
-        dirty: function (dirty) {
-            if(arguments.length === 0)
-                return this._dirty;
-
-            if(dirty == this._dirty)
+        this.pelicide.project.on('update', (event) => {
+            if (this._currentFile === null)
                 return;
 
-            var eventData = { type: 'dirty', phase: 'before', target: this, dirty: dirty };
+            var file = event.target,
+                path = file.dir.concat([file.name]).join('/');
 
-            this.trigger(eventData);
-            if (eventData.isCancelled === true) return;
-
-            this._dirty = dirty;
-            this._toolbar.set('save', {disabled: !dirty});
-
-            this.trigger(jQuery.extend(eventData, { phase: 'after' }))
-        },
-
-        state: function () {
-            if (this._editor === null)
-                return null;
-
-            return {
-                file: this._currentFile,
-                mode: this._currentMode,
-                content: this._editor.content()
-            };
-        },
-
-        open: function (file) {
-            if (arguments.length == 2) {
-                file = this.pelicide.project.getFile(arguments[0], arguments[1]);
+            if (this._currentFile.dir.concat([self._currentFile.name]).join('/') == path) {
+                this._currentFile = file;
             }
+        });
+    }
 
-            if (!file) {
-                return Promise.reject(new Error('File not found.'));
-            }
+    getEditor(filename) {
+        var dot = filename.lastIndexOf('.'),
+            mode = '';
 
-            var self = this,
-                editor = this.getEditor(file.name);
+        /* >0 because of dotfiles */
+        if (dot > 0) {
+            mode = filename.substring(dot + 1);
+        } else {
+            mode = '';
+        }
 
-            if (!editor) {
-                return Promise.reject(new Error('No editor is registered for this file type.'));
-            }
+        var editor = this.editors[mode];
+        return editor ? { mode: mode,  class: editor } : null;
+    }
 
-            var eventData = { type: 'open', phase: 'before', target: this, file: file };
-            this.trigger(eventData);
-            if (eventData.isCancelled === true) {
-                return Promise.reject();
-            }
+    change() {
+        this.dirty(true);
+        this.trigger({ type: 'change', phase: 'after', target: this });
+    }
 
-            return this.close()
-                .then(function() { return API.get_content(file.dir, file.name) })
-                .then(function (content) {
-                    self._currentFile = file;
-                    self._currentMode = editor.mode;
-                    self._editor = new editor.class(self, self._box, content);
+    dirty(dirty) {
+        if(arguments.length === 0)
+            return this._dirty;
 
-                    self._toolbar.enable('rebuild_page');
+        if(dirty == this._dirty)
+            return;
 
-                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
-                })
-                .catch(function (e) {
-                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
-                    return Promise.reject(e);
-                });
-        },
+        var eventData = { type: 'dirty', phase: 'before', target: this, dirty: dirty };
 
-        save: function () {
-            var self = this;
+        this.trigger(eventData);
+        if (eventData.isCancelled === true) return;
 
-            if(this._editor === null) {
-                return Promise.resolve();
-            }
+        this._dirty = dirty;
+        this._toolbar.set('save', {disabled: !dirty});
 
-            var eventData = {type: 'save', phase: 'before', target: self, file: self._currentFile};
-            this.trigger(eventData);
-            if (eventData.isCancelled) {
-                return Promise.reject();
-            }
+        this.trigger(jQuery.extend(eventData, { phase: 'after' }))
+    }
 
-            return API.set_content(self._currentFile.dir, self._currentFile.name, self._editor.content())
-                .then(function () {
-                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
-                    self.dirty(false);
-                }, function (e) {
-                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
-                    return Promise.reject(e);
-                });
-        },
+    state() {
+        return (this._editor === null) ? null : {
+            file: this._currentFile,
+            mode: this._currentMode,
+            content: this._editor.content()
+        };
+    }
 
-        close: function() {
-            var self = this;
+    open(file) {
+        if (arguments.length == 2) {
+            file = this.pelicide.project.getFile(arguments[0], arguments[1]);
+        }
 
-            if (this._editor === null) {
-                return Promise.resolve();
-            }
+        if (!file) {
+            return Promise.reject(new Error('File not found.'));
+        }
 
-            var eventData = { type: 'close', phase: 'before', target: this, file: this._currentFile };
-            this.trigger(eventData);
-            if (eventData.isCancelled === true) {
-                return Promise.reject();
-            }
+        var editor = this.getEditor(file.name);
 
-            function _close() {
-                self._toolbar.disable('rebuild_page');
-                self._editor.close();
-                self._editor = null;
-                self._currentFile = null;
-                self._currentMode = null;
-                jQuery(self._box).empty();
-                self.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
-            }
+        if (!editor) {
+            return Promise.reject(new Error('No editor is registered for this file type.'));
+        }
 
-            if (!this.dirty()) {
-                _close();
-                return Promise.resolve();
-            }
+        var eventData = { type: 'open', phase: 'before', target: this, file: file };
+        this.trigger(eventData);
+        if (eventData.isCancelled === true) {
+            return Promise.reject();
+        }
 
-            return new Promise(function (resolve, reject) {
-                jQuery().w2popup({
-                    title: 'Confirm close',
-                    width: 450,
-                    height: 220,
-                    body: '<div class="w2ui-centered w2ui-confirm-msg" style="font-size: 13px;">' +
-                          '<p>The content of the currently opened file has changed.</p>' +
-                          '<p>Are you sure you want to close this file?</p></div>',
-                    buttons: '<button value="save" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Save</button>' +
-                             '<button value="discard" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Discard</button>' +
-                             '<button value="cancel" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Cancel</button>',
+        return this.close()
+            .then(() => API.get_content(file.dir, file.name))
+            .then(content => {
+                this._currentFile = file;
+                this._currentMode = editor.mode;
+                this._editor = new editor.class(this, this._box, content);
 
-                    onOpen: function (event) {
-                        event.onComplete = function() {
-                            $('.px-confirm-close').on('click', function(event) {
-                                w2popup.close();
+                this._toolbar.enable('rebuild_page');
 
-                                var result = $(event.target).val();
-                                if(result == 'save') {
-                                    resolve(self.save().then(_close));
-                                } else if(result == 'discard') {
-                                    self.dirty(false);
+                this.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+            })
+            .catch(e => {
+                this.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                return Promise.reject(e);
+            });
+    }
+
+    save() {
+        if(this._editor === null) {
+            return Promise.resolve();
+        }
+
+        var eventData = {type: 'save', phase: 'before', target: this, file: this._currentFile};
+        this.trigger(eventData);
+        if (eventData.isCancelled) {
+            return Promise.reject();
+        }
+
+        return API.set_content(this._currentFile.dir, this._currentFile.name, this._editor.content())
+            .then(() => {
+                this.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+                this.dirty(false);
+            }, e => {
+                this.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                return Promise.reject(e);
+            });
+    }
+
+    close() {
+        if (this._editor === null) {
+            return Promise.resolve();
+        }
+
+        var eventData = { type: 'close', phase: 'before', target: this, file: this._currentFile };
+        this.trigger(eventData);
+        if (eventData.isCancelled === true) {
+            return Promise.reject();
+        }
+
+        var _close = () => {
+            this._toolbar.disable('rebuild_page');
+            this._editor.close();
+            this._editor = null;
+            this._currentFile = null;
+            this._currentMode = null;
+            jQuery(this._box).empty();
+            this.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+        };
+
+        if (!this.dirty()) {
+            _close();
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            jQuery().w2popup({
+                title: 'Confirm close',
+                width: 450,
+                height: 220,
+                body: '<div class="w2ui-centered w2ui-confirm-msg" style="font-size: 13px;">' +
+                      '<p>The content of the currently opened file has changed.</p>' +
+                      '<p>Are you sure you want to close this file?</p></div>',
+                buttons: '<button value="save" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Save</button>' +
+                         '<button value="discard" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Discard</button>' +
+                         '<button value="cancel" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Cancel</button>',
+
+                onOpen: (event) => {
+                    event.onComplete = () => {
+                        $('.px-confirm-close').on('click', (event) => {
+                            w2popup.close();
+
+                            var result = $(event.target).val();
+                            switch (result) {
+                                case 'save':
+                                    resolve(this.save().then(_close));
+                                    break;
+                                case 'discard':
+                                    this.dirty(false);
                                     _close();
                                     resolve();
-                                } else {
-                                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: false }));
+                                    break;
+                                default:
+                                    this.trigger(jQuery.extend(eventData, { phase: 'after', success: false }));
                                     reject();
-                                }
-                            });
-                        };
-                    }
-                });
-            });
-        },
-
-        rebuild: function () {
-            var self = this,
-                state = this.state();
-
-            this._toolbar.disable('rebuild_page');
-
-            if (!state)
-                return Promise.reject(new Error('No open file.'));
-
-            var eventData = {
-                type: 'rebuild',
-                phase: 'before',
-                target: this,
-                onComplete: function() {
-                    self._toolbar.set('rebuild_page', {disabled: self._editor === null});
+                            }
+                        });
+                    };
                 }
-            };
-            this.trigger(eventData);
-            if (eventData.isCancelled === true) {
-                eventData.onComplete();
-                return Promise.reject();
+            });
+        });
+    }
+
+    rebuild() {
+        var state = this.state();
+
+        this._toolbar.disable('rebuild_page');
+
+        if (!state)
+            return Promise.reject(new Error('No open file.'));
+
+        var eventData = {
+            type: 'rebuild',
+            phase: 'before',
+            target: this,
+            onComplete: () => {
+                this._toolbar.set('rebuild_page', {disabled: this._editor === null});
             }
-
-            return this.save()
-                .then(function () { return API.build([[state.file.dir, state.file.name]]); })
-                .then(function () { self.trigger(jQuery.extend(eventData, { phase: 'after', success: true })); })
-                .catch(function (e) {
-                    self.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
-                    return Promise.reject(e);
-                });
+        };
+        this.trigger(eventData);
+        if (eventData.isCancelled === true) {
+            eventData.onComplete();
+            return Promise.reject();
         }
-    };
-    jQuery.extend(Editor.prototype, w2utils.event);
 
-    return Editor;
-});
+        return this.save()
+            .then(() => { return API.build([[state.file.dir, state.file.name]]); })
+            .then(() => { this.trigger(jQuery.extend(eventData, { phase: 'after', success: true })); })
+            .catch(e => {
+                this.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                return Promise.reject(e);
+            });
+    }
+}
