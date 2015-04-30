@@ -1,8 +1,6 @@
 define([
-    'jquery',
-    'js/util',
     'components/markdown/lib/markdown'
-], function(jQuery, Util) {
+], function() {
 
     var NA_CALLS = ['restart', 'get_settings', 'set', 'list_extensions', 'build'],
         CONTENT = [
