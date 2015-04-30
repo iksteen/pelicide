@@ -1,8 +1,8 @@
 import jQuery from 'jquery';
-import {CMEditor} from 'js/cm-editor';
-import _ from 'codemirror/mode/rst/rst';
+import CMEditor from 'js/cm-editor';
+import 'codemirror/mode/rst/rst';
 
-export class RSTEditor extends CMEditor {
+export default class RSTEditor extends CMEditor {
     constructor(pelicide, parent_el, content) {
         super(pelicide, parent_el, content);
     }

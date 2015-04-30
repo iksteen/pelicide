@@ -1,7 +1,7 @@
-import {CMEditor} from 'js/cm-editor';
-import _ from 'codemirror/mode/markdown/markdown';
+import CMEditor from 'js/cm-editor';
+import 'codemirror/mode/markdown/markdown';
 
-export class MDEditor extends CMEditor {
+export default class MDEditor extends CMEditor {
     constructor(pelicide, parent_el, content) {
         super(pelicide, parent_el, content);
     }

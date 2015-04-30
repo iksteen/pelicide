@@ -1,6 +1,6 @@
 import CodeMirror from 'codemirror/lib/codemirror';
 
-export class CMEditor {
+export default class CMEditor {
     constructor(editor, parent_el, content) {
         this._codeMirror = CodeMirror(
             parent_el,
