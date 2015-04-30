@@ -1,7 +1,8 @@
 import Util from 'js/util'
 import API from 'js/api'
 import jQuery from 'jquery'
-import _ from 'phstc/jquery-dateFormat'
+import 'phstc/jquery-dateFormat'
+import 'vitmalina/w2ui'
 
 function getPathFromRecord(record) {
     return {
@@ -10,7 +11,7 @@ function getPathFromRecord(record) {
     }
 }
 
-export class ArticleContent {
+export default class ArticleContent {
     constructor(project) {
         this.project = project;
         this._draftNodeId = null;
