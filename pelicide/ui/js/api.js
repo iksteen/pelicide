@@ -1,43 +1,37 @@
-define([
-    'jquery',
-    'datagraph/jquery-jsonrpc'
-], function(jQuery) {
-    var API_CALLS = ['restart', 'get_settings', 'get', 'set', 'list_extensions', 'build', 'render',
-                     'list_content', 'get_content', 'set_content'];
+import jQuery from 'jquery'
+import _ from 'datagraph/jquery-jsonrpc'
 
-    function API() {
-        var self = this;
+var API_CALLS = ['restart', 'get_settings', 'get', 'set', 'list_extensions', 'build', 'render',
+                 'list_content', 'get_content', 'set_content'];
 
+class API {
+    constructor() {
         this._endpoint = null;
 
-        jQuery.each(API_CALLS, function (i, e) {
-            self[e] = function () {
-                return self._request(e, jQuery.makeArray(arguments));
-            }
-        });
+        for(let e of API_CALLS.values()) {
+            this[e] = (...params) => this._request(e, params);
+        }
     }
 
-    API.prototype = {
-        _request: function (method, params) {
-            if(this._endpoint === null) {
-                return Promise.reject(new Error('No API endpoint configured.'));
-            }
+    configure(endpoint) {
+        this._endpoint = endpoint;
+    }
 
-            var endPoint = this._endpoint;
-            return new Promise(function(resolve, reject) {
-                jQuery.jsonRPC.request(method, {
-                    endPoint: endPoint,
-                    params: params,
-                    success: function (r) { resolve(r.result); },
-                    error: function (e) { reject(new Error(e.error.message)); }
-                })
-            });
-        },
-
-        configure: function (endpoint) {
-            this._endpoint = endpoint;
+    _request(method, params) {
+        if(this._endpoint === null) {
+            return Promise.reject(new Error('No API endpoint configured.'));
         }
-    };
 
-    return new API();
-});
+        return new Promise((resolve, reject) => {
+            jQuery.jsonRPC.request(method, {
+                endPoint: this._endpoint,
+                params: params,
+                success: r => resolve(r.result),
+                error: e => reject(new Error(e.error.message))
+            })
+        });
+    }
+}
+
+var api = new API();
+export default api;

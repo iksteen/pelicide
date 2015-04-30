@@ -4,6 +4,7 @@ define([
     'jquery',
     'vitmalina/w2ui'
 ], function(Util, API, jQuery) {
+    API = API.default;
 
     function Editor(pelicide, options) {
         options = jQuery.extend({editors: []}, options);

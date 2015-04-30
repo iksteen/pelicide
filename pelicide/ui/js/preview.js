@@ -4,6 +4,7 @@ define([
     'jquery',
     'vitmalina/w2ui'
 ], function(Util, API, jQuery) {
+    API = API.default;
 
     function Preview(pelicide, options) {
         options = jQuery.extend({previewDelay: 50}, options);

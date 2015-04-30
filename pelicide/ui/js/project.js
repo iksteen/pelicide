@@ -4,6 +4,8 @@ define([
     'jquery',
     'vitmalina/w2ui'
 ], function(Util, API, jQuery) {
+    API = API.default;
+
     function Project(pelicide, options) {
         options = jQuery.extend({sitename: '', contentTypes: []}, options);
 
