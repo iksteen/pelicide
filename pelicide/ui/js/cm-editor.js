@@ -1,8 +1,7 @@
-define([
-    'codemirror/lib/codemirror'
-], function(CodeMirror) {
-    function CMEditor(editor, parent_el, content) {
-        /* Set up CodeMirror */
+import CodeMirror from 'codemirror/lib/codemirror';
+
+export class CMEditor {
+    constructor(editor, parent_el, content) {
         this._codeMirror = CodeMirror(
             parent_el,
             {
@@ -12,12 +11,13 @@ define([
                 theme: 'pelicide'
             }
         );
-        if(CodeMirror.autoLoadMode !== undefined) {
+
+        if (CodeMirror.autoLoadMode !== undefined) {
             CodeMirror.autoLoadMode(this._codeMirror, this.mode);
         }
 
         // Notify editor component of change.
-        this._codeMirror.on('change', function() {
+        this._codeMirror.on('change', function () {
             editor.change();
         });
 
@@ -28,19 +28,15 @@ define([
         this._codeMirror.focus();
     }
 
-    CMEditor.prototype = {
-        mode: 'text/plain',
+    close() {
+        this._codeMirror = null;
+    }
 
-        close: function() {
-            this._codeMirror = null;
-        },
+    content() {
+        return this._codeMirror.getValue();
+    }
 
-        content: function() {
-            return this._codeMirror.getValue();
-        }
-    };
-
-    CMEditor.formats = [];
-
-    return CMEditor;
-});
+    get mode() { return 'text/plain'; }
+    static get formats() { return []; }
+    static get templates() { return {}; }
+}

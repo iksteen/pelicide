@@ -1,33 +1,27 @@
-define([
-    'jquery',
-    'js/cm-editor',
-    'codemirror/mode/markdown/markdown'
-], function(jQuery, CMEditor) {
-    function MDEditor(pelicide, parent_el, content) {
-        CMEditor.call(this, pelicide, parent_el, content);
+import {CMEditor} from 'js/cm-editor';
+import _ from 'codemirror/mode/markdown/markdown';
+
+export class MDEditor extends CMEditor {
+    constructor(pelicide, parent_el, content) {
+        super(pelicide, parent_el, content);
     }
 
-    MDEditor.prototype = jQuery.extend(
-        {},
-        CMEditor.prototype,
-        {
-            constructor: MDEditor,
-            mode: 'markdown'
+    get mode() { return 'markdown'; }
+
+    static get formats() {
+        return ['md', 'markdown', 'mdown'];
+    }
+
+    static get templates() {
+        return {
+            article: function (record) {
+                return 'Title: ' + record.title + '\n' +
+                    'Date: ' + record.date + '\n' +
+                    'Status: ' + record.status.id + '\n' +
+                    'Tags:\n' +
+                    (record.category ? ('Category: ' + record.category + '\n') : '') +
+                    'Slug: ' + record.slug + '\n\n';
+            }
         }
-    );
-
-    MDEditor.formats = ['md', 'markdown', 'mdown'];
-    MDEditor.templates = {
-        article: function (record) {
-            return 'Title: ' + record.title + '\n' +
-                'Date: ' + record.date + '\n' +
-                'Status: ' + record.status.id + '\n' +
-                'Tags:\n' +
-                (record.category ? ('Category: ' + record.category + '\n') : '') +
-                'Slug: ' + record.slug + '\n\n';
-        }
-    };
-
-
-    return MDEditor;
-});
+    }
+}
