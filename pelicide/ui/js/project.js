@@ -20,7 +20,6 @@ define([
 
         this._id = 0;
         this._paths = {};
-        this._content = {};
         this._files = {};
 
         this._otherContentId = null;
@@ -78,7 +77,7 @@ define([
                     }
                 ],
                 onDblClick: function (event) {
-                    var file = self._content[event.target];
+                    var file = self._sidebar.get(event.target).file;
                     if (file !== undefined) {
                         self.pelicide.editor.open(file).catch(Util.alert);
                     }
@@ -123,7 +122,6 @@ define([
                     }
                 }
             };
-            this._content = {};
             this._files = {};
 
             var contentChildren=this._sidebar.find({
@@ -221,7 +219,7 @@ define([
 
             for (var i = 0; i < parent.nodes.length; ++i) {
                 var sibling = parent.nodes[i];
-                if (this._content.hasOwnProperty(sibling.id) && sibling.text.localeCompare(file.name) > 0) {
+                if (sibling.file !== undefined && sibling.text.localeCompare(file.name) > 0) {
                     before = sibling.id;
                     break;
                 }
@@ -231,10 +229,10 @@ define([
                 id: id,
                 text: file.name,
                 icon: 'fa fa-file-text-o',
+                file: file,
                 disabled: !this.pelicide.editor.getEditor(file.name)
             });
 
-            this._content[id] = file;
             this._files[file.dir.concat([file.name]).join('/')] = id;
 
             this.trigger({ type: 'update', target: file });
@@ -247,12 +245,12 @@ define([
                 id = this._files[path];
 
             this._sidebar.remove(id);
-            delete this._content[id];
             delete this._files[path];
         },
 
         getFile: function(dir, filename) {
-            return this._content[this._files[dir.concat([filename]).join('/')]];
+            var node = this._sidebar.get(this._files[dir.concat([filename]).join('/')]);
+            return node ? node.file : null;
         },
 
         pathForFile: function(file) {
@@ -267,8 +265,9 @@ define([
 
         categories: function () {
             var categories = [];
-            jQuery.each(this._content, function (k, file) {
-                if (jQuery.inArray(file.meta.category, categories) === -1) {
+            jQuery.each(this._sidebar.find({}), function (k, node) {
+                var file = node.file;
+                if (file !== undefined && jQuery.inArray(file.meta.category, categories) === -1) {
                     categories.push(file.meta.category);
                 }
             });

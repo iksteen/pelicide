@@ -51,7 +51,7 @@ define([
                 },
                 onValidate: function (event) {
                     var path = getPathFromRecord(this.record);
-                    if (self.project.getFile(path.path, path.name) !== undefined) {
+                    if (self.project.getFile(path.path, path.name)) {
                         event.errors.push({
                             field: this.get('title'),
                             error: 'File already exists'
