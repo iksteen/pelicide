@@ -2,7 +2,7 @@ import jQuery from 'jquery';
 import API from 'js/api';
 import Pelicide from 'js/pelicide';
 import Util from 'js/util';
-import ArticleContent from 'js/article-content';
+import {ArticleContent} from 'js/article-content';
 import {MDEditor} from 'js/md-editor';
 import {RSTEditor} from 'js/rst-editor';
 
