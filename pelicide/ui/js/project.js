@@ -278,6 +278,7 @@ define([
             var node = this._files[file.dir.concat([file.name]).join('/')];
             this._sidebar.expandParents(node);
             this._sidebar.select(node);
+            this._sidebar.scrollIntoView(node);
         },
 
         update: function (file) {
