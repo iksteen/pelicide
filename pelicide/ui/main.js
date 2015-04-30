@@ -1,31 +1,12 @@
-require.config({
-    deps: ['components/es6-promise/promise.min'],
-    paths: {
-        // Uncomment the next line to activate demo mode.
-        //'js/api': 'js/demo-mode',
-        jquery: 'components/jquery/dist/jquery.min',
-        jquery_jsonrpc: 'components/jquery-jsonrpc/jquery.jsonrpc',
-        jquery_dateFormat: 'components/jquery-dateFormat/dist/jquery-dateFormat.min',
-        w2ui: 'components/w2ui/w2ui-1.4.2.min',
-        cm: 'components/codemirror',
-        unorm: 'components/unorm/lib/unorm'
-    },
-    shim: {
-        jquery_jsonrpc: ['jquery'],
-        jquery_dateFormat: ['jquery'],
-        w2ui: ['jquery']
-    }
-});
-
-require([
-    'jquery',
-    'js/pelicide',
-    'js/md-editor',
-    'js/rst-editor',
-    'js/article-content',
-    'js/api',
-    'js/util'
-], function(jQuery, Pelicide, MDEditor, RSTEditor, ArticleContent, API, Util) {
+Promise.all([
+    System.import('jquery'),
+    System.import('js/pelicide'),
+    System.import('js/md-editor'),
+    System.import('js/rst-editor'),
+    System.import('js/article-content'),
+    System.import('js/api'),
+    System.import('js/util')
+]).then(function (m) { (function(jQuery, Pelicide, MDEditor, RSTEditor, ArticleContent, API, Util) {
     // Set up API endpoint.
     API.configure('/rpc');
 
@@ -50,4 +31,4 @@ require([
             //setTimeout(function () { pelicide.editor.open([], 'welcome-to-pelicide.md'); }, 0);
         }).catch(Util.alert);
     });
-});
+}).apply(this, m); });

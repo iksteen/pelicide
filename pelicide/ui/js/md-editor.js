@@ -1,7 +1,7 @@
 define([
     'jquery',
     'js/cm-editor',
-    'cm/mode/markdown/markdown'
+    'codemirror/mode/markdown/markdown'
 ], function(jQuery, CMEditor) {
     function MDEditor(pelicide, parent_el, content) {
         CMEditor.call(this, pelicide, parent_el, content);

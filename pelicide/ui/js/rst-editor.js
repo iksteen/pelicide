@@ -1,7 +1,7 @@
 define([
     'jquery',
     'js/cm-editor',
-    'cm/mode/rst/rst'
+    'codemirror/mode/rst/rst'
 ], function(jQuery, CMEditor) {
     function RSTEditor(pelicide, parent_el, content) {
         CMEditor.call(this, pelicide, parent_el, content);

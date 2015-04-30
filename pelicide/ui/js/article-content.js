@@ -2,7 +2,7 @@ define([
     'js/util',
     'js/api',
     'jquery',
-    'jquery_dateFormat'
+    'phstc/jquery-dateFormat'
 ], function(Util, API, jQuery) {
 
     function ArticleContent(project) {

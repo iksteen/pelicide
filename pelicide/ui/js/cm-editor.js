@@ -1,5 +1,5 @@
 define([
-    'cm/lib/codemirror'
+    'codemirror/lib/codemirror'
 ], function(CodeMirror) {
     function CMEditor(editor, parent_el, content) {
         /* Set up CodeMirror */

@@ -1,0 +1,46 @@
+{
+  "jspm": {
+    "directories": {
+      "baseURL": "pelicide/ui"
+    },
+    "dependencies": {
+      "codemirror": "npm:codemirror@^5.2.0",
+      "datagraph/jquery-jsonrpc": "github:datagraph/jquery-jsonrpc@^0.1.1",
+      "font-awesome": "npm:font-awesome@^4.3.0",
+      "jquery": "github:components/jquery@^2.1.3",
+      "phstc/jquery-dateFormat": "github:phstc/jquery-dateFormat@^1.0.2",
+      "unorm": "npm:unorm@^1.3.3",
+      "vitmalina/w2ui": "github:vitmalina/w2ui@^1.4.2"
+    },
+    "devDependencies": {
+      "traceur": "github:jmcriffey/bower-traceur@0.0.88",
+      "traceur-runtime": "github:jmcriffey/bower-traceur-runtime@0.0.88"
+    },
+    "overrides": {
+      "github:vitmalina/w2ui@1.4.2": {
+        "main": "dist/w2ui",
+        "shim": {
+          "dist/w2ui": {
+            "deps": [
+              "jquery"
+            ]
+          }
+        }
+      },
+      "github:datagraph/jquery-jsonrpc@0.1.1": {
+        "shim": {
+          "jquery.jsonrpc": [
+            "jquery"
+          ]
+        }
+      },
+      "github:phstc/jquery-dateFormat@1.0.2": {
+        "shim": {
+          "dist/jquery-dateFormat": [
+            "jquery"
+          ]
+        }
+      }
+    }
+  }
+}

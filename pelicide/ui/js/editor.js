@@ -2,7 +2,7 @@ define([
     'js/util',
     'js/api',
     'jquery',
-    'w2ui'
+    'vitmalina/w2ui'
 ], function(Util, API, jQuery) {
 
     function Editor(pelicide, options) {

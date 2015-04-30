@@ -2,4 +2,4 @@
 *.pyc
 dist
 *.egg-info
-pelicide/ui/components
+pelicide/ui/jspm_packages

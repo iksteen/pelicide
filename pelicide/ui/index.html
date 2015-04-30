@@ -4,7 +4,11 @@
     <title>Pelicide</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <link rel="stylesheet" type="text/css" href="main.css" />
-    <script async data-main="main.js" type="text/javascript" src="components/requirejs/require.js"></script>
+    <script type="text/javascript" src="jspm_packages/system.js"></script>
+    <script type="text/javascript" src="config.js"></script>
+    <script type="text/javascript">
+        System.import('main');
+    </script>
 </head>
 <body>
 	<div id="main_layout">

@@ -1,7 +1,7 @@
 define([
     'jquery',
     'unorm',
-    'w2ui'
+    'vitmalina/w2ui'
 ], function(jQuery, unorm) {
     var combining = /[\u0300-\u036F]/g;
     var util = {

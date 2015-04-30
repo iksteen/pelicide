@@ -1,6 +1,6 @@
 define([
     'jquery',
-    'jquery_jsonrpc'
+    'datagraph/jquery-jsonrpc'
 ], function(jQuery) {
     var API_CALLS = ['restart', 'get_settings', 'get', 'set', 'list_extensions', 'build', 'render',
                      'list_content', 'get_content', 'set_content'];

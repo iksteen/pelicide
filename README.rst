@@ -14,11 +14,11 @@ Development
 -----------
 
 However, pelicide hasn't been released to pypi yet. So, first clone the
-repository. Then use ``bower`` to install the required web components::
+repository. Then use ``jspm`` to install the required web components::
 
     $ git clone git@github.com:iksteen/pelicide.git
     $ cd pelicide
-    $ bower install
+    $ jspm install
     $ python setup.py develop
 
 Running pelicide

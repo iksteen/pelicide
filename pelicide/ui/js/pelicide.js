@@ -4,7 +4,7 @@ define([
     'js/editor',
     'js/preview',
     'jquery',
-    'w2ui'
+    'vitmalina/w2ui'
 ], function(Util, Project, Editor, Preview, jQuery) {
 
     function Pelicide(options) {
