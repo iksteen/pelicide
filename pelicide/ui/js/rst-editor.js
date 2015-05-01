@@ -15,15 +15,17 @@ export default class RSTEditor extends CMEditor {
 
     static get templates() {
         return {
-            article: function (record) {
-                var titleLen = record.title.length;
-                return record.title + '\n' +
-                    (new Array(titleLen + 1).join('#')) + '\n\n' +
-                    ':date: ' + record.date + '\n' +
-                    ':status: ' + record.status.id + '\n' +
-                    ':tags: \n' +
-                    (record.category ? (':category: ' + record.category + '\n') : '') +
-                    ':slug: ' + record.slug + '\n\n';
+            article(record) {
+                return `${record.title}
+${'#'.repeat(record.title.length)}
+
+:date: ${record.date}
+:status: ${record.status.id}
+:tags: `+ (record.category ? `
+:category: ${record.category}` : '') + `
+:slug: ${record.slug}
+
+`;
             }
         }
     }

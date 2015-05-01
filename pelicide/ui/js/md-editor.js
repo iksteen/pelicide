@@ -14,13 +14,15 @@ export default class MDEditor extends CMEditor {
 
     static get templates() {
         return {
-            article: function (record) {
-                return 'Title: ' + record.title + '\n' +
-                    'Date: ' + record.date + '\n' +
-                    'Status: ' + record.status.id + '\n' +
-                    'Tags:\n' +
-                    (record.category ? ('Category: ' + record.category + '\n') : '') +
-                    'Slug: ' + record.slug + '\n\n';
+            article(record) {
+                return `Title: ${record.title}
+Date: ${record.date}
+Status: ${record.status.id}
+Tags:`  + (record.category ? `
+Category: ${record.category}` : '') + `
+Slug: ${record.slug}
+
+`;
             }
         }
     }
