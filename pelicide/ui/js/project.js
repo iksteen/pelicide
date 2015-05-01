@@ -173,7 +173,7 @@ export default class Project {
         var id = this._newId(),
             items = this._toolbar.get('create').items;
 
-        items.push(jQuery.extend({}, item, { id: id }));
+        items.push(Object.assign({}, item, { id: id }));
         this._toolbar.set('create', {
             disabled: false,
             items: items
@@ -368,9 +368,9 @@ export default class Project {
         return this.pelicide.editor.save()
             .then(() => { return API.build(); })
             .then(() => {
-                this.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+                this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
             }, e => {
-                this.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
                 return Promise.reject(e);
             });
     }

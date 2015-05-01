@@ -7,7 +7,7 @@ export default class Editor {
     constructor(pelicide, options) {
         Object.assign(this, w2utils.event);
 
-        options = jQuery.extend({editors: []}, options);
+        options = Object.assign({editors: []}, options);
 
         this.pelicide = pelicide;
         this._handlers = [];
@@ -102,7 +102,7 @@ export default class Editor {
         this._dirty = dirty;
         this._toolbar.set('save', {disabled: !dirty});
 
-        this.trigger(jQuery.extend(eventData, { phase: 'after' }))
+        this.trigger(Object.assign(eventData, { phase: 'after' }))
     }
 
     state() {
@@ -143,10 +143,10 @@ export default class Editor {
 
                 this._toolbar.enable('rebuild_page');
 
-                this.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+                this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
             })
             .catch(e => {
-                this.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
                 return Promise.reject(e);
             });
     }
@@ -164,10 +164,10 @@ export default class Editor {
 
         return API.set_content(this._currentFile.dir, this._currentFile.name, this._editor.content())
             .then(() => {
-                this.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+                this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
                 this.dirty(false);
             }, e => {
-                this.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
                 return Promise.reject(e);
             });
     }
@@ -190,7 +190,7 @@ export default class Editor {
             this._currentFile = null;
             this._currentMode = null;
             jQuery(this._box).empty();
-            this.trigger(jQuery.extend(eventData, { phase: 'after', success: true }));
+            this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
         };
 
         if (!this.dirty()) {
@@ -226,7 +226,7 @@ export default class Editor {
                                     resolve();
                                     break;
                                 default:
-                                    this.trigger(jQuery.extend(eventData, { phase: 'after', success: false }));
+                                    this.trigger(Object.assign(eventData, { phase: 'after', success: false }));
                                     reject();
                             }
                         });
@@ -260,9 +260,9 @@ export default class Editor {
 
         return this.save()
             .then(() => { return API.build([[state.file.dir, state.file.name]]); })
-            .then(() => { this.trigger(jQuery.extend(eventData, { phase: 'after', success: true })); })
+            .then(() => { this.trigger(Object.assign(eventData, { phase: 'after', success: true })); })
             .catch(e => {
-                this.trigger(jQuery.extend(eventData, { phase: 'after', success: false, error: e }));
+                this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
                 return Promise.reject(e);
             });
     }

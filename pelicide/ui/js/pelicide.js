@@ -74,7 +74,7 @@ export default class Pelicide {
         jQuery().w2layout({
             name: 'layout',
             panels: [
-                jQuery.extend({}, projectLayout, { type: 'left', size: 240, resizable: true }),
+                Object.assign({}, projectLayout, { type: 'left', size: 240, resizable: true }),
                 { type: 'main' }
             ]
         });
@@ -82,8 +82,8 @@ export default class Pelicide {
         jQuery().w2layout({
             name: 'editor',
             panels: [
-                jQuery.extend({}, editorLayout, { type: 'main', size: '50%' }),
-                jQuery.extend({}, previewLayout, { type: 'right', size: '50%' })
+                Object.assign({}, editorLayout, { type: 'main', size: '50%' }),
+                Object.assign({}, previewLayout, { type: 'right', size: '50%' })
             ]
         });
         w2ui['layout'].content('main', w2ui['editor']);

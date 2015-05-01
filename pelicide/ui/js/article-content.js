@@ -90,7 +90,7 @@ export default class ArticleContent {
                 })
             })
             .then((record) => {
-                jQuery.extend(record, {
+                Object.assign(record, {
                     slug: slugify(record.title),
                     date: jQuery.format.date(new Date(), 'yyyy-MM-dd HH:mm')
                 });
