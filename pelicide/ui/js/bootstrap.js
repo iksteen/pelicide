@@ -6,7 +6,7 @@ import ArticleContent from 'js/article-content';
 import MDEditor from 'js/md-editor';
 import RSTEditor from 'js/rst-editor';
 
-export function bootstrap() {
+export function bootstrap(demo=false) {
     // Set up API endpoint.
     API.configure('/rpc');
 
@@ -27,8 +27,9 @@ export function bootstrap() {
                 ]
             });
             pelicide.run('#main_layout');
-            // Uncomment the next line to automatically open the demo document.
-            //setTimeout(function () { pelicide.editor.open([], 'welcome-to-pelicide.md'); }, 0);
+
+            if(demo)
+                setTimeout(function () { pelicide.editor.open([], 'welcome-to-pelicide.md'); }, 0);
         }).catch(alert);
     });
 }

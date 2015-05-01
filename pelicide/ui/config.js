@@ -14,6 +14,7 @@ System.config({
     "font-awesome": "npm:font-awesome@4.3.0",
     "jquery": "github:components/jquery@2.1.3",
     "phstc/jquery-dateFormat": "github:phstc/jquery-dateFormat@1.0.2",
+    "showdown": "github:showdownjs/showdown@0.5.0",
     "traceur": "github:jmcriffey/bower-traceur@0.0.88",
     "traceur-runtime": "github:jmcriffey/bower-traceur-runtime@0.0.88",
     "unorm": "npm:unorm@1.3.3",
