@@ -257,15 +257,13 @@ export default class Project {
         return ['content', this._otherContentId].concat(file.dir);
     }
 
-    categories() {
-        var categories = [];
-        jQuery.each(this._sidebar.find({}), function (k, node) {
-            let file = node.file;
-            if (file !== undefined && jQuery.inArray(file.meta.category, categories) === -1) {
-                categories.push(file.meta.category);
-            }
-        });
-        return categories;
+    get categories() {
+        var categories = new Set();
+        for (let node of this._sidebar.find({}).values()) {
+            if (node.file !== undefined)
+                categories.add(node.file.meta.category);
+        }
+        return Array.from(categories);
     }
 
     select(file) {

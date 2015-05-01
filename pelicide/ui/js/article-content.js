@@ -72,7 +72,7 @@ export default class ArticleContent {
     }
 
     create() {
-        var categories = this.project.categories();
+        var categories = this.project.categories;
 
         return API.get('ARTICLE_PATHS')
             .then((article_paths) => {
