@@ -1,4 +1,4 @@
-import Util from 'js/util'
+import {alert} from 'js/util'
 import API from 'js/api'
 import jQuery from 'jquery'
 import _ from 'vitmalina/w2ui'
@@ -35,7 +35,7 @@ export default class Editor {
                         disabled: true,
                         icon: 'fa fa-save',
                         hint: 'Save',
-                        onClick: () => this.save().catch(Util.alert)
+                        onClick: () => this.save().catch(alert)
                     },
                     {
                         type: 'button',
@@ -43,7 +43,7 @@ export default class Editor {
                         icon: 'fa fa-wrench',
                         hint: 'Rebuild page',
                         disabled: true,
-                        onClick: () => this.rebuild().catch(Util.alert)
+                        onClick: () => this.rebuild().catch(alert)
                     }
                 ]
             }

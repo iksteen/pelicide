@@ -1,4 +1,4 @@
-import Util from 'js/util'
+import {alert} from 'js/util'
 import API from 'js/api'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
@@ -37,14 +37,14 @@ export default class Project {
                         id: 'refresh',
                         icon: 'fa fa-refresh',
                         hint: 'Reload project',
-                        onClick: () => this.reload().catch(Util.alert)
+                        onClick: () => this.reload().catch(alert)
                     },
                     {
                         type: 'button',
                         id: 'rebuild',
                         icon: 'fa fa-wrench',
                         hint: 'Rebuild project',
-                        onClick: () => this.rebuild().catch(Util.alert)
+                        onClick: () => this.rebuild().catch(alert)
                     },
                     { type: 'break' },
                     {
@@ -77,7 +77,7 @@ export default class Project {
             onDblClick: event => {
                 var file = this._sidebar.get(event.target).file;
                 if (file !== undefined) {
-                    this.pelicide.editor.open(file).catch(Util.alert);
+                    this.pelicide.editor.open(file).catch(alert);
                 }
             }
         });
@@ -104,7 +104,7 @@ export default class Project {
         /* Update node path after saving a file. */
         this.pelicide.editor.on({type: 'save', execute: 'after'}, e => this.update(e.file));
 
-        this.reload().catch(Util.alert);
+        this.reload().catch(alert);
     }
 
     _newId() {

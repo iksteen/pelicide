@@ -1,4 +1,4 @@
-import Util from 'js/util'
+import {slugify, dialog, alert} from 'js/util'
 import API from 'js/api'
 import jQuery from 'jquery'
 import 'phstc/jquery-dateFormat'
@@ -7,7 +7,7 @@ import 'vitmalina/w2ui'
 function getPathFromRecord(record) {
     return {
         path: record.create_in ? record.create_in.split('/') : [],
-        name: Util.slugify(record.title) + '.' + record.format.id
+        name: slugify(record.title) + '.' + record.format.id
     }
 }
 
@@ -84,14 +84,14 @@ export default class ArticleContent {
                     create_in: article_paths[0]
                 };
 
-                return Util.dialog({
+                return dialog({
                     title: 'Create article',
                     form: this._form
                 })
             })
             .then((record) => {
                 jQuery.extend(record, {
-                    slug: Util.slugify(record.title),
+                    slug: slugify(record.title),
                     date: jQuery.format.date(new Date(), 'yyyy-MM-dd HH:mm')
                 });
 
@@ -103,6 +103,6 @@ export default class ArticleContent {
                     .then(() => this.project.reload())
                     .then(() => this.project.pelicide.editor.open(path.path, path.name));
             })
-            .catch(Util.alert);
+            .catch(alert);
     }
 }
