@@ -4,10 +4,8 @@ import jQuery from 'jquery'
 import _ from 'vitmalina/w2ui'
 
 export default class Editor {
-    constructor(pelicide, options) {
+    constructor(pelicide, {editors = []}) {
         Object.assign(this, w2utils.event);
-
-        options = Object.assign({editors: []}, options);
 
         this.pelicide = pelicide;
         this._handlers = [];
@@ -18,7 +16,7 @@ export default class Editor {
         this._currentFile = null;
         this._currentMode = null;
 
-        for (let editor of options.editors.values()) {
+        for (let editor of editors.values()) {
             for (let format of editor.formats.values()) {
                 this.editors[format] = editor;
             }

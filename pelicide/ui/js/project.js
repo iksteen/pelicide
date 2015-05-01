@@ -5,20 +5,18 @@ import 'vitmalina/w2ui'
 
 
 export default class Project {
-    constructor(pelicide, options) {
+    constructor(pelicide, {sitename = '', contentTypes = []}) {
         Object.assign(this, w2utils.event);
 
-        options = Object.assign({sitename: '', contentTypes: []}, options);
-
         this.pelicide = pelicide;
-        this._sitename = options.sitename;
+        this._sitename = sitename;
         this.handlers = [];
         this._sidebar = null;
         this._box = null;
         this._toolbar = null;
 
         this._contentTypes = [];
-        for (let contentType of options.contentTypes.values())
+        for (let contentType of contentTypes.values())
             this._contentTypes.push(new contentType(this));
 
         this._id = 0;

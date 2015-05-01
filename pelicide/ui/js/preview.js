@@ -4,13 +4,11 @@ import jQuery from 'jquery'
 import 'vitmalina/w2ui'
 
 export default class Preview {
-    constructor(pelicide, options) {
+    constructor(pelicide, {previewDelay: delay = 50}) {
         Object.assign(this, w2utils.event);
 
-        options = Object.assign({previewDelay: 50}, options);
-
         this.pelicide = pelicide;
-        this.delay = options.previewDelay;
+        this.delay = delay;
         this._mode = null;
         this._pending = false;
     }
