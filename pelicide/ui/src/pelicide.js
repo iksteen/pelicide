@@ -1,7 +1,7 @@
-import Util from 'js/util'
-import Project from 'js/project'
-import Editor from 'js/editor'
-import Preview from 'js/preview'
+import Util from 'src/util'
+import Project from 'src/project'
+import Editor from 'src/editor'
+import Preview from 'src/preview'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
 

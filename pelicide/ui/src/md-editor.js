@@ -1,4 +1,4 @@
-import CMEditor from 'js/cm-editor';
+import CMEditor from 'src/cm-editor';
 import 'codemirror/mode/markdown/markdown';
 
 export default class MDEditor extends CMEditor {

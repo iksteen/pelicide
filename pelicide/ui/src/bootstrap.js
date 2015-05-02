@@ -1,10 +1,10 @@
 import jQuery from 'jquery';
-import API from 'js/api';
-import Pelicide from 'js/pelicide';
-import {alert} from 'js/util';
-import ArticleContent from 'js/article-content';
-import MDEditor from 'js/md-editor';
-import RSTEditor from 'js/rst-editor';
+import API from 'src/api';
+import Pelicide from 'src/pelicide';
+import {alert} from 'src/util';
+import ArticleContent from 'src/article-content';
+import MDEditor from 'src/md-editor';
+import RSTEditor from 'src/rst-editor';
 
 export function bootstrap(demo=false) {
     // Set up API endpoint.

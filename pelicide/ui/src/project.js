@@ -1,5 +1,5 @@
-import {alert} from 'js/util'
-import API from 'js/api'
+import {alert} from 'src/util'
+import API from 'src/api'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
 

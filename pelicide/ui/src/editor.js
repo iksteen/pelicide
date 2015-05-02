@@ -1,7 +1,7 @@
-import {alert} from 'js/util'
-import API from 'js/api'
+import {alert} from 'src/util'
+import API from 'src/api'
 import jQuery from 'jquery'
-import _ from 'vitmalina/w2ui'
+import 'vitmalina/w2ui'
 
 export default class Editor {
     constructor(pelicide, {editors = []}) {

@@ -1,5 +1,4 @@
-import jQuery from 'jquery';
-import CMEditor from 'js/cm-editor';
+import CMEditor from 'src/cm-editor';
 import 'codemirror/mode/rst/rst';
 
 export default class RSTEditor extends CMEditor {

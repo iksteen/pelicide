@@ -1,5 +1,5 @@
-import Util from 'js/util'
-import API from 'js/api'
+import Util from 'src/util'
+import API from 'src/api'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
 

@@ -1,5 +1,5 @@
-import {slugify, dialog, alert} from 'js/util'
-import API from 'js/api'
+import {slugify, dialog, alert} from 'src/util'
+import API from 'src/api'
 import jQuery from 'jquery'
 import 'phstc/jquery-dateFormat'
 import 'vitmalina/w2ui'
