@@ -1,4 +1,3 @@
-import Util from 'src/util'
 import API from 'src/api'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'

@@ -1,4 +1,3 @@
-import Util from 'src/util'
 import Project from 'src/project'
 import Editor from 'src/editor'
 import Preview from 'src/preview'
