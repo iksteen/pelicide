@@ -86,8 +86,8 @@ def start_service(root, project, path_prefix=''):
         project['pelicanconf'],
         {
             'OUTPUT_PATH': output_path,
-            'SITEURL': '%s/site' % path_prefix,
-            'RELATIVE_URLS': False,
+            'SITEURL': 'site',
+            'RELATIVE_URLS': True,
         },
     )
 

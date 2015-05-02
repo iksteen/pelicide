@@ -8,7 +8,7 @@ import RSTEditor from 'src/rst-editor';
 
 export function bootstrap(demo=false) {
     // Set up API endpoint.
-    API.configure('/rpc');
+    API.configure('rpc');
 
     // Start Pelicide UI when DOM is ready.
     jQuery(function () {
