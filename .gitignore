@@ -1,5 +1,6 @@
 .idea
 *.pyc
+build
 dist
 *.egg-info
 pelicide/ui/jspm_packages
