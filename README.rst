@@ -6,15 +6,25 @@ An IDE for Pelican sites.
 Installation
 ------------
 
-Installing it should be easy::
+Installing pelicide should be easy::
 
     $ pip install pelicide
 
 Development
 -----------
 
-However, pelicide hasn't been released to pypi yet. So, first clone the
-repository. Then use ``jspm`` to install the required web components::
+However, pelicide hasn't been released to pypi yet. To build a working
+pelicide install, there are some requirements:
+
+- **Python 2.7.** *(unfortunately, not all dependencies are python 3
+  compatible)*
+- **Node.js** *(required to host jspm)*
+- **jspm** *(required to collect all javascript dependencies and build
+  the production javascript files, install it using ``npm install jspm``)*
+- **git** *(required to get the actual code and the dependencies)*
+
+Once those dependencies are installed, you can get the pelicide source code,
+install it's dependencies using jspm and pip::
 
     $ git clone git@github.com:iksteen/pelicide.git
     $ cd pelicide
