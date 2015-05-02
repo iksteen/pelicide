@@ -13,7 +13,6 @@ System.config({
     "codemirror": "npm:codemirror@5.2.0",
     "css": "github:systemjs/plugin-css@0.1.10",
     "datagraph/jquery-jsonrpc": "github:datagraph/jquery-jsonrpc@0.1.1",
-    "font-awesome": "npm:font-awesome@4.3.0",
     "jquery": "github:components/jquery@2.1.3",
     "phstc/jquery-dateFormat": "github:phstc/jquery-dateFormat@1.0.2",
     "showdown": "github:showdownjs/showdown@0.5.0",
@@ -106,9 +105,6 @@ System.config({
     },
     "npm:events-browserify@0.0.1": {
       "process": "github:jspm/nodelibs-process@0.1.1"
-    },
-    "npm:font-awesome@4.3.0": {
-      "css": "github:systemjs/plugin-css@0.1.10"
     },
     "npm:https-browserify@0.0.0": {
       "http": "github:jspm/nodelibs-http@1.7.1"
