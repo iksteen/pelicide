@@ -42,7 +42,8 @@ export default class Editor {
                         hint: 'Rebuild page',
                         disabled: true,
                         onClick: () => this.rebuild().catch(alert)
-                    }
+                    },
+                    {type: 'spacer', id: 'editor_spacer'}
                 ]
             }
         };
@@ -63,6 +64,33 @@ export default class Editor {
                 this._currentFile = file;
             }
         });
+    }
+
+    addEditorToolbarItem(item) {
+        if (! this._toolbar.get('editor_break')) {
+            this._toolbar.insert('editor_spacer', {
+                type: 'break',
+                id: 'editor_break',
+                editorItem: true
+            });
+        }
+        this._toolbar.insert('editor_spacer', Object.assign({type: 'button', editorItem: true}, item));
+    }
+
+    addEditorToolbarItems(items) {
+        for (let item of items.values()) {
+            this.addEditorToolbarItem(item);
+        }
+    }
+
+    removeEditorToolbarItems() {
+        var editorItems = [];
+        for(let i = this._toolbar.items.length - 1; i >= 0; --i) {
+            let item = this._toolbar.items[i];
+            console.log(i, this._toolbar.items.length, item);
+            if(item && item.editorItem)
+                this._toolbar.remove(item.id);
+        }
     }
 
     getEditor(filename) {
@@ -182,6 +210,7 @@ export default class Editor {
         }
 
         var _close = () => {
+            this.removeEditorToolbarItems();
             this._toolbar.disable('rebuild_page');
             this._editor.close();
             this._editor = null;
