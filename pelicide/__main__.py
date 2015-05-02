@@ -48,6 +48,7 @@ def parse_project(project_path):
 @defer.inlineCallbacks
 def run_web(args, project):
     root = static.File(os.path.join(os.path.dirname(__file__), 'ui'))
+    root.indexNames = ['index.rpy', 'index.html']
     root.processors = {'.rpy': script.ResourceScript}
     try:
         port = reactor.listenTCP(args.port, server.Site(root), interface='127.0.0.1')
