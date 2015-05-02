@@ -19,9 +19,10 @@ export default class CMEditor {
         }
 
         // Notify editor component of change.
-        this._codeMirror.on('change', function () {
-            editor.change();
-        });
+        this._codeMirror.on('change', () => editor.change());
+
+        // Make sure CodeMirror refreshes when the panel size changes.
+        editor.pelicide.on('layout', () => this._codeMirror.refresh());
 
         // Sync preview scrolling
         editor.pelicide.preview.setUpScrollSync(this._codeMirror.getScrollerElement());
