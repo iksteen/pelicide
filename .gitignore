@@ -3,3 +3,4 @@
 dist
 *.egg-info
 pelicide/ui/jspm_packages
+pelicide/ui/build.*
