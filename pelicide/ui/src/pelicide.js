@@ -86,6 +86,10 @@ export default class Pelicide {
         });
         w2ui['layout'].content('main', w2ui['editor']);
 
+        // Trigger layout events when panels are resized.
+        w2ui['layout'].on({ type: 'resize', execute: 'after' }, () => this.trigger({ type: 'layout' }));
+        w2ui['editor'].on({ type: 'resize', execute: 'after' }, () => this.trigger({ type: 'layout' }));
+
         return w2ui['layout'];
     }
 
