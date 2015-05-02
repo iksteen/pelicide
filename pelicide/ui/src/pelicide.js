@@ -50,11 +50,9 @@ export default class Pelicide {
         editorLayout.toolbar.items = [].concat(
             [
                 {
-                    type: 'check',
                     id: 'project',
                     icon: 'fa fa-bars',
                     hint: 'Toggle project view',
-                    checked: true,
                     onClick: () => this.toggleProject()
                 },
                 {type: 'break'}
@@ -63,11 +61,9 @@ export default class Pelicide {
             [
                 {type: 'spacer'},
                 {
-                    type: 'check',
                     id: 'preview',
                     icon: 'fa fa-eye',
                     hint: 'Toggle preview',
-                    checked: true,
                     onClick: () => this.togglePreview()
                 }
             ]
