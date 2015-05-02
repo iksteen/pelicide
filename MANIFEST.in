@@ -1,1 +1,3 @@
-recursive-include pelicide/ui *
+include pelicide/ui/index.rpy pelicide/ui/index-prod.html
+include pelicide/ui/build.js pelicide/ui/build.css
+recursive-include pelicide/ui/font-awesome/fonts *
