@@ -2,6 +2,7 @@ import Util from 'src/util'
 import API from 'src/api'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
+import 'src/css/pygments.css!';
 
 export default class Preview {
     constructor(pelicide, {previewDelay: delay = 50}) {

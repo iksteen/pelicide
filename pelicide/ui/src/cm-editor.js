@@ -1,4 +1,6 @@
 import CodeMirror from 'codemirror/lib/codemirror';
+import 'codemirror/lib/codemirror.css!';
+import 'src/css/codemirror-theme.css!';
 
 export default class CMEditor {
     constructor(editor, parent_el, content) {

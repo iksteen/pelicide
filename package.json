@@ -5,6 +5,7 @@
     },
     "dependencies": {
       "codemirror": "npm:codemirror@^5.2.0",
+      "css": "github:systemjs/plugin-css@^0.1.10",
       "datagraph/jquery-jsonrpc": "github:datagraph/jquery-jsonrpc@^0.1.1",
       "font-awesome": "npm:font-awesome@^4.3.0",
       "jquery": "github:components/jquery@^2.1.3",

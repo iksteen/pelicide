@@ -4,6 +4,9 @@ import Editor from 'src/editor'
 import Preview from 'src/preview'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
+import 'font-awesome/css/font-awesome.min.css!';
+import 'vitmalina/w2ui/dist/w2ui.min.css!';
+import 'src/css/style.css!';
 
 export default class Pelicide {
     constructor(options) {
