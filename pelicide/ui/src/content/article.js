@@ -23,49 +23,56 @@ export default class ArticleContent {
         this._draftNodeId = this.project.addContentType('Draft articles');
         this._publishedNodeId = this.project.addContentType('Published articles');
 
-        var extensions = [];
-        jQuery.each(this.project.pelicide.editor.editors, (f, e) => {
-            if (e.templates && e.templates.article) {
-                let template = e.templates.article;
-                for (let extension of e.extensions.values()) {
-                    this._templates[extension] = template;
-                    extensions.push(extension);
-                }
-            }
-        });
+        API.list_extensions()
+            .then((pelican_extensions) => {
+                pelican_extensions = new Set(pelican_extensions);
 
-        var project = this.project;
-        this._form = $().w2form({
-            name: 'create_article',
-            style: 'border: 0px; background-color: transparent;',
-            fields: [
-                {field: 'title', type: 'text', required: true, html: {caption: 'Title', attr: 'style="width: 250px"'}},
-                {field: 'category', type: 'combo', html: {caption: 'Category:', attr: 'style="width: 250px"'}},
-                {field: 'status', type: 'list', required: true, options: {items: ['draft', 'published']}, html: {caption: 'Status', attr: 'style="width: 250px"'}},
-                {field: 'extension', type: 'list', required: true, options: {items: extensions}, html: {caption: 'File type', attr: 'style="width: 250px"'}},
-                {field: 'create_in', type: 'combo', html: {caption: 'Create in:', attr: 'style="width: 250px"'}}
-            ],
-            record: {},
-            actions: {
-                Cancel: function () { this.cancel(); },
-                Create: function () { this.ok(); }
-            },
-            onValidate: function (event) {
-                var path = getPathFromRecord(this.record);
-                if (project.getFile(path.path, path.name)) {
-                    event.errors.push({
-                        field: this.get('title'),
-                        error: 'File already exists'
-                    });
+                var extensions = [];
+                for(let e of this.project.pelicide.editor.editors) {
+                    if (e.templates && e.templates.article) {
+                        let template = e.templates.article;
+                        for (let extension of e.extensions.values()) {
+                            if (pelican_extensions.has(extension)) {
+                                this._templates[extension] = template;
+                                extensions.push(extension);
+                            }
+                        }
+                    }
                 }
-            }
-        });
 
-        this.project.addCreateContent({
-            text: 'Create article',
-            icon: 'fa fa-newspaper-o',
-            onClick: () => this.create()
-        });
+                var project = this.project;
+                this._form = $().w2form({
+                    name: 'create_article',
+                    style: 'border: 0px; background-color: transparent;',
+                    fields: [
+                        {field: 'title', type: 'text', required: true, html: {caption: 'Title', attr: 'style="width: 250px"'}},
+                        {field: 'category', type: 'combo', html: {caption: 'Category:', attr: 'style="width: 250px"'}},
+                        {field: 'status', type: 'list', required: true, options: {items: ['draft', 'published']}, html: {caption: 'Status', attr: 'style="width: 250px"'}},
+                        {field: 'extension', type: 'list', required: true, options: {items: extensions}, html: {caption: 'File type', attr: 'style="width: 250px"'}},
+                        {field: 'create_in', type: 'combo', html: {caption: 'Create in:', attr: 'style="width: 250px"'}}
+                    ],
+                    record: {},
+                    actions: {
+                        Cancel: function () { this.cancel(); },
+                        Create: function () { this.ok(); }
+                    },
+                    onValidate: function (event) {
+                        var path = getPathFromRecord(this.record);
+                        if (project.getFile(path.path, path.name)) {
+                            event.errors.push({
+                                field: this.get('title'),
+                                error: 'File already exists'
+                            });
+                        }
+                    }
+                });
+
+                this.project.addCreateContent({
+                    text: 'Create article',
+                    icon: 'fa fa-newspaper-o',
+                    onClick: () => this.create()
+                });
+            });
     }
 
     scan(file) {

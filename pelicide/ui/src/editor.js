@@ -11,13 +11,15 @@ export default class Editor {
         this._handlers = [];
         this._box = null;
         this._dirty = false;
-        this.editors = {};
+        this.editors = [];
+        this._types = {};
         this._editor = null;
         this._currentFile = null;
 
         for (let editor of editors.values()) {
+            this.editors.push(editor);
             for (let format of editor.formats.values()) {
-                this.editors[format] = editor;
+                this._types[format] = editor;
             }
         }
     }
@@ -92,9 +94,9 @@ export default class Editor {
     }
 
     getEditor(file) {
-        var editor = this.editors[file.mimetype];
+        var editor = this._types[file.mimetype];
         if (typeof editor == 'undefined') {
-            editor = this.editors[file.mimetype.split('/')[0]];
+            editor = this._types[file.mimetype.split('/')[0]];
         }
         return editor ? editor : null;
     }
