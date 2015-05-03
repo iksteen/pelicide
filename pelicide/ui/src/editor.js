@@ -108,14 +108,15 @@ export default class Editor {
     }
 
     change() {
-        this.dirty(true);
+        this.dirty = true;
         this.trigger({ type: 'change', phase: 'after', target: this });
     }
 
-    dirty(dirty) {
-        if(arguments.length === 0)
-            return this._dirty;
+    get dirty() {
+        return this._dirty;
+    }
 
+    set dirty(dirty) {
         if(dirty == this._dirty)
             return;
 
@@ -190,7 +191,7 @@ export default class Editor {
         return API.set_content(this._currentFile.dir, this._currentFile.name, this._editor.content())
             .then(() => {
                 this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
-                this.dirty(false);
+                this.dirty = false;
             }, e => {
                 this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
                 return Promise.reject(e);
@@ -219,7 +220,7 @@ export default class Editor {
             this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
         };
 
-        if (!this.dirty()) {
+        if (!this.dirty) {
             _close();
             return Promise.resolve();
         }
@@ -247,7 +248,7 @@ export default class Editor {
                                     resolve(this.save().then(_close));
                                     break;
                                 case 'discard':
-                                    this.dirty(false);
+                                    this.dirty = false;
                                     _close();
                                     resolve();
                                     break;
