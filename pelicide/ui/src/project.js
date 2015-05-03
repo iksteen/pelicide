@@ -97,7 +97,7 @@ export default class Project {
         );
 
         /* Select node after opening a file. */
-        this.pelicide.editor.on({type: 'open', execute: 'after'}, e => this.select(e.file));
+        this.pelicide.editor.on({type: 'open', execute: 'after'}, e => { this.selectedFile = e.file });
 
         /* Update node path after saving a file. */
         this.pelicide.editor.on({type: 'save', execute: 'after'}, e => this.update(e.file));
@@ -264,11 +264,13 @@ export default class Project {
         return Array.from(categories);
     }
 
-    select(file) {
+    set selectedFile(file) {
         var node = this._files[file.dir.concat([file.name]).join('/')];
-        this._sidebar.expandParents(node);
-        this._sidebar.select(node);
-        this._sidebar.scrollIntoView(node);
+        if (!node.selected) {
+            this._sidebar.expandParents(node);
+            this._sidebar.select(node);
+            this._sidebar.scrollIntoView(node);
+        }
     }
 
     update(file) {
@@ -283,7 +285,7 @@ export default class Project {
                         if (newPath.join('/') !== nodePath) {
                             this.removeFile(file);
                             this.addFile(newPath, f);
-                            this.select(f);
+                            this.selectedFile = f;
                         }
                         return;
                     }
