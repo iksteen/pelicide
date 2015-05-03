@@ -3,9 +3,9 @@ import API from 'src/api';
 import Pelicide from 'src/pelicide';
 import {alert} from 'src/util';
 import ArticleContent from 'src/article-content';
-import CMEditor from 'src/cm-editor';
-import MDEditor from 'src/md-editor';
-import RSTEditor from 'src/rst-editor';
+import CMEditor from 'src/editors/codemirror';
+import MDEditor from 'src/editors/markdown';
+import RSTEditor from 'src/editors/restructuredtext';
 
 export function bootstrap(demo=false) {
     // Set up API endpoint.
