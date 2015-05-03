@@ -2,7 +2,7 @@ import jQuery from 'jquery'
 import unorm from 'unorm'
 import 'vitmalina/w2ui'
 
-function getErrorString(e) {
+export function getErrorString(e) {
     if (e.message)
         return e.message;
     else

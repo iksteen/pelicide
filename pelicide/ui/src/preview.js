@@ -1,4 +1,5 @@
 import API from 'src/api'
+import {getErrorString} from 'src/util'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
 import 'src/css/pygments.css!';
@@ -127,7 +128,7 @@ export default class Preview {
                 }, e => {
                     preview.empty().append(
                         '<h3 style="color: red">Render failed:</h3>',
-                        jQuery('<p>').html(e.error.message)
+                        jQuery('<p>').html(getErrorString(e))
                     );
                 });
             } else {
