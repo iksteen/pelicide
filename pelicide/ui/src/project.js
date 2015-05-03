@@ -276,10 +276,10 @@ export default class Project {
             nodePath = this.pathForFile(file).join('/');
 
         return API.list_content()
-            .then((content) => {
+            .then(content => {
                 for (let f of content.values()) {
                     if (f.dir.concat([f.name]).join('/') == filePath) {
-                        var newPath = this.pathForFile(f);
+                        let newPath = this.pathForFile(f);
                         if (newPath.join('/') !== nodePath) {
                             this.removeFile(file);
                             this.addFile(newPath, f);
@@ -292,12 +292,12 @@ export default class Project {
     }
 
     reload() {
-        var addContentNodes = (items) => {
+        var addContentNodes = items => {
             /* Sort items by path and file name. */
             items.sort(function (a, b) {
                 var n = Math.min(a.path.length, b.path.length);
-                for (var i = 0; i < n; ++i) {
-                    var c = a.path[i].localeCompare(b.path[i]);
+                for (let i = 0; i < n; ++i) {
+                    let c = a.path[i].localeCompare(b.path[i]);
                     if(c)
                         return c;
                 }
@@ -311,8 +311,8 @@ export default class Project {
             });
 
             /* Create nodes for all content items */
-            for(var i = 0; i < items.length; ++i) {
-                var item = items[i];
+            for(let i = 0; i < items.length; ++i) {
+                let item = items[i];
                 this.addFile(item.path, item.file);
             }
         };
@@ -326,7 +326,7 @@ export default class Project {
             .then(content => {
                 var items = [];
 
-                for (var file of content.values()) {
+                for (let file of content.values()) {
                     items.push({
                         path: this.pathForFile(file),
                         file: file

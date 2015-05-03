@@ -224,9 +224,9 @@ export default class Editor {
                          '<button value="discard" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Discard</button>' +
                          '<button value="cancel" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Cancel</button>',
 
-                onOpen: (event) => {
+                onOpen: event => {
                     event.onComplete = () => {
-                        $('.px-confirm-close').on('click', (event) => {
+                        $('.px-confirm-close').on('click', event => {
                             w2popup.close();
 
                             var result = $(event.target).val();
