@@ -1,4 +1,22 @@
 from __future__ import print_function
+
+
+# Augment mime types before importing anything else. Required because Twisted
+# captures the mime type table on class declaration.
+def augment_mime_types():
+    import mimetypes
+    CONTENT_TYPES = {
+        '.html': 'text/html',
+        '.css': 'text/css',
+        '.js': 'application/javascript',
+        '.woff2': 'application/font-woff2',
+    }
+    mimetypes.init()
+    for ext, content_type in CONTENT_TYPES.items():
+        mimetypes.add_type(content_type, ext)
+augment_mime_types()
+
+
 import ConfigParser
 import argparse
 import sys
@@ -6,14 +24,6 @@ import os
 from twisted.internet import reactor, defer, error
 from twisted.web import server, static, script
 from pelicide.service import start_service
-
-
-CONTENT_TYPES = {
-    '.html': 'text/html',
-    '.css': 'text/css',
-    '.js': 'application/javascript',
-    '.woff2': 'application/font-woff2',
-}
 
 
 def parse_project(project_path):
@@ -60,10 +70,6 @@ def run_web(args, project):
 
 
 def main():
-    for ext, content_type in CONTENT_TYPES.items():
-        if ext not in static.File.contentTypes:
-            static.File.contentTypes[ext] = content_type
-
     parser = argparse.ArgumentParser(description='An IDE for Pelican.')
     parser.add_argument('project', default=None, nargs='?', help='The pelicide project file to use.')
     parser.add_argument('--port', '-p', type=int, default=6300, help='The port to host the IDE on.')
