@@ -222,7 +222,7 @@ export default class Project {
             text: file.name,
             icon: 'fa fa-file-text-o',
             file: file,
-            disabled: !this.pelicide.editor.getEditor(file.name)
+            disabled: !this.pelicide.editor.getEditor(file)
         });
 
         this._files[file.dir.concat([file.name]).join('/')] = id;

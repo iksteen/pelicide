@@ -92,13 +92,13 @@ export default class Editor {
         }
     }
 
-    getEditor(filename) {
-        var dot = filename.lastIndexOf('.'),
+    getEditor(file) {
+        var dot = file.name.lastIndexOf('.'),
             mode = '';
 
         /* >0 because of dotfiles */
         if (dot > 0) {
-            mode = filename.substring(dot + 1);
+            mode = file.name.substring(dot + 1);
         } else {
             mode = '';
         }
@@ -148,7 +148,7 @@ export default class Editor {
             return Promise.reject(new Error('File not found.'));
         }
 
-        var editor = this.getEditor(file.name);
+        var editor = this.getEditor(file);
 
         if (!editor) {
             return Promise.reject(new Error('No editor is registered for this file type.'));
