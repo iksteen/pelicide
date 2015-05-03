@@ -112,9 +112,8 @@ export default class MDEditor extends CMEditor {
     }
 
     static get templates() {
-        return {
-            article(record) {
-                return `Title: ${record.title}
+        function template(record) {
+            return `Title: ${record.title}
 Date: ${record.date}
 Status: ${record.status.id}
 Tags:`  + (record.category ? `
@@ -122,7 +121,11 @@ Category: ${record.category}` : '') + `
 Slug: ${record.slug}
 
 `;
-            }
+        }
+
+        return {
+            article: template,
+            page: template
         }
     }
 }

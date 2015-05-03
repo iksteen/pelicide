@@ -79,9 +79,8 @@ export default class RSTEditor extends CMEditor {
     }
 
     static get templates() {
-        return {
-            article(record) {
-                return `${record.title}
+        function template(record) {
+            return `${record.title}
 ${'#'.repeat(record.title.length)}
 
 :date: ${record.date}
@@ -91,7 +90,11 @@ ${'#'.repeat(record.title.length)}
 :slug: ${record.slug}
 
 `;
-            }
+        }
+
+        return {
+            article: template,
+            page: template
         }
     }
 }

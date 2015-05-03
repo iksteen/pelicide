@@ -3,6 +3,7 @@ import API from 'src/api';
 import Pelicide from 'src/pelicide';
 import {alert} from 'src/util';
 import ArticleContent from 'src/content/article';
+import PageContent from 'src/content/page';
 import CMEditor from 'src/editors/codemirror';
 import MDEditor from 'src/editors/markdown';
 import RSTEditor from 'src/editors/restructuredtext';
@@ -20,7 +21,8 @@ export function bootstrap(demo=false) {
             var pelicide = new Pelicide({
                 sitename: sitename || '',
                 contentTypes: [
-                    ArticleContent
+                    ArticleContent,
+                    PageContent
                 ],
                 editors: [
                     MDEditor,
