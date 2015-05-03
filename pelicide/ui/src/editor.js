@@ -87,7 +87,6 @@ export default class Editor {
         var editorItems = [];
         for(let i = this._toolbar.items.length - 1; i >= 0; --i) {
             let item = this._toolbar.items[i];
-            console.log(i, this._toolbar.items.length, item);
             if(item && item.editorItem)
                 this._toolbar.remove(item.id);
         }
