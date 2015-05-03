@@ -7,7 +7,7 @@ import 'vitmalina/w2ui'
 function getPathFromRecord(record) {
     return {
         path: record.create_in ? record.create_in.split('/') : [],
-        name: slugify(record.title) + '.' + record.format.id
+        name: slugify(record.title) + '.' + record.extension.id
     }
 }
 
@@ -16,16 +16,22 @@ export default class ArticleContent {
         this.project = project;
         this._draftNodeId = null;
         this._publishedNodeId = null;
+        this._templates = {};
     }
 
     init() {
         this._draftNodeId = this.project.addContentType('Draft articles');
         this._publishedNodeId = this.project.addContentType('Published articles');
 
-        var formats = [];
+        var extensions = [];
         jQuery.each(this.project.pelicide.editor.editors, (f, e) => {
-            if (e.templates && e.templates.article)
-                formats.push(f);
+            if (e.templates && e.templates.article) {
+                let template = e.templates.article;
+                for (let extension of e.extensions.values()) {
+                    this._templates[extension] = template;
+                    extensions.push(extension);
+                }
+            }
         });
 
         var project = this.project;
@@ -36,7 +42,7 @@ export default class ArticleContent {
                 {field: 'title', type: 'text', required: true, html: {caption: 'Title', attr: 'style="width: 250px"'}},
                 {field: 'category', type: 'combo', html: {caption: 'Category:', attr: 'style="width: 250px"'}},
                 {field: 'status', type: 'list', required: true, options: {items: ['draft', 'published']}, html: {caption: 'Status', attr: 'style="width: 250px"'}},
-                {field: 'format', type: 'list', required: true, options: {items: formats}, html: {caption: 'Format', attr: 'style="width: 250px"'}},
+                {field: 'extension', type: 'list', required: true, options: {items: extensions}, html: {caption: 'File type', attr: 'style="width: 250px"'}},
                 {field: 'create_in', type: 'combo', html: {caption: 'Create in:', attr: 'style="width: 250px"'}}
             ],
             record: {},
@@ -75,12 +81,12 @@ export default class ArticleContent {
         var categories = this.project.categories;
 
         return API.get('ARTICLE_PATHS')
-            .then((article_paths) => {
+            .then(article_paths => {
                 this._form.set('category', {options: {items: categories}});
                 this._form.set('create_in', {options: {items: article_paths}});
                 this._form.record = {
                     status: 'draft',
-                    format: this._form.get('format').options.items[0],
+                    extension: this._form.get('extension').options.items[0],
                     create_in: article_paths[0]
                 };
 
@@ -89,14 +95,14 @@ export default class ArticleContent {
                     form: this._form
                 })
             })
-            .then((record) => {
+            .then(record => {
                 Object.assign(record, {
                     slug: slugify(record.title),
                     date: jQuery.format.date(new Date(), 'yyyy-MM-dd HH:mm')
                 });
 
                 var path = getPathFromRecord(record),
-                    body = this.project.pelicide.editor.editors[record.format.id].templates.article(record);
+                    body = this._templates[record.extension.id](record);
 
                 return this.project.pelicide.editor.close()
                     .then(() => API.set_content(path.path, path.name, body))

@@ -62,3 +62,13 @@ export function dialog(config) {
         w2popup.open(config);
     });
 }
+
+export function getExtension(filename) {
+    var dot = filename.lastIndexOf('.');
+
+    // >0 because of dotfiles.
+    if (dot > 0)
+        return filename.substring(dot + 1);
+    else
+        return '';
+}

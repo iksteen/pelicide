@@ -14,7 +14,6 @@ export default class Editor {
         this.editors = {};
         this._editor = null;
         this._currentFile = null;
-        this._currentMode = null;
 
         for (let editor of editors.values()) {
             for (let format of editor.formats.values()) {
@@ -93,18 +92,8 @@ export default class Editor {
     }
 
     getEditor(file) {
-        var dot = file.name.lastIndexOf('.'),
-            mode = '';
-
-        /* >0 because of dotfiles */
-        if (dot > 0) {
-            mode = file.name.substring(dot + 1);
-        } else {
-            mode = '';
-        }
-
-        var editor = this.editors[mode];
-        return editor ? { mode: mode,  class: editor } : null;
+        var editor = this.editors[file.mimetype];
+        return editor ? editor : null;
     }
 
     change() {
@@ -134,7 +123,6 @@ export default class Editor {
     state() {
         return (this._editor === null) ? null : {
             file: this._currentFile,
-            mode: this._currentMode,
             content: this._editor.content()
         };
     }
@@ -164,8 +152,7 @@ export default class Editor {
             .then(() => API.get_content(file.dir, file.name))
             .then(content => {
                 this._currentFile = file;
-                this._currentMode = editor.mode;
-                this._editor = new editor.class(this, this._box, content);
+                this._editor = new editor(this, this._box, content);
 
                 this._toolbar.enable('rebuild_page');
 
@@ -215,7 +202,6 @@ export default class Editor {
             this._editor.close();
             this._editor = null;
             this._currentFile = null;
-            this._currentMode = null;
             jQuery(this._box).empty();
             this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
         };

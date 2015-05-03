@@ -17,6 +17,7 @@ var NA_CALLS = ['restart', 'get_settings', 'set', 'list_extensions', 'build'],
                 "tags": ["pelicide", "demo"]
             },
             "type": "pelican.contents.Draft",
+            "mimetype": "text/x-markdown",
             "dir": []
         }
     ];

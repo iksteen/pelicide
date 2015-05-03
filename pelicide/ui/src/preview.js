@@ -1,5 +1,5 @@
 import API from 'src/api'
-import {getErrorString} from 'src/util'
+import {getErrorString, getExtension} from 'src/util'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
 import 'src/css/pygments.css!';
@@ -123,7 +123,7 @@ export default class Preview {
             let preview = jQuery('#preview');
 
             if (state) {
-                API.render(state.mode, state.content).then(html => {
+                API.render(getExtension(state.file.name), state.content).then(html => {
                     preview.html(html);
                 }, e => {
                     preview.empty().append(

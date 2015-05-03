@@ -71,6 +71,10 @@ export default class RSTEditor extends CMEditor {
     get mode() { return 'rst'; }
 
     static get formats() {
+        return ['text/x-rst'];
+    }
+
+    static get extensions() {
         return ['rst'];
     }
 

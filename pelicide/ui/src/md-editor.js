@@ -104,6 +104,10 @@ export default class MDEditor extends CMEditor {
     get mode() { return 'markdown'; }
 
     static get formats() {
+        return ['text/x-markdown'];
+    }
+
+    static get extensions() {
         return ['md', 'markdown', 'mdown'];
     }
 
