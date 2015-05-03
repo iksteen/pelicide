@@ -19,10 +19,10 @@ export default class BaseContent {
         this._extensions = [];
     }
 
-    init(type) {
+    init(type, statuses) {
         return this.loadExtensions(type)
             .then(() => {
-                this._form = this.form(type);
+                this._form = this.form(type, statuses);
             });
     }
 
@@ -44,7 +44,7 @@ export default class BaseContent {
             });
     }
 
-    form(type) {
+    form(type, statuses) {
         var project = this.project;
         return $().w2form({
             name: `create_${type}`,
@@ -52,7 +52,7 @@ export default class BaseContent {
             fields: [
                 {field: 'title', type: 'text', required: true, html: {caption: 'Title', attr: 'style="width: 250px"'}},
                 {field: 'category', type: 'combo', html: {caption: 'Category:', attr: 'style="width: 250px"'}},
-                {field: 'status', type: 'list', required: true, options: {items: ['draft', 'published']}, html: {caption: 'Status', attr: 'style="width: 250px"'}},
+                {field: 'status', type: 'list', required: true, options: {items: statuses}, html: {caption: 'Status', attr: 'style="width: 250px"'}},
                 {field: 'extension', type: 'list', required: true, options: {items: this._extensions}, html: {caption: 'File type', attr: 'style="width: 250px"'}},
                 {field: 'create_in', type: 'combo', html: {caption: 'Create in:', attr: 'style="width: 250px"'}}
             ],
@@ -79,7 +79,7 @@ export default class BaseContent {
         this._form.set('category', {options: {items: categories}});
         this._form.set('create_in', {options: {items: paths}});
         this._form.record = {
-            status: 'draft',
+            status: this._form.get('status').options.items[0],
             extension: this._extensions[0],
             create_in: paths[0]
         };

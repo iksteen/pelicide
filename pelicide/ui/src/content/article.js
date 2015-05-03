@@ -14,7 +14,7 @@ export default class ArticleContent extends BaseContent {
         this._draftNodeId = this.project.addContentType('Draft articles');
         this._publishedNodeId = this.project.addContentType('Published articles');
 
-        return super.init('article')
+        return super.init('article', ['draft', 'published'])
             .then(() => {
                 this.project.addCreateContent({
                     text: 'Create article',

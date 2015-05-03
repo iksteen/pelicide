@@ -12,7 +12,7 @@ export default class PageContent extends BaseContent {
     init() {
         this._pageNodeId = this.project.addContentType('Pages');
 
-        return super.init('page')
+        return super.init('page', ['published', 'hidden'])
             .then(() => {
                 this.project.addCreateContent({
                     text: 'Create page',
