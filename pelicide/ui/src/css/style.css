@@ -47,3 +47,8 @@ body, html {
     margin: 0;
     padding: 0;
 }
+
+.menu-icon > span.w2ui-icon.fa {
+    font-size: 12px !important;
+    padding-top: 3px;
+}
