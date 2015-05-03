@@ -18,6 +18,8 @@ export default class Pelicide {
         this.project = new Project(this, options);
         this.editor = new Editor(this, options);
         this.preview = new Preview(this, options);
+
+        jQuery(window).on('beforeunload', () => this.editor.dirty ?  'You have unsaved changes in your document.' : undefined);
     }
 
     run(box) {
