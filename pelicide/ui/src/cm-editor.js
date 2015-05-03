@@ -44,7 +44,7 @@ export default class CMEditor {
     }
 
     get mode() { return 'text/plain'; }
-    static get formats() { return []; }
+    static get formats() { return ['text']; }
     static get extensions() { return []; }
     static get templates() { return {}; }
 

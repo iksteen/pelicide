@@ -3,6 +3,7 @@ import API from 'src/api';
 import Pelicide from 'src/pelicide';
 import {alert} from 'src/util';
 import ArticleContent from 'src/article-content';
+import CMEditor from 'src/cm-editor';
 import MDEditor from 'src/md-editor';
 import RSTEditor from 'src/rst-editor';
 
@@ -23,7 +24,8 @@ export function bootstrap(demo=false) {
                 ],
                 editors: [
                     MDEditor,
-                    RSTEditor
+                    RSTEditor,
+                    CMEditor
                 ]
             });
             pelicide.run('#main_layout');

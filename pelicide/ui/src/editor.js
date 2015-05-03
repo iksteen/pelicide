@@ -93,6 +93,9 @@ export default class Editor {
 
     getEditor(file) {
         var editor = this.editors[file.mimetype];
+        if (typeof editor == 'undefined') {
+            editor = this.editors[file.mimetype.split('/')[0]];
+        }
         return editor ? editor : null;
     }
 
