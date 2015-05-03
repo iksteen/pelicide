@@ -26,7 +26,7 @@ export default class Project {
         this._otherContentId = null;
     }
 
-    layout() {
+    get layout() {
         return {
             toolbar: {
                 items: [

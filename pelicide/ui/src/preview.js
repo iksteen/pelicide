@@ -14,7 +14,7 @@ export default class Preview {
         this._pending = false;
     }
 
-    layout() {
+    get layout() {
         return {
             overflow: 'hidden',
             toolbar: {
@@ -117,7 +117,7 @@ export default class Preview {
     }
 
     update() {
-        var state = this.pelicide.editor.state();
+        var state = this.pelicide.editor.state;
 
         if(this.mode != 'render') {
             let preview = jQuery('#preview');
@@ -163,7 +163,7 @@ export default class Preview {
     }
 
     external() {
-        var state = this.pelicide.editor.state();
+        var state = this.pelicide.editor.state;
         if (state && state.file.url)
             window.open(state.file.url);
     }

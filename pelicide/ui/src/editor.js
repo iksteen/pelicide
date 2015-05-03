@@ -24,7 +24,7 @@ export default class Editor {
         }
     }
 
-    layout() {
+    get layout() {
         return {
             toolbar: {
                 items: [
@@ -125,7 +125,7 @@ export default class Editor {
         this.trigger(Object.assign(eventData, { phase: 'after' }))
     }
 
-    state() {
+    get state() {
         return (this._editor === null) ? null : {
             file: this._currentFile,
             content: this._editor.content()
@@ -251,7 +251,7 @@ export default class Editor {
     }
 
     rebuild() {
-        var state = this.state();
+        var state = this.state;
 
         this._toolbar.disable('rebuild_page');
 

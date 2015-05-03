@@ -24,7 +24,7 @@ export default class Pelicide {
 
     run(box) {
         /* Initialise the layout. */
-        this.layout().render(box);
+        this.layout.render(box);
 
         /* Run this as a timeout to allow the DOM to settle. */
         setTimeout(() => {
@@ -44,10 +44,10 @@ export default class Pelicide {
         return layout;
     }
 
-    layout(box) {
-        var projectLayout = this._ensureToolbarItems(this.project.layout() || {}),
-            editorLayout = this._ensureToolbarItems(this.editor.layout() || {}),
-            previewLayout = this._ensureToolbarItems(this.preview.layout() || {});
+    get layout() {
+        var projectLayout = this._ensureToolbarItems(this.project.layout || {}),
+            editorLayout = this._ensureToolbarItems(this.editor.layout || {}),
+            previewLayout = this._ensureToolbarItems(this.preview.layout || {});
 
         editorLayout.toolbar.items = [].concat(
             [
