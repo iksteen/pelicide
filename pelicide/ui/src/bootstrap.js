@@ -29,7 +29,7 @@ export function bootstrap(demo=false) {
             pelicide.run('#main_layout');
 
             if(demo)
-                setTimeout(function () { pelicide.editor.open([], 'welcome-to-pelicide.md'); }, 0);
+                setTimeout(function () { pelicide.editor.open(pelicide.project.getFile([], 'welcome-to-pelicide.md')); }, 0);
         }).catch(alert);
     });
 }

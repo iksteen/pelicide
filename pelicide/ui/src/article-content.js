@@ -107,7 +107,7 @@ export default class ArticleContent {
                 return this.project.pelicide.editor.close()
                     .then(() => API.set_content(path.path, path.name, body))
                     .then(() => this.project.reload())
-                    .then(() => this.project.pelicide.editor.open(path.path, path.name));
+                    .then(() => this.project.pelicide.editor.open(this.project.getFile(path.path, path.name)));
             })
             .catch(alert);
     }
