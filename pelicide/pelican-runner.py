@@ -14,6 +14,9 @@ def augment_mime_types():
         '.markdown': 'text/x-markdown',
         '.mdown': 'text/x-markdown',
         '.rst': 'text/x-rst',
+        '.asc': 'text/x-asciidoc',
+        '.adoc': 'text/x-asciidoc',
+        '.asciidoc': 'text/x-asciidoc',
     }
     mimetypes.init()
     for ext, content_type in CONTENT_TYPES.items():
