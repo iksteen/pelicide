@@ -1,4 +1,26 @@
 from __future__ import print_function
+import mimetypes
+
+
+# Augment mime types before importing anything else. Required because Twisted
+# captures the mime type table on class declaration.
+def augment_mime_types():
+    CONTENT_TYPES = {
+        '.html': 'text/html',
+        '.css': 'text/css',
+        '.js': 'application/javascript',
+        '.woff2': 'application/font-woff2',
+        '.md': 'text/x-markdown',
+        '.markdown': 'text/x-markdown',
+        '.mdown': 'text/x-markdown',
+        '.rst': 'text/x-rst',
+    }
+    mimetypes.init()
+    for ext, content_type in CONTENT_TYPES.items():
+        mimetypes.add_type(content_type, ext)
+augment_mime_types()
+
+
 import json
 import os
 import sys
@@ -189,7 +211,8 @@ def run(config_file, init_settings):
                         'type': content.__class__.__module__ + '.' + content.__class__.__name__,
                         'url': url,
                         'status': getattr(content, 'status', None),
-                        'meta': getattr(content, 'metadata', {})
+                        'meta': getattr(content, 'metadata', {}),
+                        'mimetype': mimetypes.guess_type(filename)[0],
                     })
                 success(cmd_id, project_contents)
             except Exception as e:
