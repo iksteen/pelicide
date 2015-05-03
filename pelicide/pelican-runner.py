@@ -12,6 +12,7 @@ def augment_mime_types():
         '.woff2': 'application/font-woff2',
         '.md': 'text/x-markdown',
         '.markdown': 'text/x-markdown',
+        '.mkd': 'text/x-markdown',
         '.mdown': 'text/x-markdown',
         '.rst': 'text/x-rst',
         '.asc': 'text/x-asciidoc',

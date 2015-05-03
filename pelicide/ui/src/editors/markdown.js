@@ -108,7 +108,7 @@ export default class MDEditor extends CMEditor {
     }
 
     static get extensions() {
-        return ['md', 'markdown', 'mdown'];
+        return ['md', 'markdown', 'mkd', 'mdown'];
     }
 
     static get templates() {
