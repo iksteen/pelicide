@@ -187,9 +187,19 @@ export default class Project {
             if (node.nodes.hasOwnProperty(el)) {
                 node = node.nodes[el];
             } else {
+                let parent = this._sidebar.get(node.id),
+                    before = null;
+
+                for (let sibling of parent.nodes.values()) {
+                    if (sibling.file !== undefined || sibling.text.localeCompare(el) > 0) {
+                        before = sibling.id;
+                        break;
+                    }
+                }
+
                 let id = this._newId();
 
-                this._sidebar.add(node.id, {
+                this._sidebar.insert(node.id, before, {
                     id: id,
                     text: el,
                     icon: 'fa fa-folder-o'
