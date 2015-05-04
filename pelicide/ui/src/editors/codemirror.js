@@ -4,6 +4,7 @@ import 'src/css/codemirror-theme.css!';
 
 export default class CMEditor {
     constructor(editor, parent_el, content) {
+        this.editor = editor;
         this._codeMirror = CodeMirror(
             parent_el,
             {
@@ -22,7 +23,8 @@ export default class CMEditor {
         this._codeMirror.on('change', () => editor.change());
 
         // Make sure CodeMirror refreshes when the panel size changes.
-        editor.pelicide.on('layout', () => this._codeMirror.refresh());
+        this._onLayoutChanged = () => this._codeMirror.refresh();
+        editor.pelicide.on('layout', this._onLayoutChanged);
 
         // Sync preview scrolling
         editor.pelicide.preview.setUpScrollSync(this._codeMirror.getScrollerElement());
@@ -36,6 +38,7 @@ export default class CMEditor {
     }
 
     close() {
+        this.editor.pelicide.off('layout', this._onLayoutChanged);
         this._codeMirror = null;
     }
 
