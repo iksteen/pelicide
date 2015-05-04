@@ -65,6 +65,14 @@ class PelicideService(JSONRPCServer):
         with open(os.path.join(path, filename), 'wb') as f:
             f.write(content.encode('utf-8'))
 
+    def jsonrpc_delete_content(self, subdir, filename):
+        path = os.path.join(self.get_content_path(subdir), filename)
+
+        if not os.path.isfile(path):
+            raise RuntimeError('File not found')
+
+        os.remove(path)
+
 
 class NoCacheFile(static.File):
     def _setContentHeaders(self, request, size=None):
