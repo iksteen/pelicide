@@ -304,31 +304,6 @@ export default class Project {
     }
 
     reload() {
-        var addContentNodes = items => {
-            /* Sort items by path and file name. */
-            items.sort(function (a, b) {
-                var n = Math.min(a.path.length, b.path.length);
-                for (let i = 0; i < n; ++i) {
-                    let c = a.path[i].localeCompare(b.path[i]);
-                    if(c)
-                        return c;
-                }
-
-                if (a.path.length < b.path.length)
-                    return -1;
-                else if (a.length > b.length)
-                    return 1;
-                else
-                    return a.file.name.localeCompare(b.file.name);
-            });
-
-            /* Create nodes for all content items */
-            for(let i = 0; i < items.length; ++i) {
-                let item = items[i];
-                this.addFile(item.path, item.file);
-            }
-        };
-
         return this.pelicide.editor.close()
             .then(() => {
                 this._sidebar.lock('Loading...', true);
@@ -336,17 +311,9 @@ export default class Project {
                 return API.list_content();
             })
             .then(content => {
-                var items = [];
-
                 for (let file of content.values()) {
-                    items.push({
-                        path: this.pathForFile(file),
-                        file: file
-                    });
+                    this.addFile(this.pathForFile(file), file);
                 }
-
-                addContentNodes(items);
-
                 this._sidebar.unlock();
             }, function (e) {
                 this._sidebar.unlock();
