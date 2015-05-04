@@ -57,14 +57,19 @@ def parse_project(project_path):
     }
 
 
-@defer.inlineCallbacks
-def run_web(args, project):
+def start_instance(project):
     root = static.File(os.path.join(os.path.dirname(__file__), 'ui'))
     root.indexNames = ['index.rpy', 'index.html']
     root.processors = {'.rpy': script.ResourceScript}
+    return root, start_service(root, project)
+
+
+@defer.inlineCallbacks
+def run(project, port=0):
+    root, d = start_instance(project)
+    yield d
     try:
-        port = reactor.listenTCP(args.port, server.Site(root), interface='127.0.0.1')
-        yield start_service(root, project, 'http://localhost:{}'.format(port.getHost().port))
+        port = reactor.listenTCP(port, server.Site(root), interface='127.0.0.1')
         print('Pelicide is running. Please visit http://127.0.0.1:{}/'.format(port.getHost().port), file=sys.stderr)
     except error.CannotListenError as e:
         print(e, file=sys.stderr)
@@ -82,7 +87,7 @@ def main():
         sys.exit(1)
 
     project = parse_project(args.project)
-    reactor.callWhenRunning(run_web, args, project)
+    reactor.callWhenRunning(run, project, args.port)
     reactor.run()
 
 

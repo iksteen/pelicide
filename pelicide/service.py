@@ -72,7 +72,7 @@ class NoCacheFile(static.File):
         request.setHeader('cache-control', 'private, max-age=0, no-cache')
 
 
-def start_service(root, project, path_prefix=''):
+def start_service(root, project):
     def clean(tmp_path):
         print('Cleaning up {}'.format(tmp_path), file=sys.stderr)
         shutil.rmtree(tmp_path, True)
