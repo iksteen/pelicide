@@ -323,8 +323,6 @@ export default class Project {
     }
 
     rebuild() {
-        var self = this;
-
         this._toolbar.disable('rebuild');
 
         var eventData = {
