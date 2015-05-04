@@ -40,6 +40,8 @@ def parse_project(project_path):
     config.set('pelicide', 'python', sys.executable)
     config.set('pelicide', 'pelicanconf', 'pelicanconf.py')
 
+    config.read(os.path.expanduser('~/.config/pelicide/pelicide.ini'))
+
     if project_path:
         config.read(project_path)
 
