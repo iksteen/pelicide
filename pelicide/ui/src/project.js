@@ -215,8 +215,9 @@ export default class Project {
         return node.id;
     }
 
-    addFile(path, file, icon) {
-        var parent = this._sidebar.get(this.ensurePath(path)),
+    addFile(file) {
+        var path = this.pathForFile(file),
+            parent = this._sidebar.get(this.ensurePath(path)),
             id = this._newId(),
             before = null;
 
@@ -294,7 +295,7 @@ export default class Project {
                         let newPath = this.pathForFile(f);
                         if (newPath.join('/') !== nodePath) {
                             this.removeFile(file);
-                            this.addFile(newPath, f);
+                            this.addFile(f);
                             this.selectedFile = f;
                         }
                         return;
@@ -312,7 +313,7 @@ export default class Project {
             })
             .then(content => {
                 for (let file of content.values()) {
-                    this.addFile(this.pathForFile(file), file);
+                    this.addFile(file);
                 }
                 this._sidebar.unlock();
             }, function (e) {
