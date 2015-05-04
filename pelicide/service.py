@@ -14,6 +14,15 @@ class PelicideService(JSONRPCServer):
         JSONRPCServer.__init__(self)
         self.runner = runner
 
+    def get_content_path(self, subdir):
+        content_path = self.runner.settings['PATH']
+        path = os.path.abspath(os.path.join(content_path, *subdir))
+
+        if not (path + os.sep).startswith(content_path + os.sep):
+            raise RuntimeError('File not in content path.')
+
+        return path
+
     def jsonrpc_restart(self):
         return self.runner.restart().addCallback(lambda _: None)
 
@@ -39,13 +48,8 @@ class PelicideService(JSONRPCServer):
         return self.runner.command('scan')
 
     def jsonrpc_get_content(self, subdir, filename):
-        content_path = self.runner.settings['PATH']
-        if not content_path.endswith(os.sep):
-            content_path += os.sep
-        path = os.path.abspath(os.path.join(self.runner.settings['PATH'], os.sep.join(subdir + [filename])))
+        path = os.path.join(self.get_content_path(subdir), filename)
 
-        if not path.startswith(content_path):
-            raise RuntimeError('File not in content path')
         if not os.path.isfile(path):
             raise RuntimeError('File not found')
 
@@ -53,11 +57,7 @@ class PelicideService(JSONRPCServer):
             return f.read().decode('utf-8')
 
     def jsonrpc_set_content(self, subdir, filename, content):
-        content_path = self.runner.settings['PATH']
-        path = os.path.abspath(os.path.join(content_path, os.sep.join(subdir)))
-
-        if not (path + os.sep).startswith(content_path + os.sep):
-            raise RuntimeError('File not in content path.')
+        path = self.get_content_path(subdir)
 
         if not os.path.isdir(path):
             os.makedirs(path)
