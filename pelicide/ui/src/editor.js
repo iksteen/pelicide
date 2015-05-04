@@ -61,7 +61,7 @@ export default class Editor {
             var file = event.target,
                 path = file.dir.concat([file.name]).join('/');
 
-            if (this._currentFile.dir.concat([self._currentFile.name]).join('/') == path) {
+            if (this._currentFile.dir.concat([this._currentFile.name]).join('/') == path) {
                 this._currentFile = file;
             }
         });
