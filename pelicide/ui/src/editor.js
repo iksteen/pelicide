@@ -50,19 +50,18 @@ export default class Editor {
         };
     }
 
+    isCurrentFile(file) {
+        var path = file.dir.concat([file.name]).join('/');
+        return this._currentFile && this._currentFile.dir.concat([this._currentFile.name]).join('/') == path;
+    }
+
     render(box, toolbar) {
         this._box = box;
         this._toolbar = toolbar;
 
-        this.pelicide.project.on('update', (event) => {
-            if (this._currentFile === null)
-                return;
-
-            var file = event.target,
-                path = file.dir.concat([file.name]).join('/');
-
-            if (this._currentFile.dir.concat([this._currentFile.name]).join('/') == path) {
-                this._currentFile = file;
+        this.pelicide.project.on('update', ({target: file}) => {
+            if (this.isCurrentFile(file)) {
+                this._currentFile =  file;
             }
         });
     }
