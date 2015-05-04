@@ -168,11 +168,11 @@ export default class Preview {
             window.open(state.file.url);
     }
 
-    setUpScrollSync(el) {
+    setUpScrollSync(scrollSource) {
         var pending = false;
 
-        el = jQuery(el);
-        el.on('scroll', () => {
+        jQuery(scrollSource).on('scroll', (event) => {
+            var el = jQuery(event.target);
             if (!pending) {
                 pending = true;
                 setTimeout(() => {
