@@ -231,7 +231,7 @@ export default class Project {
         this._sidebar.insert(parent, before, {
             id: id,
             text: file.name,
-            icon: 'fa fa-file-text-o',
+            icon: file.icon || 'fa fa-file-text-o',
             file: file,
             disabled: !this.pelicide.editor.getEditor(file)
         });
@@ -263,6 +263,7 @@ export default class Project {
                 return ['content'].concat(path);
             }
         }
+        file.icon = 'fa fa-file-o';
         return ['content', this._otherContentId].concat(file.dir);
     }
 
