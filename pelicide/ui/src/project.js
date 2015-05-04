@@ -77,7 +77,8 @@ export default class Project {
                 if (file !== undefined) {
                     this.pelicide.editor.open(file).catch(alert);
                 }
-            }
+            },
+            onContextMenu: event => { this._sidebar.menu = this.getMenuForNode(event.object); }
         });
         this._sidebar.render(box);
 
@@ -95,6 +96,9 @@ export default class Project {
                 e.subItem.onClick(e);
             }}
         );
+
+        /* Connect click event for sidebar menu items. */
+        this._sidebar.on('menuClick', e => e.menuItem.onClick && e.menuItem.onClick(e.menuItem));
 
         /* Select node after opening a file. */
         this.pelicide.editor.on({type: 'open', execute: 'after'}, e => { this.selectedFile = e.file });
@@ -138,6 +142,9 @@ export default class Project {
                 nodes: {}
             }
         }
+    }
+
+    getMenuForNode(item) {
     }
 
     get contentTitle() {
