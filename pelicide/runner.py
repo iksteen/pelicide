@@ -62,7 +62,6 @@ class Runner(object):
             self.python,
             [
                 'pelicide-runner',
-                '-u',
                 runner,
                 self.config_path,
                 json.dumps(self.init_settings),

@@ -142,6 +142,7 @@ def encode_metadata(o):
 
 def reply(cmd_id, result, args=None):
     sys.stdout.write('%s %s %s\n' % (cmd_id, '+' if result else '-', json.dumps(args, default=encode_metadata)))
+    sys.stdout.flush()
 
 
 def success(cmd_id, args=None):
@@ -183,6 +184,7 @@ def run(config_file, init_settings):
         key: settings.get(key)
         for key in ('SITENAME', 'PATH', 'THEME',)
     }))
+    sys.stdout.flush()
 
     while True:
         command = sys.stdin.readline()
