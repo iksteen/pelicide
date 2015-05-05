@@ -17,6 +17,17 @@ export function alert(e) {
     }
 }
 
+export function confirm(msg, title) {
+    return new Promise((accept, reject) => {
+        w2confirm({
+            msg: msg,
+            title: title,
+            yes_callBack: accept,
+            no_callBack: reject
+        });
+    });
+}
+
 var combining = /[\u0300-\u036F]/g;
 export function slugify(s) {
     return unorm.nfkd(s).replace(combining, '').toLowerCase().replace(/[^\w\s-]/g, '').replace(/[-\s]+/g, '-');
