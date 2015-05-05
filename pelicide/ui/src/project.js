@@ -105,6 +105,25 @@ export default class Project {
                     this.pelicide.editor.open(file).catch(alert);
                 }
             },
+            onKeydown: event => {
+                let file = this._sidebar.get(this._sidebar.selected).file;
+                if (file !== undefined) {
+                    switch (event.originalEvent.keyCode) {
+                        case 13:
+                            event.preventDefault();
+                            this.pelicide.editor.open(file).catch(alert);
+                            break;
+                        case 46:
+                            event.preventDefault();
+                            this.deleteFile(file).catch(alert);
+                            break;
+                        case 117:
+                            event.preventDefault();
+                            this.renameFile(file).catch(alert);
+                            break;
+                    }
+                }
+            },
             onContextMenu: event => { this._sidebar.menu = this.getMenuForNode(event.object); }
         });
         this._sidebar.render(box);
