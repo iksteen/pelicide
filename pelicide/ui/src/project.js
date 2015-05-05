@@ -1,4 +1,4 @@
-import {alert, confirm} from 'src/util'
+import {alert, confirm, dialog} from 'src/util'
 import API from 'src/api'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
@@ -24,6 +24,33 @@ export default class Project {
         this._files = {};
 
         this._otherContentId = null;
+
+        var project = this;
+        this._renameForm = jQuery().w2form({
+            name: 'rename_file',
+            style: 'border: 0px; background-color: transparent;',
+            fields: [
+                {field: 'filename', type: 'text', required: true, html: {caption: 'New filename', attr: 'style="width: 250px"'}}
+            ],
+            record: {},
+            actions: {
+                Cancel: function () { this.cancel(); },
+                Rename: function () { this.ok(); }
+            },
+            onValidate: function (event) {
+                var dir = this.record.dir;
+
+                if (this.record.filename == this.record.origFilename)
+                    return;
+
+                if (project.getFile(dir, this.record.filename)) {
+                    event.errors.push({
+                        field: this.get('filename'),
+                        error: 'File already exists'
+                    });
+                }
+            }
+        });
     }
 
     get layout() {
@@ -151,6 +178,13 @@ export default class Project {
         if (item.file) {
             menu.push({
                 id: ++id,
+                text: 'Rename file',
+                icon: 'fa fa-pencil-square-o',
+                item: item,
+                onClick: menuItem => this.renameFile(menuItem.item.file).catch(alert)
+            });
+            menu.push({
+                id: ++id,
                 text: 'Delete file',
                 icon: 'fa fa-times',
                 item: item,
@@ -270,6 +304,25 @@ export default class Project {
 
         this._sidebar.remove(id);
         delete this._files[path];
+    }
+
+    renameFile(file) {
+        this._renameForm.record = {
+            dir: file.dir,
+            filename: file.name,
+            origFilename: file.name
+        };
+
+        return dialog({title: 'Rename file', form: this._renameForm})
+            .then(record => {
+                return API.rename_content(record.dir, record.origFilename, record.filename)
+                    .then(() => {
+                        this.removeFile(file);
+                        file.name = record.filename;
+                        this.addFile(file);
+                        this.selectedFile = file;
+                    });
+            });
     }
 
     deleteFile(file) {
