@@ -10,8 +10,11 @@ export function getErrorString(e) {
 }
 
 export function alert(e) {
-    if (e)
-        w2alert(getErrorString(e));
+    if (e) {
+        return new Promise(resolve => w2alert(getErrorString(e), null, resolve));
+    } else {
+        return Promise.resolve();
+    }
 }
 
 var combining = /[\u0300-\u036F]/g;
