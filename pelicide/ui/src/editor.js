@@ -225,10 +225,10 @@ export default class Editor {
 
                 onOpen: event => {
                     event.onComplete = () => {
-                        $('.px-confirm-close').on('click', event => {
+                        jQuery('.px-confirm-close').on('click', event => {
                             w2popup.close();
 
-                            var result = $(event.target).val();
+                            var result = jQuery(event.target).val();
                             switch (result) {
                                 case 'save':
                                     resolve(this.save().then(_close));

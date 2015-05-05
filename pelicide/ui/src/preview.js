@@ -136,8 +136,8 @@ export default class Preview {
             }
         } else {
             if(state && state.file.url) {
-                let old_frame=$('#render'),
-                    new_frame = $('<iframe>').appendTo(old_frame.parent());
+                let old_frame = jQuery('#render'),
+                    new_frame = jQuery('<iframe>').appendTo(old_frame.parent());
 
                 new_frame.one('load', function () {
                     try {

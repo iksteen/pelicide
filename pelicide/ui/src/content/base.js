@@ -46,7 +46,7 @@ export default class BaseContent {
 
     form(type, statuses) {
         var project = this.project;
-        return $().w2form({
+        return jQuery().w2form({
             name: `create_${type}`,
             style: 'border: 0px; background-color: transparent;',
             fields: [
