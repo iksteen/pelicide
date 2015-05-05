@@ -28,7 +28,7 @@ export function confirm(msg, title) {
     });
 }
 
-var combining = /[\u0300-\u036F]/g;
+const combining = /[\u0300-\u036F]/g;
 export function slugify(s) {
     return unorm.nfkd(s).replace(combining, '').toLowerCase().replace(/[^\w\s-]/g, '').replace(/[-\s]+/g, '-');
 }
