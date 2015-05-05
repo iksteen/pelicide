@@ -75,6 +75,23 @@ class PelicideService(JSONRPCServer):
 
         os.remove(path)
 
+    def jsonrpc_rename_content(self, subdir, old_name, new_name):
+        path = self.get_content_path(subdir)
+
+        if '/' in old_name or '\\' in old_name or '/' in new_name or '\\' in new_name:
+            raise RuntimeError('Invalid filename')
+
+        old_path = self.get_sub_path(path, [old_name])
+        new_path = self.get_sub_path(path, [new_name])
+
+        if not os.path.isfile(old_path):
+            raise RuntimeError('File not found')
+
+        if os.path.exists(new_path):
+            raise RuntimeError('File already exists')
+
+        os.rename(old_path, new_path)
+
 
 class NoCacheFile(static.File):
     def _setContentHeaders(self, request, size=None):

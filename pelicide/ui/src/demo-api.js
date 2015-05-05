@@ -147,6 +147,20 @@ class API {
 
         return Promise.reject(new Error('File not found.'));
     }
+
+    rename_content(dir, oldName, newName) {
+        dir = dir.join('/');
+
+        for(let i = 0; i < CONTENT.length; ++i) {
+            let node = CONTENT[i];
+            if (node.dir.join('/') == dir && node.name == oldName) {
+                node.name = newName;
+                return Promise.resolve();
+            }
+        }
+
+        return Project.reject(new Error('File not found.'));
+    }
 }
 
 var api = new API();
