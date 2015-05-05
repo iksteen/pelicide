@@ -1,4 +1,4 @@
-import {alert} from 'src/util'
+import {alert, confirm} from 'src/util'
 import API from 'src/api'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
@@ -145,6 +145,20 @@ export default class Project {
     }
 
     getMenuForNode(item) {
+        var id = 0,
+            menu = [];
+
+        if (item.file) {
+            menu.push({
+                id: ++id,
+                text: 'Delete file',
+                icon: 'fa fa-times',
+                item: item,
+                onClick: menuItem => this.deleteFile(menuItem.item.file).catch(alert)
+            });
+        }
+
+        return menu;
     }
 
     get contentTitle() {
@@ -256,6 +270,13 @@ export default class Project {
 
         this._sidebar.remove(id);
         delete this._files[path];
+    }
+
+    deleteFile(file) {
+        return confirm(`Are you sure you want to delete ${file.name}?`)
+            .then(() => this.pelicide.editor.isCurrentFile(file) ? this.pelicide.editor.close(false) : Promise.resolve(null))
+            .then(() => API.delete_content(file.dir, file.name))
+            .then(() => this.removeFile(file));
     }
 
     getFile(dir, filename) {
