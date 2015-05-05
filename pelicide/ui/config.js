@@ -14,6 +14,7 @@ System.config({
     "css": "github:systemjs/plugin-css@0.1.10",
     "datagraph/jquery-jsonrpc": "github:datagraph/jquery-jsonrpc@0.1.1",
     "jquery": "github:components/jquery@2.1.3",
+    "keypress.js": "npm:keypress.js@2.1.0",
     "phstc/jquery-dateFormat": "github:phstc/jquery-dateFormat@1.0.2",
     "showdown": "github:showdownjs/showdown@0.5.0",
     "traceur": "github:jmcriffey/bower-traceur@0.0.88",

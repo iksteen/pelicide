@@ -61,14 +61,14 @@ export default class Project {
                         type: 'button',
                         id: 'refresh',
                         icon: 'fa fa-refresh',
-                        hint: 'Reload project',
+                        hint: `Reload project (${this.pelicide.metaKey}-Shift-L)`,
                         onClick: () => this.reload().catch(alert)
                     },
                     {
                         type: 'button',
                         id: 'rebuild',
                         icon: 'fa fa-wrench',
-                        hint: 'Rebuild project',
+                        hint: `Rebuild project (${this.pelicide.metaKey}-Shift-E)`,
                         onClick: () => this.rebuild().catch(alert)
                     },
                     { type: 'break' },
@@ -152,6 +152,14 @@ export default class Project {
         /* Update node path after saving a file. */
         this.pelicide.editor.on({type: 'save', execute: 'after'}, e => this.update(e.file));
 
+        /* Set up global hot keys. */
+        this.pelicide.listen('meta shift l', () => { this.reload().catch(alert) });
+        this.pelicide.listen('meta shift e', () => {
+            if (!this._toolbar.get('rebuild').disabled)
+                this.reload().catch(alert);
+        });
+
+        /* Load project. */
         this.reload().catch(alert);
     }
 

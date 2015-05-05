@@ -2,6 +2,7 @@ import Project from 'src/project'
 import Editor from 'src/editor'
 import Preview from 'src/preview'
 import jQuery from 'jquery'
+import keypress from 'keypress.js'
 import 'vitmalina/w2ui'
 import 'font-awesome/css/font-awesome.min.css!';
 import 'vitmalina/w2ui/dist/w2ui.min.css!';
@@ -15,6 +16,8 @@ export default class Pelicide {
 
         this.handlers = [];
 
+        this.listener = new keypress.keypress.Listener();
+
         this.project = new Project(this, options);
         this.editor = new Editor(this, options);
         this.preview = new Preview(this, options);
@@ -22,9 +25,21 @@ export default class Pelicide {
         jQuery(window).on('beforeunload', () => this.editor.dirty ?  'You have unsaved changes in your document.' : undefined);
     }
 
+    get metaKey() {
+        return navigator.userAgent.indexOf("Mac OS X") === -1 ? 'Ctrl' : 'Cmd';
+    }
+
+    listen(key, handler) {
+        this.listener.simple_combo(key, handler);
+    }
+
     run(box) {
         /* Initialise the layout. */
         this.layout.render(box);
+
+        /* Set up global hot keys. */
+        this.listen('meta shift o', () => { this.toggleProject(); });
+        this.listen('meta shift p', () => { this.togglePreview(); });
 
         /* Run this as a timeout to allow the DOM to settle. */
         setTimeout(() => {
@@ -54,7 +69,7 @@ export default class Pelicide {
                 {
                     id: 'project',
                     icon: 'fa fa-bars',
-                    hint: 'Toggle project view',
+                    hint: `Toggle project view (${this.metaKey}-Shift-O)`,
                     onClick: () => this.toggleProject()
                 },
                 {type: 'break'}
@@ -65,7 +80,7 @@ export default class Pelicide {
                 {
                     id: 'preview',
                     icon: 'fa fa-eye',
-                    hint: 'Toggle preview',
+                    hint: `Toggle preview (${this.metaKey}-Shift-P)`,
                     onClick: () => this.togglePreview()
                 }
             ]

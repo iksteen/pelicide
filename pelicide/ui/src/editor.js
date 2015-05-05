@@ -33,14 +33,14 @@ export default class Editor {
                         id: 'save',
                         disabled: true,
                         icon: 'fa fa-save',
-                        hint: 'Save',
+                        hint: `Save (${this.pelicide.metaKey}-S)`,
                         onClick: () => this.save().catch(alert)
                     },
                     {
                         type: 'button',
                         id: 'rebuild_page',
                         icon: 'fa fa-wrench',
-                        hint: 'Rebuild page',
+                        hint: `Rebuild page (${this.pelicide.metaKey}-E)`,
                         disabled: true,
                         onClick: () => this.rebuild().catch(alert)
                     },
@@ -63,6 +63,16 @@ export default class Editor {
             if (this.isCurrentFile(file)) {
                 this._currentFile =  file;
             }
+        });
+
+        /* Set up global hot keys. */
+        this.pelicide.listen('meta s', () => {
+            if (!this._toolbar.get('save').disabled)
+                this.save().catch(alert);
+        });
+        this.pelicide.listen('meta e', () => {
+            if (!this._toolbar.get('rebuild_page').disabled)
+                this.rebuild().catch(alert);
         });
     }
 
