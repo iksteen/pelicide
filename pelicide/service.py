@@ -14,14 +14,16 @@ class PelicideService(JSONRPCServer):
         JSONRPCServer.__init__(self)
         self.runner = runner
 
-    def get_content_path(self, subdir):
-        content_path = self.runner.settings['PATH']
-        path = os.path.abspath(os.path.join(content_path, *subdir))
+    def get_sub_path(self, base_path, subdir):
+        path = os.path.abspath(os.path.join(base_path, *subdir))
 
-        if not (path + os.sep).startswith(content_path + os.sep):
-            raise RuntimeError('File not in content path.')
+        if not (path + os.sep).startswith(base_path + os.sep):
+            raise RuntimeError('File not in base path')
 
         return path
+
+    def get_content_path(self, subdir):
+        return self.get_sub_path(self.runner.settings['PATH'], subdir)
 
     def jsonrpc_restart(self):
         return self.runner.restart().addCallback(lambda _: None)
