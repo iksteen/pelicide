@@ -185,7 +185,7 @@ export default class Editor {
             });
     }
 
-    close() {
+    close(confirmSave = true) {
         if (this._editor === null) {
             return Promise.resolve();
         }
@@ -206,7 +206,7 @@ export default class Editor {
             this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
         };
 
-        if (!this.dirty) {
+        if (!this.dirty || !confirmSave) {
             _close();
             return Promise.resolve();
         }
