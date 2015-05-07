@@ -6,7 +6,7 @@ import 'vitmalina/w2ui'
 
 function getPathFromRecord(record) {
     return {
-        path: record.create_in ? record.create_in.split('/') : [],
+        path: ['content'].concat(record.create_in ? record.create_in.split('/') : []),
         name: slugify(record.title) + '.' + record.extension.id
     }
 }
@@ -95,7 +95,7 @@ export default class BaseContent {
                     body = this._templates[record.extension.id](record);
 
                 return this.project.pelicide.editor.close()
-                    .then(() => API.set_content(path.path, path.name, body))
+                    .then(() => API.put_file(path.path, path.name, body))
                     .then(() => this.project.reload())
                     .then(() => this.project.pelicide.editor.open(this.project.getFile(path.path, path.name)));
             })

@@ -159,7 +159,7 @@ export default class Editor {
         }
 
         return this.close()
-            .then(() => API.get_content(file.dir, file.name))
+            .then(() => API.get_file(file.dir, file.name))
             .then(content => {
                 this._currentFile = file;
                 this._editor = new editor(this, this._box, content);
@@ -185,7 +185,7 @@ export default class Editor {
             return Promise.reject();
         }
 
-        return API.set_content(this._currentFile.dir, this._currentFile.name, this._editor.content())
+        return API.put_file(this._currentFile.dir, this._currentFile.name, this._editor.content())
             .then(() => {
                 this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
                 this.dirty = false;

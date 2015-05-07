@@ -34,7 +34,7 @@ Despite these limitations, feel free to explore the user interface! And if you l
             },
             type: 'pelican.contents.Draft',
             mimetype: 'text/x-markdown',
-            dir: []
+            dir: ['content']
         }
     ];
 
@@ -78,11 +78,11 @@ class API {
             return NotSupported();
     }
 
-    list_content() {
+    list_files() {
         return Promise.resolve(jQuery.extend(true, [], CONTENT));
     }
 
-    get_content(dir, name) {
+    get_file(dir, name) {
         dir = dir.join('/');
 
         for(let node of CONTENT.values()) {
@@ -93,7 +93,7 @@ class API {
         return Promise.reject(new Error('File not found.'));
     }
 
-    set_content(dir, name, new_content) {
+    put_file(dir, name, new_content) {
         var metadata = new_content.split('\n\n', 1)[0],
             meta = {};
 
@@ -134,7 +134,7 @@ class API {
         return Promise.resolve();
     }
 
-    delete_content(dir, name) {
+    delete_file(dir, name) {
         dir = dir.join('/');
 
         for(let i = 0; i < CONTENT.length; ++i) {

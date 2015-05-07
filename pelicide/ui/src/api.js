@@ -2,7 +2,7 @@ import jQuery from 'jquery';
 import 'datagraph/jquery-jsonrpc';
 
 var API_CALLS = ['restart', 'get_settings', 'get', 'set', 'list_extensions', 'build', 'render',
-                 'list_content', 'get_content', 'set_content', 'delete_content', 'rename_content'];
+                 'list_files', 'get_file', 'put_file', 'delete_file', 'rename_file'];
 
 class API {
     constructor() {

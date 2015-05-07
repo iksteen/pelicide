@@ -342,7 +342,7 @@ export default class Project {
 
         return dialog({title: 'Rename file', form: this._renameForm})
             .then(record => {
-                return API.rename_content(record.dir, record.origFilename, record.filename)
+                return API.rename_file(record.dir, record.origFilename, record.filename)
                     .then(() => {
                         this.removeFile(file);
                         file.name = record.filename;
@@ -355,7 +355,7 @@ export default class Project {
     deleteFile(file) {
         return confirm(`Are you sure you want to delete ${file.name}?`)
             .then(() => this.pelicide.editor.isCurrentFile(file) ? this.pelicide.editor.close(false) : Promise.resolve(null))
-            .then(() => API.delete_content(file.dir, file.name))
+            .then(() => API.delete_file(file.dir, file.name))
             .then(() => this.removeFile(file));
     }
 
@@ -372,7 +372,7 @@ export default class Project {
             }
         }
         file.icon = 'fa fa-file-o';
-        return ['content', this._otherContentId].concat(file.dir);
+        return ['content', this._otherContentId].concat(file.dir.slice(1));
     }
 
     get categories() {
@@ -397,7 +397,7 @@ export default class Project {
         var filePath = file.dir.concat([file.name]).join('/'),
             nodePath = this.pathForFile(file).join('/');
 
-        return API.list_content()
+        return API.list_files()
             .then(content => {
                 for (let f of content.values()) {
                     if (f.dir.concat([f.name]).join('/') == filePath) {
@@ -418,7 +418,7 @@ export default class Project {
             .then(() => {
                 this._sidebar.lock('Loading...', true);
                 this.clear();
-                return API.list_content();
+                return API.list_files();
             })
             .then(content => {
                 for (let file of content.values()) {

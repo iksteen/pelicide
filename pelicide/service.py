@@ -14,16 +14,20 @@ class PelicideService(JSONRPCServer):
         JSONRPCServer.__init__(self)
         self.runner = runner
 
-    def get_sub_path(self, base_path, subdir):
+    def get_sub_path(self, subdir):
+        origin, subdir = subdir[0], subdir[1:]
+
+        if origin == 'content':
+            base_path = self.runner.settings['PATH']
+        else:
+            raise RuntimeError('Unknown origin %s' % origin)
+
         path = os.path.abspath(os.path.join(base_path, *subdir))
 
         if not (path + os.sep).startswith(base_path + os.sep):
             raise RuntimeError('File not in base path')
 
         return path
-
-    def get_content_path(self, subdir):
-        return self.get_sub_path(self.runner.settings['PATH'], subdir)
 
     def jsonrpc_restart(self):
         return self.runner.restart().addCallback(lambda _: None)
@@ -41,16 +45,22 @@ class PelicideService(JSONRPCServer):
         return self.runner.command('extensions')
 
     def jsonrpc_build(self, paths=None):
+        if paths:
+            map(lambda p: p[0].pop(0), paths)
         return self.runner.command('build', paths)
 
     def jsonrpc_render(self, fmt, content):
         return self.runner.command('render', [fmt, content]).addCallback(lambda v: v['content'])
 
-    def jsonrpc_list_content(self):
-        return self.runner.command('scan')
-
-    def jsonrpc_get_content(self, subdir, filename):
-        path = os.path.join(self.get_content_path(subdir), filename)
+    def jsonrpc_list_files(self):
+        def add_origin(content, origin):
+            return [
+                dict(d, dir=[origin] + d['dir'])
+                for d in content
+            ]
+        return self.runner.command('scan').addCallback(add_origin, 'content')
+    def jsonrpc_get_file(self, subdir, filename):
+        path = self.get_sub_path(subdir + [filename])
 
         if not os.path.isfile(path):
             raise RuntimeError('File not found')
@@ -58,31 +68,29 @@ class PelicideService(JSONRPCServer):
         with open(path, 'rb') as f:
             return f.read().decode('utf-8')
 
-    def jsonrpc_set_content(self, subdir, filename, content):
-        path = self.get_content_path(subdir)
+    def jsonrpc_put_file(self, subdir, filename, content):
+        path = self.get_sub_path(subdir + [filename])
 
-        if not os.path.isdir(path):
-            os.makedirs(path)
+        path_dir = os.path.dirname(path)
+        if not os.path.isdir(path_dir):
+            os.makedirs(os.path.dirname(path))
 
-        with open(os.path.join(path, filename), 'wb') as f:
+        with open(path, 'wb') as f:
             f.write(content.encode('utf-8'))
 
-    def jsonrpc_delete_content(self, subdir, filename):
-        path = os.path.join(self.get_content_path(subdir), filename)
+    def jsonrpc_delete_file(self, subdir, filename):
+        path = self.get_sub_path(subdir + [filename])
 
         if not os.path.isfile(path):
             raise RuntimeError('File not found')
 
         os.remove(path)
 
-    def jsonrpc_rename_content(self, subdir, old_name, new_name):
-        path = self.get_content_path(subdir)
-
-        if '/' in old_name or '\\' in old_name or '/' in new_name or '\\' in new_name:
+    def jsonrpc_rename_file(self, subdir, old_name, new_name):
+        old_path = self.get_sub_path(subdir + [old_name])
+        new_path = self.get_sub_path(subdir + [new_name])
+        if not os.path.dirname(old_path) == os.path.dirname(new_path):
             raise RuntimeError('Invalid filename')
-
-        old_path = self.get_sub_path(path, [old_name])
-        new_path = self.get_sub_path(path, [new_name])
 
         if not os.path.isfile(old_path):
             raise RuntimeError('File not found')
