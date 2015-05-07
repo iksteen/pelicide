@@ -1,7 +1,10 @@
 from __future__ import print_function
+import mimetypes
 import os
+import itertools
 
 from fastjsonrpc.server import JSONRPCServer
+from twisted.internet import defer
 
 
 class PelicideService(JSONRPCServer):
@@ -14,6 +17,8 @@ class PelicideService(JSONRPCServer):
 
         if origin == 'content':
             base_path = self.runner.settings['PATH']
+        elif origin == 'theme':
+            base_path = self.runner.settings['THEME']
         else:
             raise RuntimeError('Unknown origin %s' % origin)
 
@@ -53,7 +58,29 @@ class PelicideService(JSONRPCServer):
                 dict(d, dir=[origin] + d['dir'])
                 for d in content
             ]
-        return self.runner.command('scan').addCallback(add_origin, 'content')
+
+        def list_files(origin):
+            origin_path = self.get_sub_path([origin])
+            return [
+                {
+                    'dir': [origin] + os.path.relpath(dirpath, origin_path).split(os.sep),
+                    'name': filename,
+                    'mimetype': mimetypes.guess_type(filename)[0] or 'application/octet-stream',
+                }
+                for (dirpath, dirnames, filenames) in os.walk(origin_path)
+                for filename in filenames
+            ]
+
+        return defer.gatherResults(
+            [
+                self.runner.command('scan').addCallback(add_origin, 'content'),
+                defer.succeed(list_files('theme')),
+            ],
+            consumeErrors=True
+        ).addCallback(
+            lambda r: list(itertools.chain(*r))
+        )
+
     def jsonrpc_get_file(self, subdir, filename):
         path = self.get_sub_path(subdir + [filename])
 

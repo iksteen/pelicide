@@ -97,6 +97,12 @@ export default class Project {
                     text: this._sitename || 'Content',
                     expanded: true,
                     group: true
+                },
+                {
+                    id: 'theme',
+                    text: 'Theme',
+                    expanded: false,
+                    group: true
                 }
             ],
             onDblClick: event => {
@@ -172,6 +178,10 @@ export default class Project {
             nodes: {
                 content: {
                     id: 'content',
+                    nodes: {}
+                },
+                theme: {
+                    id: 'theme',
                     nodes: {}
                 }
             }
@@ -378,6 +388,9 @@ export default class Project {
                 }
                 file.icon = 'fa fa-file-o';
                 return ['content', this._otherContentId].concat(file.dir.slice(1));
+            case 'theme':
+                file.icon = 'fa fa-file-o';
+                return file.dir;
         }
         return null;
     }
