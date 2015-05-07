@@ -1,6 +1,7 @@
 from invoke import task, run
 from invoke.tasks import call
 import os
+import shutil
 
 
 @task()
@@ -12,19 +13,24 @@ def clean(deps=False, pybuild=False):
 
     ui = os.path.join('pelicide', 'ui')
 
-    patterns = [
+    paths = [
         os.path.join(ui, fn)
         for fn in ['build.js', 'build.js.map', 'build.css', 'build.css.map']
     ]
 
     if deps:
-        patterns.append(os.path.join(ui, 'jspm_packages'))
+        paths.append(os.path.join(ui, 'jspm_packages'))
 
     if pybuild:
-        patterns.append('build')
+        paths.append('build')
 
-    for pattern in patterns:
-        run("rm -rf %s" % pattern)
+    for pattern in paths:
+        if os.path.isfile(pattern):
+            os.remove(pattern)
+        elif os.path.isdir(pattern):
+            shutil.rmtree(pattern)
+        elif os.path.exists(pattern):
+            raise RuntimeError('Don\'t know how to clean %s' % pattern)
 
 
 @task()
@@ -37,7 +43,7 @@ def deps():
 
 
 @task(deps)
-def bundle(minify=True, sourcemaps=True):
+def build_bundle(minify=True, sourcemaps=True):
     """
     Create a bundled version of the code and its dependencies, ready for
     deployment.
@@ -54,20 +60,31 @@ def bundle(minify=True, sourcemaps=True):
     if not sourcemaps:
         args.append('--skip-source-maps')
 
-    run('jspm bundle-sfx src/main %s' % ' '.join(args))
+    run('jspm bundle-sfx %s %s' % (os.path.join('src', 'main'), ' '.join(args)))
 
 
-@task(call(bundle, sourcemaps=False))
+@task(call(build_bundle, sourcemaps=False))
+def build_python():
+    """
+    Build everything needed to install python package.
+    """
+
+    run('python setup.py build')
+
+
+@task(build_python)
 def build():
     """
-    Perform a production build of the javascript code and its dependencies.
+    Perform a production build of the javascript code, its dependencies and
+    the python package.
     """
 
 
-@task(pre=[call(clean, deps=True), build])
+@task(pre=[call(clean, deps=True, pybuild=True), build])
 def rebuild():
     """
-    Perform a full rebuild of the javascript code and its dependencies.
+    Perform a full rebuild of the javascript code, its dependencies and
+    the python package.
     """
 
 
@@ -80,8 +97,28 @@ def wheel():
     run('python setup.py bdist_wheel')
 
 
-@task(pre=[call(clean, pybuild=True), wheel])
+@task(wheel)
 def dist():
     """
     Build all distribution variants.
     """
+
+
+@task(build)
+def nuitka():
+    """
+    Build a standalone nuitka distribution. Experimental.
+    """
+
+    run('nuitka --standalone %s --output-dir=build' % (
+        os.path.join('build', 'lib', 'pelicide', '__main__.py'),
+    ))
+    os.makedirs(os.path.join('build', '__main__.dist', 'pelicide'))
+    shutil.copy(
+        os.path.join('build', 'lib', 'pelicide', 'pelican-runner.py'),
+        os.path.join('build', '__main__.dist', 'pelicide')
+    )
+    shutil.copytree(
+        os.path.join('build', 'lib', 'pelicide', 'ui'),
+        os.path.join('build', '__main__.dist', 'ui')
+    )
