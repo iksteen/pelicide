@@ -22,8 +22,9 @@ import argparse
 import sys
 import os
 from twisted.internet import reactor, defer, error
-from twisted.web import server, static, script
-from pelicide.service import start_service
+from twisted.web import server
+
+from pelicide.project import start_project
 
 
 def parse_project(project_path):
@@ -57,16 +58,9 @@ def parse_project(project_path):
     }
 
 
-def start_instance(project):
-    root = static.File(os.path.join(os.path.dirname(__file__), 'ui'))
-    root.indexNames = ['index.rpy', 'index.html']
-    root.processors = {'.rpy': script.ResourceScript}
-    return root, start_service(root, project)
-
-
 @defer.inlineCallbacks
 def run(project, port=0):
-    root, d = start_instance(project)
+    root, d = start_project(project)
     yield d
     try:
         port = reactor.listenTCP(port, server.Site(root), interface='127.0.0.1')
