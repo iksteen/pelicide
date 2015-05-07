@@ -164,7 +164,8 @@ export default class Editor {
                 this._currentFile = file;
                 this._editor = new editor(this, this._box, content);
 
-                this._toolbar.enable('rebuild_page');
+                if (file.dir[0] == 'content')
+                    this._toolbar.enable('rebuild_page');
 
                 this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
             })
@@ -272,7 +273,7 @@ export default class Editor {
             phase: 'before',
             target: this,
             onComplete: () => {
-                this._toolbar.set('rebuild_page', {disabled: this._editor === null});
+                this._toolbar.set('rebuild_page', {disabled: this._editor === null || this._currentFile.dir[0] != 'content'});
             }
         };
         this.trigger(eventData);
