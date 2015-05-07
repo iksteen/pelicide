@@ -425,7 +425,7 @@ export default class Project {
                     this.addFile(file);
                 }
                 this._sidebar.unlock();
-            }, function (e) {
+            }, e => {
                 this._sidebar.unlock();
                 return Promise.reject(e);
             });
