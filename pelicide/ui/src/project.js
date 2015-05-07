@@ -298,8 +298,11 @@ export default class Project {
     }
 
     addFile(file) {
-        var path = this.pathForFile(file),
-            parent = this._sidebar.get(this.ensurePath(path)),
+        var path = this.pathForFile(file);
+        if (path === null)
+            return;
+
+        var parent = this._sidebar.get(this.ensurePath(path)),
             id = this._newId(),
             before = null;
 
@@ -365,14 +368,18 @@ export default class Project {
     }
 
     pathForFile(file) {
-        for (let contentType of this._contentTypes.values()) {
-            let path = contentType.scan(file);
-            if (path !== undefined) {
-                return ['content'].concat(path);
-            }
+        switch (file.dir[0]) {
+            case 'content':
+                for (let contentType of this._contentTypes.values()) {
+                    let path = contentType.scan(file);
+                    if (path !== undefined) {
+                        return ['content'].concat(path);
+                    }
+                }
+                file.icon = 'fa fa-file-o';
+                return ['content', this._otherContentId].concat(file.dir.slice(1));
         }
-        file.icon = 'fa fa-file-o';
-        return ['content', this._otherContentId].concat(file.dir.slice(1));
+        return null;
     }
 
     get categories() {
@@ -397,12 +404,15 @@ export default class Project {
         var filePath = file.dir.concat([file.name]).join('/'),
             nodePath = this.pathForFile(file).join('/');
 
+        if (nodePath === null)
+            return;
+
         return API.list_files()
             .then(content => {
                 for (let f of content.values()) {
                     if (f.dir.concat([f.name]).join('/') == filePath) {
                         let newPath = this.pathForFile(f);
-                        if (newPath.join('/') !== nodePath) {
+                        if (newPath !== null && newPath.join('/') !== nodePath) {
                             this.removeFile(file);
                             this.addFile(f);
                             this.selectedFile = f;
