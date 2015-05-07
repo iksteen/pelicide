@@ -314,7 +314,8 @@ export default class Project {
 
         var parent = this._sidebar.get(this.ensurePath(path)),
             id = this._newId(),
-            before = null;
+            before = null,
+            editor = this.pelicide.editor.getEditor(file);
 
         for (let sibling of parent.nodes.values()) {
             if (sibling.file !== undefined && sibling.text.localeCompare(file.name) > 0) {
@@ -326,9 +327,9 @@ export default class Project {
         this._sidebar.insert(parent, before, {
             id: id,
             text: file.name,
-            icon: file.icon || 'fa fa-file-text-o',
+            icon: editor ? editor.icon : 'fa fa-file-o',
             file: file,
-            disabled: !this.pelicide.editor.getEditor(file)
+            disabled: !editor
         });
 
         this._files[file.dir.concat([file.name]).join('/')] = id;
@@ -386,10 +387,8 @@ export default class Project {
                         return ['content'].concat(path);
                     }
                 }
-                file.icon = 'fa fa-file-o';
                 return ['content', this._otherContentId].concat(file.dir.slice(1));
             case 'theme':
-                file.icon = 'fa fa-file-o';
                 return file.dir;
         }
         return null;
