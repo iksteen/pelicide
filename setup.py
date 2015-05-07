@@ -34,8 +34,16 @@ setup(
 
     packages=['pelicide'],
     install_requires=requires,
-    include_package_data=True,
     zip_safe=False,
+
+    package_data = {
+        'pelicide': [
+            'ui/index.html',
+            'ui/build.js',
+            'ui/build.css',
+            'ui/font-awesome/fonts/*'
+        ],
+    },
 
     entry_points={
         'console_scripts': [

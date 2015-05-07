@@ -1,3 +1,0 @@
-include pelicide/ui/index.html
-include pelicide/ui/build.js pelicide/ui/build.css
-recursive-include pelicide/ui/font-awesome/fonts *
