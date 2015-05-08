@@ -15,7 +15,7 @@ CodeMirror.defineMode('htmljinja2', function(config, parserConfig) {
 
 export default class Jinja2Editor extends CMEditor {
     constructor(editor, parent_el, content) {
-        super(editor, parent_el, content);
+        super(editor, parent_el, content, 'htmljinja2');
 
         var ctrl = this.ctrlOrCmd;
 
@@ -122,8 +122,6 @@ export default class Jinja2Editor extends CMEditor {
     bp() {
         this.surround('{% ', ' %}', 3);
     }
-
-    get mode() { return 'htmljinja2'; }
 
     static get formats() {
         return ['text/html'];

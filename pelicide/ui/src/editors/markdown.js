@@ -3,7 +3,7 @@ import 'codemirror/mode/markdown/markdown';
 
 export default class MDEditor extends CMEditor {
     constructor(editor, parent_el, content) {
-        super(editor, parent_el, content);
+        super(editor, parent_el, content, 'markdown');
 
         var ctrl = this.ctrlOrCmd;
 
@@ -100,8 +100,6 @@ export default class MDEditor extends CMEditor {
     ul() {
         this.replaceLinePrefix(/^\s*[*+-]\s/, match => match ? '': '* ');
     }
-
-    get mode() { return 'markdown'; }
 
     static get formats() {
         return ['text/x-markdown', 'text/x-rmarkdown'];

@@ -5,20 +5,20 @@ import 'codemirror/addon/dialog/dialog.css!';
 import 'src/css/codemirror-theme.css!';
 
 export default class CMEditor {
-    constructor(editor, parent_el, content) {
+    constructor(editor, parent_el, content, mode='text/plain') {
         this.editor = editor;
         this._codeMirror = CodeMirror(
             parent_el,
             {
                 value: content,
                 lineWrapping: true,
-                mode: this.mode,
+                mode: mode,
                 theme: 'pelicide'
             }
         );
 
         if (CodeMirror.autoLoadMode !== undefined) {
-            CodeMirror.autoLoadMode(this._codeMirror, this.mode);
+            CodeMirror.autoLoadMode(this._codeMirror, mode);
         }
 
         // Notify editor component of change.
@@ -48,7 +48,6 @@ export default class CMEditor {
         return this._codeMirror.getValue();
     }
 
-    get mode() { return 'text/plain'; }
     static get formats() { return ['text']; }
     static get icon() { return ['fa fa-file-text-o']; }
     static get extensions() { return []; }

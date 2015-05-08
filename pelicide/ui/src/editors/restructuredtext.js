@@ -3,7 +3,7 @@ import 'codemirror/mode/rst/rst';
 
 export default class RSTEditor extends CMEditor {
     constructor(editor, parent_el, content) {
-        super(editor, parent_el, content);
+        super(editor, parent_el, content, 'rst');
 
         var ctrl = this.ctrlOrCmd;
 
@@ -67,8 +67,6 @@ export default class RSTEditor extends CMEditor {
     ul() {
         this.replaceLinePrefix(/^\s*[*+-]\s/, match => match ? '': '* ');
     }
-
-    get mode() { return 'rst'; }
 
     static get formats() {
         return ['text/x-rst'];

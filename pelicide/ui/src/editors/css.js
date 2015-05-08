@@ -3,10 +3,8 @@ import 'codemirror/mode/css/css';
 
 export default class CSSEditor extends CMEditor {
     constructor(editor, parent_el, content) {
-        super(editor, parent_el, content);
+        super(editor, parent_el, content, 'css');
     }
-
-    get mode() { return 'css'; }
 
     static get formats() {
         return ['text/css'];
