@@ -20,28 +20,24 @@ export default class BaseContent {
     }
 
     init(type, statuses) {
-        return this.loadExtensions(type)
-            .then(() => {
-                this._form = this.form(type, statuses);
-            });
+        this.loadExtensions(type);
+        this._form = this.form(type, statuses);
     }
 
     loadExtensions(type) {
-        return API.list_extensions()
-            .then((pelican_extensions) => {
-                pelican_extensions = new Set(pelican_extensions);
-                for (let e of this.project.pelicide.editor.editors.values()) {
-                    if (e.templates && e.templates[type]) {
-                        let template = e.templates[type];
-                        for (let extension of e.extensions.values()) {
-                            if (pelican_extensions.has(extension)) {
-                                this._templates[extension] = template;
-                                this._extensions.push(extension);
-                            }
-                        }
+        var pelican_extensions = this.project.pelicide.extensions;
+
+        for (let e of this.project.pelicide.editor.editors.values()) {
+            if (e.templates && e.templates[type]) {
+                let template = e.templates[type];
+                for (let extension of e.extensions.values()) {
+                    if (pelican_extensions.has(extension)) {
+                        this._templates[extension] = template;
+                        this._extensions.push(extension);
                     }
                 }
-            });
+            }
+        }
     }
 
     form(type, statuses) {

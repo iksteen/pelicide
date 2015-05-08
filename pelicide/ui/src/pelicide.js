@@ -14,6 +14,8 @@ export default class Pelicide {
 
         options = options || {};
 
+        this.extensions = new Set(options.extensions || []);
+
         this.handlers = [];
 
         this.listener = new keypress.keypress.Listener();

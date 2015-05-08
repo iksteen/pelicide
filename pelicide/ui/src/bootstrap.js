@@ -17,12 +17,16 @@ export function bootstrap(demo=false) {
 
     // Start Pelicide UI when DOM is ready.
     jQuery(function () {
-        API.get('SITENAME').then(function (sitename) {
+        Promise.all([
+            API.get('SITENAME'),
+            API.list_extensions()
+        ]).then(function ([sitename, extensions]) {
             document.title = sitename + ' (Pelicide)';
 
             // Set up and start Pelicide UI.
             var pelicide = new Pelicide({
                 sitename: sitename || '',
+                extensions: extensions,
                 contentTypes: [
                     ArticleContent,
                     PageContent

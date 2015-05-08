@@ -12,14 +12,13 @@ export default class PageContent extends BaseContent {
     init() {
         this._pageNodeId = this.project.addContentType('Pages');
 
-        return super.init('page', ['published', 'hidden'])
-            .then(() => {
-                this.project.addCreateContent({
-                    text: 'Create page',
-                    icon: 'fa fa-file-text-o',
-                    onClick: () => this.create()
-                });
-            });
+        super.init('page', ['published', 'hidden']);
+
+        this.project.addCreateContent({
+            text: 'Create page',
+            icon: 'fa fa-file-text-o',
+            onClick: () => this.create()
+        });
     }
 
     scan(file) {
