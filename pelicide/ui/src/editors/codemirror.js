@@ -1,5 +1,7 @@
 import CodeMirror from 'codemirror/lib/codemirror';
+import 'codemirror/addon/search/search';
 import 'codemirror/lib/codemirror.css!';
+import 'codemirror/addon/dialog/dialog.css!';
 import 'src/css/codemirror-theme.css!';
 
 export default class CMEditor {
