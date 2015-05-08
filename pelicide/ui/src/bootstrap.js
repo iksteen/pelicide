@@ -8,6 +8,8 @@ import CMEditor from 'src/editors/codemirror';
 import MDEditor from 'src/editors/markdown';
 import RSTEditor from 'src/editors/restructuredtext';
 import Jinja2Editor from 'src/editors/jinja2';
+import CSSEditor from 'src/editors/css';
+import JSEditor from 'src/editors/javascript';
 
 export function bootstrap(demo=false) {
     // Set up API endpoint.
@@ -29,7 +31,9 @@ export function bootstrap(demo=false) {
                     MDEditor,
                     RSTEditor,
                     CMEditor,
-                    Jinja2Editor
+                    Jinja2Editor,
+                    CSSEditor,
+                    JSEditor
                 ]
             });
             pelicide.run('#main_layout');
