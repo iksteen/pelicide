@@ -4,6 +4,7 @@ import 'codemirror/lib/codemirror.css!';
 import 'codemirror/addon/dialog/dialog.css!';
 import 'src/css/codemirror-theme.css!';
 
+
 export default class CMEditor {
     constructor(editor, parent_el, content, mode='text/plain') {
         this.editor = editor;

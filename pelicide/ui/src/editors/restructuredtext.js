@@ -1,6 +1,21 @@
 import CMEditor from 'src/editors/codemirror';
 import 'codemirror/mode/rst/rst';
 
+
+function template(record) {
+    return `${record.title}
+${'#'.repeat(record.title.length)}
+
+:date: ${record.date}
+:status: ${record.status.id}
+:tags: `+ (record.category ? `
+:category: ${record.category}` : '') + `
+:slug: ${record.slug}
+
+`;
+}
+
+
 export default class RSTEditor extends CMEditor {
     constructor(editor, parent_el, content) {
         super(editor, parent_el, content, 'rst');
@@ -37,6 +52,21 @@ export default class RSTEditor extends CMEditor {
         ]);
     }
 
+    static get formats() {
+        return ['text/x-rst'];
+    }
+
+    static get extensions() {
+        return ['rst'];
+    }
+
+    static get templates() {
+        return {
+            article: template,
+            page: template
+        }
+    }
+
     link() {
         var doc = this._codeMirror.getDoc();
         if (doc.somethingSelected()) {
@@ -52,33 +82,5 @@ export default class RSTEditor extends CMEditor {
 
     ul() {
         this.replaceLinePrefix(/^\s*[*+-]\s/, match => match ? '': '* ');
-    }
-
-    static get formats() {
-        return ['text/x-rst'];
-    }
-
-    static get extensions() {
-        return ['rst'];
-    }
-
-    static get templates() {
-        function template(record) {
-            return `${record.title}
-${'#'.repeat(record.title.length)}
-
-:date: ${record.date}
-:status: ${record.status.id}
-:tags: `+ (record.category ? `
-:category: ${record.category}` : '') + `
-:slug: ${record.slug}
-
-`;
-        }
-
-        return {
-            article: template,
-            page: template
-        }
     }
 }

@@ -6,12 +6,14 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/css/css';
 import 'codemirror/mode/htmlmixed/htmlmixed';
 
+
 CodeMirror.defineMode('htmljinja2', function(config, parserConfig) {
     return CodeMirror.overlayMode(
         CodeMirror.getMode(config, parserConfig.backdrop || 'text/html'),
         CodeMirror.getMode(config, 'jinja2')
     );
 });
+
 
 export default class Jinja2Editor extends CMEditor {
     constructor(editor, parent_el, content) {
@@ -75,6 +77,12 @@ export default class Jinja2Editor extends CMEditor {
         ]);
     }
 
+    static get formats() {
+        return ['text/html'];
+    }
+
+    static get icon() { return ['fa fa-file-code-o']; }
+
     link() {
         var doc = this._codeMirror.getDoc();
         if (doc.somethingSelected()) {
@@ -100,10 +108,4 @@ export default class Jinja2Editor extends CMEditor {
         else
             this.insert('<img alt="" src=""/>', 10);
     }
-
-    static get formats() {
-        return ['text/html'];
-    }
-
-    static get icon() { return ['fa fa-file-code-o']; }
 }

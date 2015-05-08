@@ -1,6 +1,19 @@
 import CMEditor from 'src/editors/codemirror';
 import 'codemirror/mode/markdown/markdown';
 
+
+function template(record) {
+    return `Title: ${record.title}
+Date: ${record.date}
+Status: ${record.status.id}
+Tags:`  + (record.category ? `
+Category: ${record.category}` : '') + `
+Slug: ${record.slug}
+
+`;
+}
+
+
 export default class MDEditor extends CMEditor {
     constructor(editor, parent_el, content) {
         super(editor, parent_el, content, 'markdown');
@@ -49,6 +62,21 @@ export default class MDEditor extends CMEditor {
         ]);
     }
 
+    static get formats() {
+        return ['text/x-markdown', 'text/x-rmarkdown'];
+    }
+
+    static get extensions() {
+        return ['md', 'markdown', 'mkd', 'mdown', 'rmd'];
+    }
+
+    static get templates() {
+        return {
+            article: template,
+            page: template
+        }
+    }
+
     header() {
         this.replaceLinePrefix(/(#+)\s+/, match =>
             match ? (match[1].length >= 6 ? '' : '#'.repeat(match[1].length + 1) + ' ') : '# '
@@ -83,31 +111,5 @@ export default class MDEditor extends CMEditor {
 
     ul() {
         this.replaceLinePrefix(/^\s*[*+-]\s/, match => match ? '': '* ');
-    }
-
-    static get formats() {
-        return ['text/x-markdown', 'text/x-rmarkdown'];
-    }
-
-    static get extensions() {
-        return ['md', 'markdown', 'mkd', 'mdown', 'rmd'];
-    }
-
-    static get templates() {
-        function template(record) {
-            return `Title: ${record.title}
-Date: ${record.date}
-Status: ${record.status.id}
-Tags:`  + (record.category ? `
-Category: ${record.category}` : '') + `
-Slug: ${record.slug}
-
-`;
-        }
-
-        return {
-            article: template,
-            page: template
-        }
     }
 }
