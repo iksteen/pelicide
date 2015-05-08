@@ -397,7 +397,7 @@ export default class Project {
     get categories() {
         var categories = new Set();
         for (let node of this._sidebar.find({}).values()) {
-            if (node.file !== undefined)
+            if (node.file && node.file.meta && node.file.meta.category)
                 categories.add(node.file.meta.category);
         }
         return Array.from(categories);
