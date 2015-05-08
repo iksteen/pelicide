@@ -120,10 +120,11 @@ export default class Preview {
         var state = this.pelicide.editor.state;
 
         if(this.mode != 'render') {
-            let preview = jQuery('#preview');
+            let preview = jQuery('#preview'),
+                extension = state && getExtension(state.file.name);
 
-            if (state) {
-                API.render(getExtension(state.file.name), state.content).then(html => {
+            if (state && this.pelicide.extensions.has(extension)) {
+                API.render(extension, state.content).then(html => {
                     preview.html(html);
                 }, e => {
                     preview.empty().append(
