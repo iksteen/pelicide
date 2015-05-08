@@ -5,50 +5,36 @@ export default class RSTEditor extends CMEditor {
     constructor(editor, parent_el, content) {
         super(editor, parent_el, content, 'rst');
 
-        var ctrl = this.ctrlOrCmd;
-
-        editor.addEditorToolbarItems([
-            {
-                id: 'md_bold',
-                icon: 'fa fa-bold',
-                hint: `Bold (${ctrl}B)`,
-                onClick: () => this.bold()
-            },
-            {
-                id: 'md_italic',
-                icon: 'fa fa-italic',
-                hint: `Italic (${ctrl}I)`,
-                onClick: () => this.italic()
-            },
-            {type: 'break', id: 'md_break_1'},
-            {
-                id: 'md_link',
-                icon: 'fa fa-link',
-                hint: `Insert link (${ctrl}L)`,
-                onClick: () => this.link()
-            },
-            {
-                id: 'md_ul',
-                icon: 'fa fa-list-ul',
-                hint: `Unordered list item (${ctrl}U)`,
-                onClick: () => this.ul()
-            }
+        this.addActions([
+            [
+                {
+                    icon: 'fa fa-bold',
+                    hint: 'Bold',
+                    key: '{meta}-B',
+                    action: () => this.surround('**')
+                },
+                {
+                    icon: 'fa fa-italic',
+                    hint: 'Italic',
+                    key: '{meta}-I',
+                    action: () => this.surround('*')
+                }
+            ],
+            [
+                {
+                    icon: 'fa fa-link',
+                    hint: 'Insert link',
+                    ley: '{meta}-L',
+                    action: () => this.link()
+                },
+                {
+                    icon: 'fa fa-list-ul',
+                    hint: 'Unordered list item (${ctrl}U)',
+                    key: '{meta}-U',
+                    action: () => this.ul()
+                }
+            ]
         ]);
-
-        this._codeMirror.setOption("extraKeys", {
-            [ctrl + 'B']: () => this.bold(),
-            [ctrl + 'I']: () => this.italic(),
-            [ctrl + 'L']: () => this.link(),
-            [ctrl + 'U']: () => this.ul()
-        });
-    }
-
-    bold() {
-        this.surround('**');
-    }
-
-    italic() {
-        this.surround('*');
     }
 
     link() {

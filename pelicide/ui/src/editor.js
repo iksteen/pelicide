@@ -77,13 +77,6 @@ export default class Editor {
     }
 
     addEditorToolbarItem(item) {
-        if (! this._toolbar.get('editor_break')) {
-            this._toolbar.insert('editor_spacer', {
-                type: 'break',
-                id: 'editor_break',
-                editorItem: true
-            });
-        }
         this._toolbar.insert('editor_spacer', Object.assign({type: 'button', editorItem: true}, item));
     }
 

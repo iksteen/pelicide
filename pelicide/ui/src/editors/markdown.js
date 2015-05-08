@@ -5,64 +5,48 @@ export default class MDEditor extends CMEditor {
     constructor(editor, parent_el, content) {
         super(editor, parent_el, content, 'markdown');
 
-        var ctrl = this.ctrlOrCmd;
-
-        editor.addEditorToolbarItems([
-            {
-                id: 'md_bold',
-                icon: 'fa fa-bold',
-                hint: `Bold (${ctrl}B)`,
-                onClick: () => this.bold()
-            },
-            {
-                id: 'md_italic',
-                icon: 'fa fa-italic',
-                hint: `Italic (${ctrl}I)`,
-                onClick: () => this.italic()
-            },
-            {
-                id: 'md_header',
-                icon: 'fa fa-header',
-                hint: `Header (${ctrl}H)`,
-                onClick: () => this.header()
-            },
-            {type: 'break', id: 'md_break_1'},
-            {
-                id: 'md_link',
-                icon: 'fa fa-link',
-                hint: `Insert link (${ctrl}L)`,
-                onClick: () => this.link()
-            },
-            {
-                id: 'md_image',
-                icon: 'fa fa-picture-o',
-                hint: `Insert image (${ctrl}O)`,
-                onClick: () => this.image()
-            },
-            {
-                id: 'md_ul',
-                icon: 'fa fa-list-ul',
-                hint: `Unordered list item (${ctrl}U)`,
-                onClick: () => this.ul()
-            }
+        this.addActions([
+            [
+                {
+                    icon: 'fa fa-bold',
+                    hint: 'Bold',
+                    key: '{meta}-B',
+                    action: () => this.surround('**')
+                },
+                {
+                    icon: 'fa fa-italic',
+                    hint: 'Italic',
+                    key: '{meta}-I',
+                    action: () => this.surround('*')
+                },
+                {
+                    icon: 'fa fa-header',
+                    hint: 'Heading',
+                    key: '{meta}-H',
+                    action: () => this.header()
+                }
+            ],
+            [
+                {
+                    icon: 'fa fa-link',
+                    hint: 'Insert link',
+                    key: '{meta}-L',
+                    action: () => this.link()
+                },
+                {
+                    icon: 'fa fa-image',
+                    hint: 'Insert image',
+                    key: '{meta}-O',
+                    action: () => this.image()
+                },
+                {
+                    icon: 'fa fa-list-ul',
+                    hint: 'Unordered list item',
+                    key: '{meta}-U',
+                    action: () => this.ul()
+                }
+            ]
         ]);
-
-        this._codeMirror.setOption("extraKeys", {
-            [ctrl + 'B']: () => this.bold(),
-            [ctrl + 'I']: () => this.italic(),
-            [ctrl + 'H']: () => this.header(),
-            [ctrl + 'L']: () => this.link(),
-            [ctrl + 'O']: () => this.image(),
-            [ctrl + 'U']: () => this.ul()
-        });
-    }
-
-    bold() {
-        this.surround('**');
-    }
-
-    italic() {
-        this.surround('*');
     }
 
     header() {

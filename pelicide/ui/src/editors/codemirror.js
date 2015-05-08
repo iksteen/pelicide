@@ -7,6 +7,8 @@ import 'src/css/codemirror-theme.css!';
 export default class CMEditor {
     constructor(editor, parent_el, content, mode='text/plain') {
         this.editor = editor;
+        this._actionId = 0;
+        this._keymap = {};
         this._codeMirror = CodeMirror(
             parent_el,
             {
@@ -35,8 +37,46 @@ export default class CMEditor {
         this._codeMirror.focus();
     }
 
-    get ctrlOrCmd() {
-      return (CodeMirror.keyMap["default"] == CodeMirror.keyMap.macDefault) ? "Cmd-" : "Ctrl-";
+    addActions(actions) {
+        var items = [],
+            meta = this.editor.pelicide.metaKey;
+
+        for(let section of actions.values()) {
+            items.push({
+                'id': 'cm_' + (++this._actionId),
+                'type': 'break'
+            });
+
+            for(let action of section.values()) {
+                if (!action.action)
+                    continue;
+
+                let hint = action.hint;
+
+                if (action.key) {
+                    let key = action.key.replace('{meta}', meta);
+                    if (hint)
+                        hint += ` (${key})`;
+                    this._keymap[key] = action.action;
+                }
+
+                if (action.text || action.icon) {
+                    items.push(Object.assign(
+                        {
+                            id: 'cm_' + (++this._actionId),
+                            onClick: action.action
+                        },
+                        action,
+                        {
+                            hint: hint
+                        }
+                    ));
+                }
+            }
+        }
+
+        this.editor.addEditorToolbarItems(items);
+        this._codeMirror.setOption('extraKeys', this._keymap);
     }
 
     close() {

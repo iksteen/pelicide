@@ -17,76 +17,62 @@ export default class Jinja2Editor extends CMEditor {
     constructor(editor, parent_el, content) {
         super(editor, parent_el, content, 'htmljinja2');
 
-        var ctrl = this.ctrlOrCmd;
-
-        editor.addEditorToolbarItems([
-            {
-                id: 'j2_bold',
-                icon: 'fa fa-bold',
-                hint: `Bold (${ctrl}B)`,
-                onClick: () => this.bold()
-            },
-            {
-                id: 'j2_italic',
-                icon: 'fa fa-italic',
-                hint: `Italic (${ctrl}I)`,
-                onClick: () => this.italic()
-            },
-            {
-                id: 'j2_underline',
-                icon: 'fa fa-underline',
-                hint: `Underline (${ctrl}U)`,
-                onClick: () => this.underline()
-            },
-            {type: 'break', id: 'jd_break_1'},
-            {
-                id: 'j2_link',
-                icon: 'fa fa-link',
-                hint: `Insert link (${ctrl}L)`,
-                onClick: () => this.link()
-            },
-            {
-                id: 'j2_image',
-                icon: 'fa fa-picture-o',
-                hint: `Insert image (${ctrl}O)`,
-                onClick: () => this.image()
-            },
-            {type: 'break', id: 'j2_break_2'},
-            {
-                id: 'j2_bb',
-                text: '<span style="color: #8d99a7">{{</span>',
-                hint: `Insert {{ }} (${ctrl}[)`,
-                onClick: () => this.bb()
-            },
-            {
-                id: 'j2_bp',
-                text: '<span style="color: #8d99a7">{%</span>',
-                hint: `Insert {% %} (${ctrl}])`,
-                onClick: () => this.bp()
-            }
+        this.addActions([
+            [
+                {
+                    icon: 'fa fa-bold',
+                    hint: 'Bold',
+                    key: '{meta}-B',
+                    action: () => this.surround('<b>', '</b>')
+                },
+                {
+                    icon: 'fa fa-italic',
+                    hint: 'Italic',
+                    key: '{meta}-I',
+                    action: () => this.surround('<i>', '</i>')
+                },
+                {
+                    icon: 'fa fa-underline',
+                    hint: 'Underline',
+                    key: '{meta}-U',
+                    action: () => this.surround('<u>', '</u>')
+                }
+            ],
+            [
+                {
+                    icon: 'fa fa-link',
+                    hint: 'Insert link',
+                    key: '{meta}-L',
+                    action: () => this.link()
+                },
+                {
+                    icon: 'fa fa-picture-o',
+                    hint: 'Insert image',
+                    key: '{meta}-O',
+                    action: () => this.image()
+                }
+            ],
+            [
+                {
+                    text: '<span style="color: #8d99a7">{{</span>',
+                    hint: 'Insert variable',
+                    key: '{meta}-[',
+                    action: () => this.surround('{{ ', ' }}', 3)
+                },
+                {
+                    text: '<span style="color: #8d99a7">{%</span>',
+                    hint: 'Insert block',
+                    key: '{meta}-]',
+                    action: () => this.surround('{% ', ' %}', 3)
+                },
+                {
+                    text: '<span style="color: #8d99a7">{#</span>',
+                    hint: 'Insert comment',
+                    key: '{meta}-;',
+                    action: () => this.surround('{# ', ' #}', 3)
+                }
+            ]
         ]);
-
-        this._codeMirror.setOption("extraKeys", {
-            [ctrl + 'B']: () => this.bold(),
-            [ctrl + 'I']: () => this.italic(),
-            [ctrl + 'U']: () => this.underline(),
-            [ctrl + 'L']: () => this.link(),
-            [ctrl + 'O']: () => this.image(),
-            [ctrl + '[']: () => this.bb(),
-            [ctrl + ']']: () => this.bp()
-        });
-    }
-
-    bold() {
-        this.surround('<b>', '</b>');
-    }
-
-    italic() {
-        this.surround('<i>', '</i>');
-    }
-
-    underline() {
-        this.surround('<u>', '</u>');
     }
 
     link() {
@@ -113,14 +99,6 @@ export default class Jinja2Editor extends CMEditor {
         }
         else
             this.insert('<img alt="" src=""/>', 10);
-    }
-
-    bb() {
-        this.surround('{{ ', ' }}', 3);
-    }
-
-    bp() {
-        this.surround('{% ', ' %}', 3);
     }
 
     static get formats() {
