@@ -18,7 +18,7 @@ class API {
         this._endpoint = endpoint;
     }
 
-    _request(method, params) {
+    _realRequest(method, params) {
         if(this._endpoint === null) {
             return Promise.reject(new Error('No API endpoint configured.'));
         }
@@ -31,6 +31,15 @@ class API {
                 error: e => reject(new Error(e.error.message))
             });
         });
+    }
+
+    _request(method, params) {
+        return this._realRequest(method, params)
+            .catch(e => {
+                if (e.message == 'Invalid RPC token')
+                    return this._realRequest(method, params);
+                return Promise.reject(e);
+            });
     }
 }
 
