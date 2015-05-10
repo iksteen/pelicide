@@ -1,4 +1,5 @@
 import jQuery from 'jquery';
+import Cookie from 'js-cookie';
 import 'datagraph/jquery-jsonrpc';
 
 var API_CALLS = ['restart', 'get_settings', 'get', 'set', 'list_extensions', 'build', 'render',
@@ -25,10 +26,10 @@ class API {
         return new Promise((resolve, reject) => {
             jQuery.jsonRPC.request(method, {
                 endPoint: this._endpoint,
-                params: params,
+                params: [Cookie.get('pelicide-token')].concat(params),
                 success: r => resolve(r.result),
                 error: e => reject(new Error(e.error.message))
-            })
+            });
         });
     }
 }

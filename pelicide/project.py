@@ -6,7 +6,8 @@ import shutil
 import sys
 import tempfile
 
-from twisted.web import static, script
+from twisted.web import resource, static, script
+from zope.interface import implements
 
 from pelicide.runner import Runner
 from pelicide.service import PelicideService
@@ -18,7 +19,28 @@ class NoCacheFile(static.File):
         request.setHeader('cache-control', 'private, max-age=0, no-cache')
 
 
-def start_service(root, project):
+class SetTokenWrapper(object):
+    implements(resource.IResource)
+    isLeaf = False
+
+    def __init__(self, token, wrapped):
+        self._token = token
+        self._wrapped = wrapped
+
+    def _set_token(self, request):
+        if request.getCookie('pelicide-token') != self._token:
+            request.addCookie('pelicide-token', '%s' % self._token)
+        return self._wrapped
+
+    def render(self, request):
+        return self._set_token(request).render(request)
+
+    def getChildWithDefault(self, path, request):
+        request.postpath.insert(0, request.prepath.pop())
+        return self._set_token(request)
+
+
+def start_service(token, root, project):
     def clean(tmp_path):
         print('Cleaning up {}'.format(tmp_path), file=sys.stderr)
         shutil.rmtree(tmp_path, True)
@@ -38,7 +60,7 @@ def start_service(root, project):
         },
     )
 
-    root.putChild('rpc', PelicideService(runner))
+    root.putChild('rpc', PelicideService(token, runner))
     root.putChild('site', NoCacheFile(output_path))
 
     return runner.start().addCallback(
@@ -48,8 +70,8 @@ def start_service(root, project):
     )
 
 
-def start_project(project):
+def start_project(token, project):
     root = NoCacheFile(os.path.join(os.path.dirname(__file__), 'ui'))
     root.indexNames = ['index.rpy', 'index.html']
     root.processors = {'.rpy': script.ResourceScript}
-    return root, start_service(root, project)
+    return root, start_service(token, root, project)

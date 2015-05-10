@@ -4,12 +4,23 @@ import os
 import itertools
 
 from fastjsonrpc.server import JSONRPCServer
+import functools
 from twisted.internet import defer
 
 
+def check_token(f):
+    @functools.wraps(f)
+    def proxy(self, token, *args):
+        if token != self.token:
+            raise RuntimeError('Invalid RPC token')
+        return f(self, *args)
+    return proxy
+
+
 class PelicideService(JSONRPCServer):
-    def __init__(self, runner):
+    def __init__(self, token, runner):
         JSONRPCServer.__init__(self)
+        self.token = token
         self.runner = runner
 
     def get_sub_path(self, subdir):
@@ -29,29 +40,37 @@ class PelicideService(JSONRPCServer):
 
         return path
 
+    @check_token
     def jsonrpc_restart(self):
         return self.runner.restart().addCallback(lambda _: None)
 
+    @check_token
     def jsonrpc_get_settings(self):
         return self.runner.settings
 
+    @check_token
     def jsonrpc_get(self, key):
         return self.runner.command('setting', [key])
 
+    @check_token
     def jsonrpc_set(self, key, value):
         return self.runner.command('setting', [key, value])
 
+    @check_token
     def jsonrpc_list_extensions(self):
         return self.runner.command('extensions')
 
+    @check_token
     def jsonrpc_build(self, paths=None):
         if paths:
             map(lambda p: p[0].pop(0), paths)
         return self.runner.command('build', paths)
 
+    @check_token
     def jsonrpc_render(self, fmt, content):
         return self.runner.command('render', [fmt, content]).addCallback(lambda v: v['content'])
 
+    @check_token
     def jsonrpc_list_files(self):
         def add_origin(content, origin):
             return [
@@ -81,6 +100,7 @@ class PelicideService(JSONRPCServer):
             lambda r: list(itertools.chain(*r))
         )
 
+    @check_token
     def jsonrpc_get_file(self, subdir, filename):
         path = self.get_sub_path(subdir + [filename])
 
@@ -90,6 +110,7 @@ class PelicideService(JSONRPCServer):
         with open(path, 'rb') as f:
             return f.read().decode('utf-8')
 
+    @check_token
     def jsonrpc_put_file(self, subdir, filename, content):
         path = self.get_sub_path(subdir + [filename])
 
@@ -100,6 +121,7 @@ class PelicideService(JSONRPCServer):
         with open(path, 'wb') as f:
             f.write(content.encode('utf-8'))
 
+    @check_token
     def jsonrpc_delete_file(self, subdir, filename):
         path = self.get_sub_path(subdir + [filename])
 
@@ -108,6 +130,7 @@ class PelicideService(JSONRPCServer):
 
         os.remove(path)
 
+    @check_token
     def jsonrpc_rename_file(self, subdir, old_name, new_name):
         old_path = self.get_sub_path(subdir + [old_name])
         new_path = self.get_sub_path(subdir + [new_name])

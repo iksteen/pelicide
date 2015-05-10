@@ -19,12 +19,14 @@ augment_mime_types()
 
 import ConfigParser
 import argparse
-import sys
 import os
+import random
+import string
+import sys
 from twisted.internet import reactor, defer, error
 from twisted.web import server
 
-from pelicide.project import start_project
+from pelicide.project import start_project, SetTokenWrapper
 
 
 def parse_project(project_path):
@@ -60,10 +62,11 @@ def parse_project(project_path):
 
 @defer.inlineCallbacks
 def run(project, port=0):
-    root, d = start_project(project)
+    token = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(64))
+    root, d = start_project(token, project)
     yield d
     try:
-        port = reactor.listenTCP(port, server.Site(root), interface='127.0.0.1')
+        port = reactor.listenTCP(port, server.Site(SetTokenWrapper(token, root)), interface='127.0.0.1')
         print('Pelicide is running. Please visit http://127.0.0.1:{}/'.format(port.getHost().port), file=sys.stderr)
     except error.CannotListenError as e:
         print(e, file=sys.stderr)
@@ -71,6 +74,8 @@ def run(project, port=0):
 
 
 def main():
+    random.seed()
+
     parser = argparse.ArgumentParser(description='An IDE for Pelican.')
     parser.add_argument('project', default=None, nargs='?', help='The pelicide project file to use.')
     parser.add_argument('--port', '-p', type=int, default=6300, help='The port to host the IDE on.')

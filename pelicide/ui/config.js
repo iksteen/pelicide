@@ -14,6 +14,7 @@ System.config({
     "css": "github:systemjs/plugin-css@0.1.10",
     "datagraph/jquery-jsonrpc": "github:datagraph/jquery-jsonrpc@0.1.1",
     "jquery": "github:components/jquery@2.1.3",
+    "js-cookie": "npm:js-cookie@1.5.1",
     "keypress.js": "npm:keypress.js@2.1.0",
     "phstc/jquery-dateFormat": "github:phstc/jquery-dateFormat@1.0.2",
     "showdown": "github:showdownjs/showdown@0.5.0",
@@ -112,6 +113,9 @@ System.config({
     },
     "npm:inherits@2.0.1": {
       "util": "github:jspm/nodelibs-util@0.1.0"
+    },
+    "npm:js-cookie@1.5.1": {
+      "process": "github:jspm/nodelibs-process@0.1.1"
     },
     "npm:os-browserify@0.1.2": {
       "os": "github:jspm/nodelibs-os@0.1.0"
