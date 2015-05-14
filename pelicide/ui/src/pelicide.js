@@ -9,6 +9,20 @@ import 'font-awesome/css/font-awesome.min.css!';
 import 'vitmalina/w2ui/dist/w2ui.min.css!';
 import 'src/css/style.css!';
 
+
+settings.register(
+    {
+        name: 'hideProjectAfterOpen',
+        defaultValue: true,
+        type: 'checkbox',
+        html: {
+            caption: '&nbsp;',
+            text: '&nbsp;Hide project tree after opening a file.'
+        }
+    }
+);
+
+
 export default class Pelicide {
     constructor(options) {
         Object.assign(this, w2utils.event);
@@ -39,6 +53,11 @@ export default class Pelicide {
     run(box) {
         /* Initialise the layout. */
         this.layout.render(box);
+
+        this.editor.on({ type: 'open', execute: 'after' }, () => {
+            if (settings.get('hideProjectAfterOpen'))
+                w2ui['layout'].hide('left');
+        });
 
         /* Set up global hot keys. */
         this.listen('meta shift o', () => { this.toggleProject(); });
