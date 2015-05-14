@@ -63,7 +63,7 @@ export function dialog(config) {
 
         form.ok = function () {
             if (this.validate(true).length == 0) {
-                w2popup.close({result: Object.create(this.record)});
+                w2popup.close({result: Object.assign({}, this.record)});
                 this.clear();
             }
         };
