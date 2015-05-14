@@ -2,6 +2,7 @@ import Project from 'src/project'
 import Editor from 'src/editor'
 import Preview from 'src/preview'
 import jQuery from 'jquery'
+import settings from 'src/settings'
 import keypress from 'keypress.js'
 import 'vitmalina/w2ui'
 import 'font-awesome/css/font-awesome.min.css!';
@@ -79,6 +80,13 @@ export default class Pelicide {
             editorLayout.toolbar.items,
             [
                 {type: 'spacer'},
+                {
+                    id: 'settings',
+                    icon: 'fa fa-cog',
+                    hint: 'Settings',
+                    onClick: () => { settings.show(); }
+                },
+                {type: 'break'},
                 {
                     id: 'preview',
                     icon: 'fa fa-eye',
