@@ -106,7 +106,7 @@ export default class MDEditor extends CMEditor {
                 this.surround('![', ']()', 1);
         }
         else
-            this.insert('[]()', 3);
+            this.insert('![]()', 3);
     }
 
     ul() {
