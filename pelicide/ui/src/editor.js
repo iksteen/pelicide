@@ -51,8 +51,8 @@ export default class Editor {
     }
 
     isCurrentFile(file) {
-        var path = file.dir.concat([file.name]).join('/');
-        return this._currentFile && this._currentFile.dir.concat([this._currentFile.name]).join('/') == path;
+        return file && this._currentFile &&
+            this._currentFile.dir.concat([this._currentFile.name]).join('/') == file.dir.concat([file.name]).join('/');
     }
 
     render(box, toolbar) {
