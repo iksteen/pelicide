@@ -1,7 +1,25 @@
 import {alert} from 'src/util'
 import API from 'src/api'
+import settings from 'src/settings'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
+
+
+settings.register(
+    {
+        name: 'autoSaveInterval',
+        defaultValue: 0,
+        type: 'int',
+        options: {
+            min: 0
+        },
+        html: {
+            caption: 'Auto save every',
+            text: '&nbsp;second(s) (use 0 to disable).'
+        }
+    }
+);
+
 
 export default class Editor {
     constructor(pelicide, {editors = []}) {
@@ -11,6 +29,7 @@ export default class Editor {
         this._handlers = [];
         this._box = null;
         this._dirty = false;
+        this._autoSavePending = null;
         this.editors = [];
         this._types = {};
         this._editor = null;
@@ -73,6 +92,20 @@ export default class Editor {
         this.pelicide.listen('meta e', () => {
             if (!this._toolbar.get('rebuild_page').disabled)
                 this.rebuild().catch(alert);
+        });
+
+        /* Set up periodic auto-save. */
+        this.on({type: 'change', execute: 'after'}, () => {
+            if (settings.get('autoSaveInterval') && !this.isCurrentFile(this._autoSavePending)) {
+                this._autoSavePending = this._currentFile;
+
+                setTimeout(() => {
+                    if (this.isCurrentFile(this._autoSavePending)) {
+                        this._autoSavePending = null;
+                        this.save();
+                    }
+                }, settings.get('autoSaveInterval') * 1000);
+            }
         });
     }
 
@@ -189,7 +222,7 @@ export default class Editor {
             });
     }
 
-    close(confirmSave = true) {
+    close(saveBeforeClose = true) {
         if (this._editor === null) {
             return Promise.resolve();
         }
@@ -210,9 +243,13 @@ export default class Editor {
             this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
         };
 
-        if (!this.dirty || !confirmSave) {
+        if (!this.dirty || !saveBeforeClose) {
             _close();
             return Promise.resolve();
+        }
+
+        if (settings.get('autoSaveInterval')) {
+            return this.save().then(_close);
         }
 
         return new Promise((resolve, reject) => {
