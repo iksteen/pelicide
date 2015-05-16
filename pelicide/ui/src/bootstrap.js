@@ -1,4 +1,3 @@
-import jQuery from 'jquery';
 import API from 'src/api';
 import Pelicide from 'src/pelicide';
 import {alert} from 'src/util';
@@ -15,35 +14,32 @@ export function bootstrap(demo=false) {
     // Set up API endpoint.
     API.configure('rpc');
 
-    // Start Pelicide UI when DOM is ready.
-    jQuery(function () {
-        Promise.all([
-            API.get('SITENAME'),
-            API.list_extensions()
-        ]).then(function ([sitename, extensions]) {
-            document.title = sitename + ' (Pelicide)';
+    Promise.all([
+        API.get('SITENAME'),
+        API.list_extensions()
+    ]).then(function ([sitename, extensions]) {
+        document.title = sitename + ' (Pelicide)';
 
-            // Set up and start Pelicide UI.
-            var pelicide = new Pelicide({
-                sitename: sitename || '',
-                extensions: extensions,
-                contentTypes: [
-                    ArticleContent,
-                    PageContent
-                ],
-                editors: [
-                    MDEditor,
-                    RSTEditor,
-                    CMEditor,
-                    Jinja2Editor,
-                    CSSEditor,
-                    JSEditor
-                ]
-            });
-            pelicide.run('#main_layout');
+        // Set up and start Pelicide UI.
+        var pelicide = new Pelicide({
+            sitename: sitename || '',
+            extensions: extensions,
+            contentTypes: [
+                ArticleContent,
+                PageContent
+            ],
+            editors: [
+                MDEditor,
+                RSTEditor,
+                CMEditor,
+                Jinja2Editor,
+                CSSEditor,
+                JSEditor
+            ]
+        });
+        pelicide.run('#main_layout');
 
-            if(demo)
-                setTimeout(function () { pelicide.editor.open(pelicide.project.getFile(['content'], 'welcome-to-pelicide.md')); }, 0);
-        }).catch(alert);
-    });
+        if(demo)
+            setTimeout(function () { pelicide.editor.open(pelicide.project.getFile(['content'], 'welcome-to-pelicide.md')); }, 0);
+    }).catch(alert);
 }
