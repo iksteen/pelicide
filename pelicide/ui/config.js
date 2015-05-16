@@ -13,6 +13,7 @@ System.config({
     "codemirror": "npm:codemirror@5.2.0",
     "css": "github:systemjs/plugin-css@0.1.10",
     "datagraph/jquery-jsonrpc": "github:datagraph/jquery-jsonrpc@0.1.1",
+    "fullscreen": "npm:fullscreen@1.0.0",
     "jquery": "github:components/jquery@2.1.3",
     "js-cookie": "npm:js-cookie@1.5.1",
     "keypress.js": "npm:keypress.js@2.1.0",
@@ -107,6 +108,9 @@ System.config({
     },
     "npm:events-browserify@0.0.1": {
       "process": "github:jspm/nodelibs-process@0.1.1"
+    },
+    "npm:fullscreen@1.0.0": {
+      "events": "github:jspm/nodelibs-events@0.1.0"
     },
     "npm:https-browserify@0.0.0": {
       "http": "github:jspm/nodelibs-http@1.7.1"

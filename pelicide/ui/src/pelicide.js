@@ -5,6 +5,7 @@ import jQuery from 'jquery'
 import settings from 'src/settings'
 import keypress from 'keypress.js'
 import 'vitmalina/w2ui'
+import fullscreen from 'fullscreen'
 import 'font-awesome/css/font-awesome.min.css!';
 import 'vitmalina/w2ui/dist/w2ui.min.css!';
 import 'src/css/style.css!';
@@ -19,6 +20,16 @@ settings.register(
             caption: '&nbsp;',
             text: '&nbsp;Hide project tree after opening a file.'
         }
+    },
+    {
+        name: 'focusFullScreen',
+        defaultValue: true,
+        type: 'checkbox',
+        html: {
+            caption: '&nbsp;',
+            text: '&nbsp;Go full screen in focus mode.',
+            attr: fullscreen.available() ? '' : 'disabled'
+        }
     }
 );
 
@@ -30,10 +41,10 @@ export default class Pelicide {
         options = options || {};
 
         this.extensions = new Set(options.extensions || []);
-
         this.handlers = [];
-
         this.listener = new keypress.keypress.Listener();
+        this._fs = fullscreen(window.document.documentElement);
+        this._fsAttained = false;
 
         this.project = new Project(this, options);
         this.editor = new Editor(this, options);
@@ -59,9 +70,14 @@ export default class Pelicide {
                 w2ui['layout'].hide('left');
         });
 
+        /* Set up focus (full screen) mode. */
+        this._fs.on('attain', () => { this._onFsAttained(); });
+        this._fs.on('release', () => { this._onFsReleased(); });
+
         /* Set up global hot keys. */
         this.listen('meta shift o', () => { this.toggleProject(); });
         this.listen('meta shift p', () => { this.togglePreview(); });
+        this.listen('meta enter', () => { this.toggleFocus(); });
 
         /* Run this as a timeout to allow the DOM to settle. */
         setTimeout(() => {
@@ -93,6 +109,12 @@ export default class Pelicide {
                     icon: 'fa fa-bars',
                     hint: `Toggle project view (${this.metaKey}-Shift-O)`,
                     onClick: () => this.toggleProject()
+                },
+                {
+                    id: 'focus',
+                    icon: 'fa fa-expand',
+                    hint: `Toggle focus mode (${this.metaKey}-Enter)`,
+                    onClick: () => this.toggleFocus()
                 },
                 {type: 'break'}
             ],
@@ -145,5 +167,38 @@ export default class Pelicide {
 
     togglePreview() {
         w2ui['editor'].toggle('right');
+    }
+
+    toggleFocus() {
+        if (fullscreen.available() && settings.get('focusFullScreen')) {
+            if (this._fsAttained)
+                this._fs.release();
+            else
+                this._fs.request();
+        } else {
+            if (this._fsAttained)
+                this._fs.emit('release');
+            else
+                this._fs.emit('attain');
+        }
+    }
+
+    _onFsAttained() {
+        this._fsAttained = true;
+        w2ui['layout'].hideToolbar('left');
+        w2ui['editor'].hideToolbar('main');
+        w2ui['editor'].hideToolbar('right');
+        w2ui['layout'].hide('left', true);
+        this.preview.mode = 'draft';
+    }
+
+    _onFsReleased() {
+        this._fsAttained = false;
+        w2ui['layout'].showToolbar('left');
+        w2ui['editor'].showToolbar('main');
+        w2ui['editor'].showToolbar('right');
+        if (!settings.get('hideProjectAfterOpen') || !this.editor.state) {
+            w2ui['layout'].show('left', true);
+        }
     }
 }
