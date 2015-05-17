@@ -16,8 +16,9 @@ export function bootstrap(demo=false) {
 
     Promise.all([
         API.get('SITENAME'),
-        API.list_extensions()
-    ]).then(function ([sitename, extensions]) {
+        API.list_extensions(),
+        API.can_deploy()
+    ]).then(function ([sitename, extensions, canDeploy]) {
         document.title = sitename + ' (Pelicide)';
 
         // Set up and start Pelicide UI.
@@ -28,6 +29,7 @@ export function bootstrap(demo=false) {
                 ArticleContent,
                 PageContent
             ],
+            canDeploy: canDeploy,
             editors: [
                 MDEditor,
                 RSTEditor,

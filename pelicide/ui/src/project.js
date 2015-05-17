@@ -5,11 +5,12 @@ import 'vitmalina/w2ui'
 
 
 export default class Project {
-    constructor(pelicide, {sitename = '', contentTypes = []}) {
+    constructor(pelicide, {sitename = '', contentTypes = [], canDeploy = false}) {
         Object.assign(this, w2utils.event);
 
         this.pelicide = pelicide;
         this._sitename = sitename;
+        this._canDeploy = canDeploy;
         this.handlers = [];
         this._sidebar = null;
         this._box = null;
@@ -70,6 +71,14 @@ export default class Project {
                         icon: 'fa fa-wrench',
                         hint: `Rebuild project (${this.pelicide.metaKey}-Shift-E)`,
                         onClick: () => this.rebuild().catch(alert)
+                    },
+                    {
+                        type: 'button',
+                        id: 'deploy',
+                        icon: 'fa fa-cloud-upload',
+                        hint: `Deploy site`,
+                        disabled: !this._canDeploy,
+                        onClick: () => this.deploy().catch(alert)
                     },
                     { type: 'break' },
                     {
@@ -472,6 +481,33 @@ export default class Project {
 
         return this.pelicide.editor.save()
             .then(() => { return API.build(); })
+            .then(() => {
+                this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
+            }, e => {
+                this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
+                return Promise.reject(e);
+            });
+    }
+
+    deploy() {
+        this._toolbar.disable('deploy');
+
+        var eventData = {
+            type: 'deploy',
+            phase: 'before',
+            target: this,
+            onComplete: () => {
+                this._toolbar.enable('deploy');
+            }
+        };
+        this.trigger(eventData);
+        if (eventData.isCancelled === true) {
+            eventData.onComplete();
+            return Promise.reject();
+        }
+
+        return this.pelicide.editor.save()
+            .then(() => { return API.deploy(); })
             .then(() => {
                 this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
             }, e => {
