@@ -3,7 +3,7 @@ import Cookie from 'js-cookie';
 import 'datagraph/jquery-jsonrpc';
 
 var API_CALLS = ['restart', 'get_settings', 'get', 'set', 'list_extensions', 'build', 'render',
-                 'list_files', 'get_file', 'put_file', 'delete_file', 'rename_file'];
+                 'list_files', 'get_file', 'put_file', 'delete_file', 'rename_file', 'can_deploy', 'deploy'];
 
 class API {
     constructor() {

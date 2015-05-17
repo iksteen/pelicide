@@ -2,7 +2,7 @@ import Showdown from 'showdown';
 import jQuery from 'jquery';
 
 
-var NA_CALLS = ['restart', 'get_settings', 'set', 'build'],
+var NA_CALLS = ['restart', 'get_settings', 'set', 'build', 'deploy'],
     CONTENT = [
         {
             name: 'welcome-to-pelicide.md',
@@ -160,6 +160,10 @@ class API {
         }
 
         return Project.reject(new Error('File not found.'));
+    }
+
+    can_deploy() {
+        return false;
     }
 }
 

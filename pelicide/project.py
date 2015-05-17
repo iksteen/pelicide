@@ -60,7 +60,7 @@ def start_service(token, root, project):
         },
     )
 
-    root.putChild('rpc', PelicideService(token, runner))
+    root.putChild('rpc', PelicideService(token, runner, project))
     root.putChild('site', NoCacheFile(output_path))
 
     return runner.start().addCallback(

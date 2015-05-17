@@ -42,6 +42,7 @@ def parse_project(project_path):
     config.add_section('pelicide')
     config.set('pelicide', 'python', sys.executable)
     config.set('pelicide', 'pelicanconf', 'pelicanconf.py')
+    config.set('pelicide', 'deploy', '')
 
     config.read(os.path.expanduser('~/.config/pelicide/pelicide.ini'))
 
@@ -57,6 +58,7 @@ def parse_project(project_path):
     return {
         'python': build_path(config.get('pelicide', 'python'), project_home),
         'pelicanconf': build_path(config.get('pelicide', 'pelicanconf'), project_home),
+        'deploy': config.get('pelicide', 'deploy'),
     }
 
 

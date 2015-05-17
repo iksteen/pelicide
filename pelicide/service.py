@@ -18,10 +18,11 @@ def check_token(f):
 
 
 class PelicideService(JSONRPCServer):
-    def __init__(self, token, runner):
+    def __init__(self, token, runner, project):
         JSONRPCServer.__init__(self)
         self.token = token
         self.runner = runner
+        self.deploy_command = project['deploy']
 
     def get_sub_path(self, subdir):
         origin, subdir = subdir[0], subdir[1:]
@@ -144,3 +145,12 @@ class PelicideService(JSONRPCServer):
             raise RuntimeError('File already exists')
 
         os.rename(old_path, new_path)
+
+    @check_token
+    def jsonrpc_can_deploy(self):
+        return bool(self.deploy_command)
+
+    @check_token
+    def jsonrpc_deploy(self):
+        if self.deploy_command:
+            return self.runner.command('exec', [self.deploy_command])
