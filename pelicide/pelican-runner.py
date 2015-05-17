@@ -244,6 +244,13 @@ def run(config_file, init_settings):
             except Exception as e:
                 print_exc()
                 fail(cmd_id, str(e))
+        elif cmd == 'exec':
+            try:
+                os.system('%s 1>&2' % args[0])
+                success(cmd_id, None)
+            except Exception as e:
+                print_exc()
+                fail(cmd_id, str(e))
         else:
             fail(cmd_id, 'No such command')
 
