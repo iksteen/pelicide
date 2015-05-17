@@ -251,4 +251,5 @@ def run(config_file, init_settings):
 if __name__ == '__main__':
     log_init(logging.DEBUG)
     os.environ['PATH'] = os.path.dirname(sys.executable) + os.pathsep + os.environ['PATH']
+    os.chdir(os.path.dirname(sys.argv[1]))
     run(sys.argv[1], json.loads(sys.argv[2]))
