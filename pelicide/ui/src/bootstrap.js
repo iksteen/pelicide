@@ -39,9 +39,15 @@ export function bootstrap(demo=false) {
                 JSEditor
             ]
         });
-        pelicide.run('#main_layout');
 
-        if(demo)
-            setTimeout(function () { pelicide.editor.open(pelicide.project.getFile(['content'], 'welcome-to-pelicide.md')); }, 0);
+        if(demo) {
+            let f = () => {
+                pelicide.editor.open(pelicide.project.getFile(['content'], 'welcome-to-pelicide.md'));
+                pelicide.project.off({type: 'reload'}, f);
+            };
+            pelicide.project.on({type: 'reload', execute: 'after'}, f);
+        }
+
+        pelicide.run('#main_layout');
     }).catch(alert);
 }
