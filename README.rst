@@ -39,14 +39,23 @@ Create a project file (pelicide.ini) in your pelican directory::
     [pelicide]
     pelicanconf=pelicanconf.py
     python=~/.pyenv/pelican/bin/python
+    deploy=make rsync_upload
 
-Both settings are optional (in fact, you can run pelicide without a project
+All settings are optional (in fact, you can run pelicide without a project
 file). The default value for the ``pelicanconf`` setting is *pelicanconf.py*,
 the default python interpreter is the interpreter used to execute pelicide.
 
 The specified python interpreter will be used to set up the pelican
-environment. This can be useful if you want to install pelicide in a different
-virtual environment than the one you build your site with.
+environment. This can be useful if you install pelicide in a different virtual
+environment than the one you build your site with.
+
+The deploy option specifies what command to execute to deploy (or publish)
+your site. You can specify any shell command. The command will be executed in
+the directory your pelican config file resides in.
+
+You can also create a global configuration file in
+*~/.config/pelicide/pelicide.ini*. This config file will be loaded first and
+can contain the same options as the project file.
 
 Now, start pelicide::
 
@@ -58,6 +67,6 @@ finally it will tell you to go to a website::
 
     Pelicide is running. Please visit http://127.0.0.1:6300/
 
-Note that if you run pelicide without a project file, it will look for
-pelicanconf.py in the current directory and it will use the python interpreter
-used to run pelicide itself.
+Note that if you run pelicide without a project file and without a global
+configuration file, it will look for pelicanconf.py in the current directory
+and it will use the python interpreter used to run pelicide itself.
