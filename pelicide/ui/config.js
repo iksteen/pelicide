@@ -1,5 +1,10 @@
 System.config({
-  "transpiler": "traceur",
+  "transpiler": "babel",
+  "babelOptions": {
+    "optional": [
+      "runtime"
+    ]
+  },
   "paths": {
     "*": "*.js",
     "github:*": "jspm_packages/github/*.js",
@@ -10,7 +15,10 @@ System.config({
 
 System.config({
   "map": {
+    "babel": "npm:babel-core@5.4.3",
+    "babel-runtime": "npm:babel-runtime@5.4.3",
     "codemirror": "npm:codemirror@5.2.0",
+    "core-js": "npm:core-js@0.9.10",
     "css": "github:systemjs/plugin-css@0.1.10",
     "datagraph/jquery-jsonrpc": "github:datagraph/jquery-jsonrpc@0.1.1",
     "fullscreen": "npm:fullscreen@1.0.0",
@@ -19,8 +27,6 @@ System.config({
     "keypress.js": "npm:keypress.js@2.1.0",
     "phstc/jquery-dateFormat": "github:phstc/jquery-dateFormat@1.0.2",
     "showdown": "github:showdownjs/showdown@0.5.1",
-    "traceur": "github:jmcriffey/bower-traceur@0.0.88",
-    "traceur-runtime": "github:jmcriffey/bower-traceur-runtime@0.0.88",
     "unorm": "npm:unorm@1.3.3",
     "vitmalina/w2ui": "github:vitmalina/w2ui@1.4.2",
     "github:jspm/nodelibs-assert@0.1.0": {
@@ -101,6 +107,9 @@ System.config({
       "child_process": "github:jspm/nodelibs-child_process@0.1.0",
       "events": "github:jspm/nodelibs-events@0.1.0",
       "path": "github:jspm/nodelibs-path@0.1.0",
+      "process": "github:jspm/nodelibs-process@0.1.1"
+    },
+    "npm:core-js@0.9.10": {
       "process": "github:jspm/nodelibs-process@0.1.1"
     },
     "npm:core-util-is@1.0.1": {
