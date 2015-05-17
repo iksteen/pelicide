@@ -445,6 +445,12 @@ export default class Project {
     }
 
     reload() {
+        var eventData = {type: 'reload', phase: 'before', target: this};
+        this.trigger(eventData);
+        if (eventData.isCancelled === true) {
+            return Promise.reject();
+        }
+
         return this.pelicide.editor.close()
             .then(() => {
                 this._sidebar.lock('Loading...', true);
@@ -456,8 +462,10 @@ export default class Project {
                     this.addFile(file);
                 }
                 this._sidebar.unlock();
+                this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
             }, e => {
                 this._sidebar.unlock();
+                this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
                 return Promise.reject(e);
             });
     }
