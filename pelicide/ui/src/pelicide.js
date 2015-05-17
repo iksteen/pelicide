@@ -40,7 +40,9 @@ export default class Pelicide {
 
         options = options || {};
 
-        this.extensions = new Set(options.extensions || []);
+        this.extensions = new Set();
+        for (let extension of (options.extensions || []))
+            this.extensions.add(extension);
         this.handlers = [];
         this.listener = new keypress.keypress.Listener();
         this._fs = fullscreen(window.document.documentElement);
