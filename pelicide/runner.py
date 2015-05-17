@@ -66,6 +66,7 @@ class Runner(object):
                 self.config_path,
                 json.dumps(self.init_settings),
             ],
+            env=None,
             childFDs={
                 0: 'w',
                 1: 'r',
