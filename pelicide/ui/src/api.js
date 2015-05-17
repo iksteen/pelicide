@@ -9,7 +9,7 @@ class API {
     constructor() {
         this._endpoint = null;
 
-        for(let e of API_CALLS.values()) {
+        for(let e of API_CALLS) {
             this[e] = (...params) => this._request(e, params);
         }
     }

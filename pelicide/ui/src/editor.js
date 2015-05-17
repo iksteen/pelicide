@@ -35,9 +35,9 @@ export default class Editor {
         this._editor = null;
         this._currentFile = null;
 
-        for (let editor of editors.values()) {
+        for (let editor of editors) {
             this.editors.push(editor);
-            for (let format of editor.formats.values()) {
+            for (let format of editor.formats) {
                 this._types[format] = editor;
             }
         }
@@ -114,7 +114,7 @@ export default class Editor {
     }
 
     addEditorToolbarItems(items) {
-        for (let item of items.values()) {
+        for (let item of items) {
             this.addEditorToolbarItem(item);
         }
     }

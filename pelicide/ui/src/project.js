@@ -17,7 +17,7 @@ export default class Project {
         this._toolbar = null;
 
         this._contentTypes = [];
-        for (let contentType of contentTypes.values())
+        for (let contentType of contentTypes)
             this._contentTypes.push(new contentType(this));
 
         this._id = 0;
@@ -146,7 +146,7 @@ export default class Project {
         this.clear();
 
         /* Initialise content type plugins. */
-        for(let contentType of this._contentTypes.values()) {
+        for(let contentType of this._contentTypes) {
             contentType.init();
         }
         this._otherContentId = this.addContentType('Other');
@@ -200,7 +200,7 @@ export default class Project {
         var contentChildren=this._sidebar.find({
             parent: this._sidebar.get('content')
         });
-        for(let node of contentChildren.values()) {
+        for(let node of contentChildren) {
             /* Remove all nodes below the content type node. */
             this._sidebar.remove.apply(
                 this._sidebar,
@@ -291,7 +291,7 @@ export default class Project {
                 let parent = this._sidebar.get(node.id),
                     before = null;
 
-                for (let sibling of parent.nodes.values()) {
+                for (let sibling of parent.nodes) {
                     if (sibling.file !== undefined || sibling.text.localeCompare(el) > 0) {
                         before = sibling.id;
                         break;
@@ -326,7 +326,7 @@ export default class Project {
             before = null,
             editor = this.pelicide.editor.getEditor(file);
 
-        for (let sibling of parent.nodes.values()) {
+        for (let sibling of parent.nodes) {
             if (sibling.file !== undefined && sibling.text.localeCompare(file.name) > 0) {
                 before = sibling.id;
                 break;
@@ -390,7 +390,7 @@ export default class Project {
     pathForFile(file) {
         switch (file.dir[0]) {
             case 'content':
-                for (let contentType of this._contentTypes.values()) {
+                for (let contentType of this._contentTypes) {
                     let path = contentType.scan(file);
                     if (path !== undefined) {
                         return ['content'].concat(path);
@@ -405,7 +405,7 @@ export default class Project {
 
     get categories() {
         var categories = new Set();
-        for (let node of this._sidebar.find({}).values()) {
+        for (let node of this._sidebar.find({})) {
             if (node.file && node.file.meta && node.file.meta.category)
                 categories.add(node.file.meta.category);
         }
@@ -430,7 +430,7 @@ export default class Project {
 
         return API.list_files()
             .then(content => {
-                for (let f of content.values()) {
+                for (let f of content) {
                     if (f.dir.concat([f.name]).join('/') == filePath) {
                         let newPath = this.pathForFile(f);
                         if (newPath !== null && newPath.join('/') !== nodePath) {
@@ -458,7 +458,7 @@ export default class Project {
                 return API.list_files();
             })
             .then(content => {
-                for (let file of content.values()) {
+                for (let file of content) {
                     this.addFile(file);
                 }
                 this._sidebar.unlock();

@@ -42,13 +42,13 @@ export default class CMEditor {
         var items = [],
             meta = this.editor.pelicide.metaKey;
 
-        for(let section of actions.values()) {
+        for(let section of actions) {
             items.push({
                 'id': 'cm_' + (++this._actionId),
                 'type': 'break'
             });
 
-            for(let action of section.values()) {
+            for(let action of section) {
                 if (!action.action)
                     continue;
 

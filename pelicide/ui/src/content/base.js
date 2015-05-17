@@ -27,10 +27,10 @@ export default class BaseContent {
     loadExtensions(type) {
         var pelican_extensions = this.project.pelicide.extensions;
 
-        for (let e of this.project.pelicide.editor.editors.values()) {
+        for (let e of this.project.pelicide.editor.editors) {
             if (e.templates && e.templates[type]) {
                 let template = e.templates[type];
-                for (let extension of e.extensions.values()) {
+                for (let extension of e.extensions) {
                     if (pelican_extensions.has(extension)) {
                         this._templates[extension] = template;
                         this._extensions.push(extension);

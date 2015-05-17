@@ -46,7 +46,7 @@ class API {
     constructor() {
         this._showdown = new Showdown.converter();
 
-        for(let e of NA_CALLS.values())
+        for(let e of NA_CALLS)
             this[e] = NotSupported;
     }
 
@@ -85,7 +85,7 @@ class API {
     get_file(dir, name) {
         dir = dir.join('/');
 
-        for(let node of CONTENT.values()) {
+        for(let node of CONTENT) {
             if (node.dir.join('/') == dir && node.name == name)
                 return Promise.resolve(node.content);
         }
@@ -97,7 +97,7 @@ class API {
         var metadata = new_content.split('\n\n', 1)[0],
             meta = {};
 
-        for(let piece of metadata.split('\n').values()) {
+        for(let piece of metadata.split('\n')) {
             let [key, value] = piece.split(/:\s+/);
             meta[key.toLowerCase()] = value;
         }
@@ -106,7 +106,7 @@ class API {
             page = dir && dir[0] == 'pages',
             type = page ? 'pelican.contents.Page' : draft ? 'pelican.contents.Draft' : 'pelican.contents.Article';
 
-        for(let node of CONTENT.values()) {
+        for(let node of CONTENT) {
             if (node.dir.join('/') == dir.join('/') && node.name == name) {
                 Object.assign(node, {
                     content: new_content,
