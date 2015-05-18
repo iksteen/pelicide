@@ -81,31 +81,35 @@ export default class Jinja2Editor extends CMEditor {
         return ['text/html'];
     }
 
-    static get icon() { return ['fa fa-file-code-o']; }
+    static get icon() {
+        return ['fa fa-file-code-o'];
+    }
 
     link() {
         var doc = this._codeMirror.getDoc();
         if (doc.somethingSelected()) {
             let text = doc.getSelection();
-            if (/^\w+:\/\/|^mailto:/.test(text))
+            if (/^\w+:\/\/|^mailto:/.test(text)) {
                 this.surround('<a href="', '"></a>', 4);
-            else
+            } else {
                 this.surround('<a href="http://">', '</a>', text.length + 6);
-        }
-        else
+            }
+        } else {
             this.insert('<a href="http://"></a>', 6);
+        }
     }
 
     image() {
         var doc = this._codeMirror.getDoc();
         if (doc.somethingSelected()) {
             let text = doc.getSelection();
-            if (/^\w+:\/\//.test(text))
+            if (/^\w+:\/\//.test(text)) {
                 this.surround('<img alt="', '" src=""/>', 3);
-            else
+            } else {
                 this.surround('<img alt="" src="', '"/>', text.length + 10);
-        }
-        else
+            }
+        } else {
             this.insert('<img alt="" src=""/>', 10);
+        }
     }
 }

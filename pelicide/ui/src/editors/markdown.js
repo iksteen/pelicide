@@ -78,8 +78,9 @@ export default class MDEditor extends CMEditor {
     }
 
     header() {
-        this.replaceLinePrefix(/(#+)\s+/, match =>
-            match ? (match[1].length >= 6 ? '' : '#'.repeat(match[1].length + 1) + ' ') : '# '
+        this.replaceLinePrefix(
+            /(#+)\s+/,
+            match => match ? (match[1].length >= 6 ? '' : '#'.repeat(match[1].length + 1) + ' ') : '# '
         );
     }
 
@@ -87,26 +88,28 @@ export default class MDEditor extends CMEditor {
         var doc = this._codeMirror.getDoc();
         if (doc.somethingSelected()) {
             let text = doc.getSelection();
-            if (/^\w+:\/\/|^mailto:/.test(text))
+            if (/^\w+:\/\/|^mailto:/.test(text)) {
                 this.surround('[](', ')', text.length + 3);
-            else
+            } else {
                 this.surround('[', '](http://)', 1);
-        }
-        else
+            }
+        } else {
             this.insert('[](http://)', 10);
+        }
     }
 
     image() {
         var doc = this._codeMirror.getDoc();
         if (doc.somethingSelected()) {
             let text = doc.getSelection();
-            if (/^\w+:\/\//.test(text))
+            if (/^\w+:\/\//.test(text)) {
                 this.surround('![](', ')', text.length + 3);
-            else
+            } else {
                 this.surround('![', ']()', 1);
-        }
-        else
+            }
+        } else {
             this.insert('![]()', 3);
+        }
     }
 
     ul() {

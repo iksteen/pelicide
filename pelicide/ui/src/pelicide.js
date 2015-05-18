@@ -66,19 +66,20 @@ export default class Pelicide {
         /* Initialise the layout. */
         this.layout.render(box);
 
-        this.editor.on({ type: 'open', execute: 'after' }, () => {
-            if (settings.get('hideProjectAfterOpen'))
+        this.editor.on({type: 'open', execute: 'after'}, () => {
+            if (settings.get('hideProjectAfterOpen')) {
                 w2ui['layout'].hide('left');
+            }
         });
 
         /* Set up focus (full screen) mode. */
-        this._fs.on('attain', () => { this._onFsAttained(); });
-        this._fs.on('release', () => { this._onFsReleased(); });
+        this._fs.on('attain', () => this._onFsAttained());
+        this._fs.on('release', () => this._onFsReleased());
 
         /* Set up global hot keys. */
-        this.listen('meta shift o', () => { this.toggleProject(); });
-        this.listen('meta shift p', () => { this.togglePreview(); });
-        this.listen('meta enter', () => { this.toggleFocus(); });
+        this.listen('meta shift o', () => this.toggleProject());
+        this.listen('meta shift p', () => this.togglePreview());
+        this.listen('meta enter', () => this.toggleFocus());
 
         /* Run this as a timeout to allow the DOM to settle. */
         setTimeout(() => {
@@ -91,7 +92,7 @@ export default class Pelicide {
 
     _ensureToolbarItems(layout) {
         if (layout.toolbar === undefined) {
-            layout.toolbar = { items: [] }
+            layout.toolbar = {items: []};
         } else if(layout.toolbar.items === undefined) {
             layout.toolbar.items = [];
         }
@@ -126,7 +127,7 @@ export default class Pelicide {
                     id: 'settings',
                     icon: 'fa fa-cog',
                     hint: 'Settings',
-                    onClick: () => { settings.show(); }
+                    onClick: () => settings.show()
                 },
                 {type: 'break'},
                 {
@@ -141,23 +142,23 @@ export default class Pelicide {
         jQuery().w2layout({
             name: 'layout',
             panels: [
-                Object.assign({}, projectLayout, { type: 'left', size: 240, resizable: true }),
-                { type: 'main' }
+                Object.assign({}, projectLayout, {type: 'left', size: 240, resizable: true}),
+                {type: 'main'}
             ]
         });
 
         jQuery().w2layout({
             name: 'editor',
             panels: [
-                Object.assign({}, editorLayout, { type: 'main', size: '50%' }),
-                Object.assign({}, previewLayout, { type: 'right', size: '50%' })
+                Object.assign({}, editorLayout, {type: 'main', size: '50%'}),
+                Object.assign({}, previewLayout, {type: 'right', size: '50%'})
             ]
         });
         w2ui['layout'].content('main', w2ui['editor']);
 
-        // Trigger layout events when panels are resized.
-        w2ui['layout'].on({ type: 'resize', execute: 'after' }, () => this.trigger({ type: 'layout' }));
-        w2ui['editor'].on({ type: 'resize', execute: 'after' }, () => this.trigger({ type: 'layout' }));
+        /* Trigger layout events when panels are resized. */
+        w2ui['layout'].on({type: 'resize', execute: 'after'}, () => this.trigger({type: 'layout'}));
+        w2ui['editor'].on({type: 'resize', execute: 'after'}, () => this.trigger({type: 'layout'}));
 
         return w2ui['layout'];
     }
@@ -172,15 +173,17 @@ export default class Pelicide {
 
     toggleFocus() {
         if (fullscreen.available() && settings.get('focusFullScreen')) {
-            if (this._fsAttained)
+            if (this._fsAttained) {
                 this._fs.release();
-            else
+            } else {
                 this._fs.request();
+            }
         } else {
-            if (this._fsAttained)
+            if (this._fsAttained) {
                 this._fs.emit('release');
-            else
+            } else {
                 this._fs.emit('attain');
+            }
         }
     }
 

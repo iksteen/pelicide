@@ -24,17 +24,17 @@ export default class CMEditor {
             CodeMirror.autoLoadMode(this._codeMirror, mode);
         }
 
-        // Notify editor component of change.
+        /* Notify editor component of change. */
         this._codeMirror.on('change', () => editor.change());
 
-        // Make sure CodeMirror refreshes when the panel size changes.
+        /* Make sure CodeMirror refreshes when the panel size changes. */
         this._onLayoutChanged = () => this._codeMirror.refresh();
         editor.pelicide.on({type: 'layout'}, this._onLayoutChanged);
 
-        // Sync preview scrolling
+        /* Sync preview scrolling. */
         editor.pelicide.preview.setUpScrollSync(this._codeMirror.getScrollerElement());
 
-        // Set focus to editor widget.
+        /* Set focus to editor widget. */
         this._codeMirror.focus();
     }
 
@@ -49,15 +49,17 @@ export default class CMEditor {
             });
 
             for(let action of section) {
-                if (!action.action)
+                if (!action.action) {
                     continue;
+                }
 
                 let hint = action.hint;
 
                 if (action.key) {
                     let key = action.key.replace('{meta}', meta);
-                    if (hint)
+                    if (hint) {
                         hint += ` (${key})`;
+                    }
                     this._keymap[key] = action.action;
                 }
 
@@ -89,10 +91,21 @@ export default class CMEditor {
         return this._codeMirror.getValue();
     }
 
-    static get formats() { return ['text']; }
-    static get icon() { return ['fa fa-file-text-o']; }
-    static get extensions() { return []; }
-    static get templates() { return {}; }
+    static get formats() {
+        return ['text'];
+    }
+
+    static get icon() {
+        return ['fa fa-file-text-o'];
+    }
+
+    static get extensions() {
+        return [];
+    }
+
+    static get templates() {
+        return {};
+    }
 
     insert(text, offset = 0) {
         var doc = this._codeMirror.getDoc(),
@@ -130,10 +143,11 @@ export default class CMEditor {
             var line = doc.getLine(lineNo),
                 match = search.exec(line),
                 startPos = {line: lineNo, ch: 0},
-                endPos = {line: lineNo, ch: (match === null ? 0 : match[0].length)};
+                endPos = {line: lineNo, ch: match === null ? 0 : match[0].length};
 
-            if (skipEmpty && !line)
+            if (skipEmpty && !line) {
                 return;
+            }
 
             doc.replaceRange(replace(match), startPos, endPos);
         }
@@ -141,8 +155,9 @@ export default class CMEditor {
         var from = doc.getCursor('from').line,
             to = doc.getCursor('to').line;
 
-        for (let i = from; i <= to; ++i)
+        for (let i = from; i <= to; ++i) {
             replacePrefix(i);
+        }
 
         this._codeMirror.focus();
     }

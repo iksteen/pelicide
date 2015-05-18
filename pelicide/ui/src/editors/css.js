@@ -11,5 +11,7 @@ export default class CSSEditor extends CMEditor {
         return ['text/css'];
     }
 
-    static get icon() { return ['fa fa-file-code-o']; }
+    static get icon() {
+        return ['fa fa-file-code-o'];
+    }
 }

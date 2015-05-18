@@ -81,7 +81,9 @@ export default class Editor {
 
         this.pelicide.project.on('update', ({target: file}) => {
             if (this.isCurrentFile(file)) {
-                this._currentFile =  file;
+                this._currentFile = file;
+            }
+        });
 
         /* Connect events to toolbar button states. */
         this.on({type: 'rebuild', execute: 'before'}, () => this._toolbar.set('rebuild_page', {disabled: true}));
@@ -97,12 +99,14 @@ export default class Editor {
 
         /* Set up global hot keys. */
         this.pelicide.listen('meta s', () => {
-            if (!this._toolbar.get('save').disabled)
+            if (!this._toolbar.get('save').disabled) {
                 this.save().catch(alert);
+            }
         });
         this.pelicide.listen('meta e', () => {
-            if (!this._toolbar.get('rebuild_page').disabled)
+            if (!this._toolbar.get('rebuild_page').disabled) {
                 this.rebuild().catch(alert);
+            }
         });
 
         /* Set up periodic auto-save. */
@@ -134,8 +138,9 @@ export default class Editor {
         var editorItems = [];
         for(let i = this._toolbar.items.length - 1; i >= 0; --i) {
             let item = this._toolbar.items[i];
-            if(item && item.editorItem)
+            if(item && item.editorItem) {
                 this._toolbar.remove(item.id);
+            }
         }
     }
 
@@ -157,8 +162,9 @@ export default class Editor {
     }
 
     set dirty(dirty) {
-        if(dirty == this._dirty)
+        if(dirty == this._dirty) {
             return;
+        }
 
         this._dirty = dirty;
         this.trigger({type: 'dirty', target: this, dirty: dirty});

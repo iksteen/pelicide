@@ -1,8 +1,9 @@
 import API from 'src/api'
 import {getErrorString, getExtension} from 'src/util'
 import jQuery from 'jquery'
-import 'src/css/pygments.css!';
 import url from 'url'
+import 'src/css/pygments.css!'
+
 
 export default class Preview {
     constructor(pelicide, {previewDelay: delay = 50}) {
@@ -23,14 +24,14 @@ export default class Preview {
                         group: '1',
                         caption: 'Draft',
                         checked: true,
-                        onClick: () => { this.mode = 'draft' }
+                        onClick: () => this.mode = 'draft'
                     },
                     {
                         type: 'radio',
                         id: 'render',
                         group: '1',
                         caption: 'Render',
-                        onClick: () => { this.mode = 'render' }
+                        onClick: () => this.mode = 'render'
                     },
                     {type: 'break'},
                     {
@@ -58,8 +59,8 @@ export default class Preview {
         this._box = box;
         this._toolbar = toolbar;
 
-        this.pelicide.editor.on({ type: 'change', execute: 'after' }, () => this.schedule());
-        this.pelicide.editor.on({ type: 'open', execute: 'after' }, () => {
+        this.pelicide.editor.on({type: 'change', execute: 'after'}, () => this.schedule());
+        this.pelicide.editor.on({type: 'open', execute: 'after', success: true}, () => {
             toolbar.enable('update_preview');
             toolbar.enable('external_preview');
             this.update();
@@ -122,14 +123,15 @@ export default class Preview {
                 extension = state && getExtension(state.file.name);
 
             if (state && this.pelicide.extensions.has(extension)) {
-                API.render(extension, state.content).then(html => {
-                    preview.html(html);
-                }, e => {
-                    preview.empty().append(
-                        '<h3 style="color: red">Render failed:</h3>',
-                        jQuery('<p>').html(getErrorString(e))
-                    );
-                });
+                API.render(extension, state.content).then(
+                    html => preview.html(html),
+                    e => {
+                        preview.empty().append(
+                            '<h3 style="color: red">Render failed:</h3>',
+                            jQuery('<p>').html(getErrorString(e))
+                        );
+                    }
+                );
             } else {
                 preview.empty();
             }
@@ -138,23 +140,25 @@ export default class Preview {
                 let old_frame = jQuery('#render'),
                     new_frame = jQuery('<iframe>').appendTo(old_frame.parent());
 
-                new_frame.one('load', function () {
-                    try {
-                        // Try to preserve the old scroll position.
-                        let old_doc = old_frame.contents();
-                        if (old_doc.prop('location').href == url.resolve(document.location.href, state.file.url)) {
-                            let old_body = old_doc.find('body'),
-                                top = old_body.scrollTop(),
-                                left = old_body.scrollLeft();
-                            new_frame.contents().find('body').scrollTop(top).scrollLeft(left);
+                new_frame
+                    .one('load', function () {
+                        try {
+                            /* Try to preserve the old scroll position. */
+                            let old_doc = old_frame.contents();
+                            if (old_doc.prop('location').href == url.resolve(document.location.href, state.file.url)) {
+                                let old_body = old_doc.find('body'),
+                                    top = old_body.scrollTop(),
+                                    left = old_body.scrollLeft();
+                                new_frame.contents().find('body').scrollTop(top).scrollLeft(left);
+                            }
+                        } catch (e) {
+                            /* If the user navigated away from the service application, a cross origin
+                               frame access exception will be raised. */
                         }
-                    } catch (e) {
-                        // If the user navigated away from the service application, a cross origin
-                        // frame access exception will be raised.
-                    }
-                    old_frame.remove();
-                    new_frame.attr('id', 'render');
-                }).attr('src', state.file.url);
+                        old_frame.remove();
+                        new_frame.attr('id', 'render');
+                    })
+                    .attr('src', state.file.url);
             } else {
                 jQuery('#render').attr('src', '');
             }
@@ -163,8 +167,9 @@ export default class Preview {
 
     external() {
         var state = this.pelicide.editor.state;
-        if (state && state.file.url)
+        if (state && state.file.url) {
             window.open(state.file.url);
+        }
     }
 
     setUpScrollSync(scrollSource) {

@@ -27,7 +27,7 @@ class CookieSettings {
     register(...fields) {
         for (let field of fields) {
             this._fields.push(field);
-            if (! this._data.hasOwnProperty(field.name)) {
+            if (!this._data.hasOwnProperty(field.name)) {
                 this._data[field.name] = field.defaultValue;
             }
         }

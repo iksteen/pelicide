@@ -11,5 +11,7 @@ export default class JSEditor extends CMEditor {
         return ['application/javascript'];
     }
 
-    static get icon() { return ['fa fa-file-code-o']; }
+    static get icon() {
+        return ['fa fa-file-code-o'];
+    }
 }

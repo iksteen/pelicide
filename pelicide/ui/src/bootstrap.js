@@ -10,8 +10,9 @@ import Jinja2Editor from 'src/editors/jinja2';
 import CSSEditor from 'src/editors/css';
 import JSEditor from 'src/editors/javascript';
 
+
 export function bootstrap(demo=false) {
-    // Set up API endpoint.
+    /* Set up API endpoint. */
     API.configure('rpc');
 
     Promise.all([
@@ -21,15 +22,15 @@ export function bootstrap(demo=false) {
     ]).then(function ([sitename, extensions, canDeploy]) {
         document.title = sitename + ' (Pelicide)';
 
-        // Set up and start Pelicide UI.
+        /* Set up and start Pelicide UI. */
         var pelicide = new Pelicide({
             sitename: sitename || '',
             extensions: extensions,
+            canDeploy: canDeploy,
             contentTypes: [
                 ArticleContent,
                 PageContent
             ],
-            canDeploy: canDeploy,
             editors: [
                 MDEditor,
                 RSTEditor,

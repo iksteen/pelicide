@@ -18,8 +18,9 @@ export default class Project {
         this._toolbar = null;
 
         this._contentTypes = [];
-        for (let contentType of contentTypes)
+        for (let contentType of contentTypes) {
             this._contentTypes.push(new contentType(this));
+        }
 
         this._id = 0;
         this._paths = {};
@@ -140,7 +141,7 @@ export default class Project {
                     }
                 }
             },
-            onContextMenu: event => { this._sidebar.menu = this.getMenuForNode(event.object); }
+            onContextMenu: event => this._sidebar.menu = this.getMenuForNode(event.object)
         });
         this._sidebar.render(box);
 
@@ -156,8 +157,8 @@ export default class Project {
         this._toolbar.on('click', e => {
             if(e.item && e.item.type == 'menu' && e.subItem && e.subItem.onClick) {
                 e.subItem.onClick(e);
-            }}
-        );
+            }
+        });
 
         /* Connect click event for sidebar menu items. */
         this._sidebar.on('menuClick', e => e.menuItem.onClick && e.menuItem.onClick(e.menuItem));
@@ -169,10 +170,11 @@ export default class Project {
         this.pelicide.editor.on({type: 'save', execute: 'after', success: true}, e => this.update(e.file));
 
         /* Set up global hot keys. */
-        this.pelicide.listen('meta shift l', () => { this.reload().catch(alert) });
+        this.pelicide.listen('meta shift l', () => this.reload().catch(alert));
         this.pelicide.listen('meta shift e', () => {
-            if (!this._toolbar.get('rebuild').disabled)
+            if (!this._toolbar.get('rebuild').disabled) {
                 this.reload().catch(alert);
+            }
         });
 
         /* Connect events to toolbar button states. */
@@ -213,9 +215,7 @@ export default class Project {
             /* Remove all nodes below the content type node. */
             this._sidebar.remove.apply(
                 this._sidebar,
-                this._sidebar.find(node, {}).map(function (e) {
-                    return e.id;
-                })
+                this._sidebar.find(node, {}).map(e => e.id)
             );
 
             /* Re-register path for the content type node. */
@@ -257,7 +257,6 @@ export default class Project {
     set contentTitle(text) {
         this._sidebar.get('content').text = (text === null) ? 'Content' : text;
         this._sidebar.refresh('content');
-
     }
 
     addContentType(text) {
@@ -281,7 +280,7 @@ export default class Project {
         var id = this._newId(),
             items = this._toolbar.get('create').items;
 
-        items.push(Object.assign({}, item, { id: id }));
+        items.push(Object.assign({}, item, {id: id}));
         this._toolbar.set('create', {
             disabled: false,
             items: items
@@ -352,7 +351,7 @@ export default class Project {
 
         this._files[file.dir.concat([file.name]).join('/')] = id;
 
-        this.trigger({ type: 'update', target: file });
+        this.trigger({type: 'update', target: file});
 
         return id;
     }
@@ -373,20 +372,18 @@ export default class Project {
         };
 
         return dialog({title: 'Rename file', form: this._renameForm})
-            .then(record => {
-                return API.rename_file(record.dir, record.origFilename, record.filename)
-                    .then(() => {
-                        this.removeFile(file);
-                        file.name = record.filename;
-                        this.addFile(file);
-                        this.selectedFile = file;
-                    });
+            .then(record => API.rename_file(record.dir, record.origFilename, record.filename))
+            .then(() => {
+                this.removeFile(file);
+                file.name = record.filename;
+                this.addFile(file);
+                this.selectedFile = file;
             });
     }
 
     deleteFile(file) {
         return confirm(`Are you sure you want to delete ${file.name}?`)
-            .then(() => this.pelicide.editor.isCurrentFile(file) ? this.pelicide.editor.close(false) : Promise.resolve(null))
+            .then(() => this.pelicide.editor.isCurrentFile(file) ? this.pelicide.editor.close(false) : null)
             .then(() => API.delete_file(file.dir, file.name))
             .then(() => this.removeFile(file));
     }
@@ -415,8 +412,9 @@ export default class Project {
     get categories() {
         var categories = new Set();
         for (let node of this._sidebar.find({})) {
-            if (node.file && node.file.meta && node.file.meta.category)
+            if (node.file && node.file.meta && node.file.meta.category) {
                 categories.add(node.file.meta.category);
+            }
         }
         return Array.from(categories);
     }
@@ -434,8 +432,9 @@ export default class Project {
         var filePath = file.dir.concat([file.name]).join('/'),
             nodePath = this.pathForFile(file).join('/');
 
-        if (nodePath === null)
+        if (nodePath === null) {
             return;
+        }
 
         return API.list_files()
             .then(content => {

@@ -2,12 +2,15 @@ import jQuery from 'jquery'
 import unorm from 'unorm'
 import 'vitmalina/w2ui'
 
+
 export function getErrorString(e) {
-    if (e.message)
+    if (e.message) {
         return e.message;
-    else
+    } else {
         return e;
+    }
 }
+
 
 export function alert(e) {
     if (e) {
@@ -16,6 +19,7 @@ export function alert(e) {
         return Promise.resolve();
     }
 }
+
 
 export function confirm(msg, title) {
     return new Promise((accept, reject) => {
@@ -28,10 +32,12 @@ export function confirm(msg, title) {
     });
 }
 
+
 const combining = /[\u0300-\u036F]/g;
 export function slugify(s) {
     return unorm.nfkd(s).replace(combining, '').toLowerCase().replace(/[^\w\s-]/g, '').replace(/[-\s]+/g, '-');
 }
+
 
 export function dialog(config) {
     var form = config.form;
@@ -77,12 +83,14 @@ export function dialog(config) {
     });
 }
 
+
 export function getExtension(filename) {
     var dot = filename.lastIndexOf('.');
 
-    // >0 because of dotfiles.
-    if (dot > 0)
+    /* >0 because of dotfiles. */
+    if (dot > 0) {
         return filename.substring(dot + 1);
-    else
+    } else {
         return '';
+    }
 }

@@ -2,6 +2,7 @@ import {alert} from 'src/util'
 import API from 'src/api'
 import BaseContent from 'src/content/base'
 
+
 export default class ArticleContent extends BaseContent {
     constructor(project) {
         super(project);

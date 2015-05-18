@@ -4,12 +4,14 @@ import jQuery from 'jquery'
 import 'phstc/jquery-dateFormat'
 import 'vitmalina/w2ui'
 
+
 function getPathFromRecord(record) {
     return {
         path: ['content'].concat(record.create_in ? record.create_in.split('/') : []),
         name: slugify(record.title) + '.' + record.extension.id
     }
 }
+
 
 export default class BaseContent {
     constructor(project) {

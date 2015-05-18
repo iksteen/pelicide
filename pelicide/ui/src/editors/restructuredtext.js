@@ -71,13 +71,14 @@ export default class RSTEditor extends CMEditor {
         var doc = this._codeMirror.getDoc();
         if (doc.somethingSelected()) {
             let text = doc.getSelection();
-            if (/^\w+:\/\/|^mailto:/.test(text))
+            if (/^\w+:\/\/|^mailto:/.test(text)) {
                 this.surround('` <', '>`_', text.length + 5);
-            else
+            } else {
                 this.surround('`', ' <http://>`_', 3);
-        }
-        else
+            }
+        } else {
             this.insert('` <http://>`_', 12);
+        }
     }
 
     ul() {

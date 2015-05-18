@@ -38,16 +38,19 @@ Despite these limitations, feel free to explore the user interface! And if you l
         }
     ];
 
+
 function NotSupported() {
     return Promise.reject(new Error('This functionality is not available in demo mode.'));
 }
+
 
 class API {
     constructor() {
         this._showdown = new Showdown.converter();
 
-        for(let e of NA_CALLS)
+        for(let e of NA_CALLS) {
             this[e] = NotSupported;
+        }
     }
 
     configure(endpoint) {}
@@ -73,9 +76,9 @@ class API {
             let pieces = content.split('\n\n');
             pieces.splice(0, 1);
             return Promise.resolve(this._showdown.makeHtml(pieces.join('\n\n')));
-        }
-        else
+        } else {
             return NotSupported();
+        }
     }
 
     list_files() {
@@ -86,8 +89,9 @@ class API {
         dir = dir.join('/');
 
         for(let node of CONTENT) {
-            if (node.dir.join('/') == dir && node.name == name)
+            if (node.dir.join('/') == dir && node.name == name) {
                 return Promise.resolve(node.content);
+            }
         }
 
         return Promise.reject(new Error('File not found.'));
@@ -110,9 +114,7 @@ class API {
             if (node.dir.join('/') == dir.join('/') && node.name == name) {
                 Object.assign(node, {
                     content: new_content,
-                    meta: {
-                        category: meta.category || 'misc'
-                    },
+                    meta: {category: meta.category || 'misc'},
                     type
                 });
                 return Promise.resolve();
@@ -123,9 +125,7 @@ class API {
             name: name,
             url: 'http://blurringexistence.net',
             content: new_content,
-            meta: {
-                category: meta.category || 'misc'
-            },
+            meta: {category: meta.category || 'misc'},
             mimetype: 'text/x-markdown',
             dir: dir,
             type
@@ -163,7 +163,7 @@ class API {
     }
 
     can_deploy() {
-        return false;
+        return Promise.resolve(false);
     }
 }
 
