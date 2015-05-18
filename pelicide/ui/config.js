@@ -28,6 +28,7 @@ System.config({
     "phstc/jquery-dateFormat": "github:phstc/jquery-dateFormat@1.0.2",
     "showdown": "github:showdownjs/showdown@0.5.1",
     "unorm": "npm:unorm@1.3.3",
+    "url": "github:jspm/nodelibs-url@0.1.0",
     "vitmalina/w2ui": "github:vitmalina/w2ui@1.4.2",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.3.0"

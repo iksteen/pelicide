@@ -14,6 +14,7 @@
       "phstc/jquery-dateFormat": "github:phstc/jquery-dateFormat@^1.0.2",
       "showdown": "github:showdownjs/showdown@^0.5.0",
       "unorm": "npm:unorm@^1.3.3",
+      "url": "github:jspm/nodelibs-url@^0.1.0",
       "vitmalina/w2ui": "github:vitmalina/w2ui@^1.4.2"
     },
     "devDependencies": {

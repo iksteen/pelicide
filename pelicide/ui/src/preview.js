@@ -3,6 +3,7 @@ import {getErrorString, getExtension} from 'src/util'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
 import 'src/css/pygments.css!';
+import url from 'url'
 
 export default class Preview {
     constructor(pelicide, {previewDelay: delay = 50}) {
@@ -144,7 +145,7 @@ export default class Preview {
                     try {
                         // Try to preserve the old scroll position.
                         let old_doc = old_frame.contents();
-                        if (old_doc.prop('location') == state.file.url) {
+                        if (old_doc.prop('location').href == url.resolve(document.location.href, state.file.url)) {
                             let old_body = old_doc.find('body'),
                                 top = old_body.scrollTop(),
                                 left = old_body.scrollLeft();
