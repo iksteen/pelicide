@@ -29,7 +29,7 @@ export default class CMEditor {
 
         // Make sure CodeMirror refreshes when the panel size changes.
         this._onLayoutChanged = () => this._codeMirror.refresh();
-        editor.pelicide.on('layout', this._onLayoutChanged);
+        editor.pelicide.on({type: 'layout'}, this._onLayoutChanged);
 
         // Sync preview scrolling
         editor.pelicide.preview.setUpScrollSync(this._codeMirror.getScrollerElement());
@@ -81,7 +81,7 @@ export default class CMEditor {
     }
 
     close() {
-        this.editor.pelicide.off('layout', this._onLayoutChanged);
+        this.editor.pelicide.off({type: 'layout'}, this._onLayoutChanged);
         this._codeMirror = null;
     }
 

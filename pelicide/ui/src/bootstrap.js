@@ -41,11 +41,10 @@ export function bootstrap(demo=false) {
         });
 
         if(demo) {
-            let f = () => {
-                pelicide.editor.open(pelicide.project.getFile(['content'], 'welcome-to-pelicide.md'));
-                pelicide.project.off({type: 'reload'}, f);
-            };
-            pelicide.project.on({type: 'reload', execute: 'after'}, f);
+            pelicide.project.once(
+                {type: 'reload', execute: 'after'},
+                () => pelicide.editor.open(pelicide.project.getFile(['content'], 'welcome-to-pelicide.md'))
+            );
         }
 
         pelicide.run('#main_layout');

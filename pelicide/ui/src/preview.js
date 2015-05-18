@@ -1,14 +1,11 @@
 import API from 'src/api'
 import {getErrorString, getExtension} from 'src/util'
 import jQuery from 'jquery'
-import 'vitmalina/w2ui'
 import 'src/css/pygments.css!';
 import url from 'url'
 
 export default class Preview {
     constructor(pelicide, {previewDelay: delay = 50}) {
-        Object.assign(this, w2utils.event);
-
         this.pelicide = pelicide;
         this.delay = delay;
         this._mode = null;
@@ -67,16 +64,16 @@ export default class Preview {
             toolbar.enable('external_preview');
             this.update();
         });
-        this.pelicide.editor.on({ type: 'close', execute: 'after' }, () => {
+        this.pelicide.editor.on({type: 'close', execute: 'after', success: true}, () => {
             toolbar.disable('update_preview');
             toolbar.disable('external_preview');
             this.update();
         });
-        this.pelicide.project.on({ type: 'rebuild', execute: 'after' }, () => {
+        this.pelicide.project.on({type: 'rebuild', execute: 'after', success: true}, () => {
             if (this.mode == 'render')
                 this.update();
         });
-        this.pelicide.editor.on({ type: 'rebuild', execute: 'after' }, () => {
+        this.pelicide.editor.on({type: 'rebuild', execute: 'after', success: true}, () => {
             if (this.mode == 'render')
                 this.update();
         });

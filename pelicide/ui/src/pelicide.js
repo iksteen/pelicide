@@ -3,6 +3,7 @@ import Editor from 'src/editor'
 import Preview from 'src/preview'
 import jQuery from 'jquery'
 import settings from 'src/settings'
+import EventEmitter from 'src/prevent'
 import keypress from 'keypress.js'
 import 'vitmalina/w2ui'
 import fullscreen from 'fullscreen'
@@ -36,7 +37,7 @@ settings.register(
 
 export default class Pelicide {
     constructor(options) {
-        Object.assign(this, w2utils.event);
+        Object.assign(this, EventEmitter);
 
         options = options || {};
 

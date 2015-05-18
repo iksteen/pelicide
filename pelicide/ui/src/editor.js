@@ -1,6 +1,7 @@
 import {alert} from 'src/util'
 import API from 'src/api'
 import settings from 'src/settings'
+import EventEmitter from 'src/prevent'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
 
@@ -23,7 +24,7 @@ settings.register(
 
 export default class Editor {
     constructor(pelicide, {editors = []}) {
-        Object.assign(this, w2utils.event);
+        Object.assign(this, EventEmitter);
 
         this.pelicide = pelicide;
         this._handlers = [];
@@ -81,8 +82,18 @@ export default class Editor {
         this.pelicide.project.on('update', ({target: file}) => {
             if (this.isCurrentFile(file)) {
                 this._currentFile =  file;
+
+        /* Connect events to toolbar button states. */
+        this.on({type: 'rebuild', execute: 'before'}, () => this._toolbar.set('rebuild_page', {disabled: true}));
+        this.on({type: 'rebuild', execute: 'after'}, () =>
+            this._toolbar.set('rebuild_page', {disabled: this._editor === null || this._currentFile.dir[0] != 'content'})
+        );
+        this.on({type: 'open', execute: 'after', success: true}, ({file}) => {
+            if (file.dir[0] == 'content') {
+                this._toolbar.enable('rebuild_page');
             }
         });
+        this.on({type: 'dirty'}, ({dirty}) => this._toolbar.set('save', {disabled: !dirty}));
 
         /* Set up global hot keys. */
         this.pelicide.listen('meta s', () => {
@@ -95,7 +106,7 @@ export default class Editor {
         });
 
         /* Set up periodic auto-save. */
-        this.on({type: 'change', execute: 'after'}, () => {
+        this.on({type: 'change'}, () => {
             if (settings.get('autoSaveInterval') && !this.isCurrentFile(this._autoSavePending)) {
                 this._autoSavePending = this._currentFile;
 
@@ -138,7 +149,7 @@ export default class Editor {
 
     change() {
         this.dirty = true;
-        this.trigger({ type: 'change', phase: 'after', target: this });
+        this.trigger({type: 'change', target: this});
     }
 
     get dirty() {
@@ -149,15 +160,8 @@ export default class Editor {
         if(dirty == this._dirty)
             return;
 
-        var eventData = { type: 'dirty', phase: 'before', target: this, dirty: dirty };
-
-        this.trigger(eventData);
-        if (eventData.isCancelled === true) return;
-
         this._dirty = dirty;
-        this._toolbar.set('save', {disabled: !dirty});
-
-        this.trigger(Object.assign(eventData, { phase: 'after' }))
+        this.trigger({type: 'dirty', target: this, dirty: dirty});
     }
 
     get state() {
@@ -178,27 +182,21 @@ export default class Editor {
             return Promise.reject(new Error('No editor is registered for this file type.'));
         }
 
-        var eventData = { type: 'open', phase: 'before', target: this, file: file };
-        this.trigger(eventData);
-        if (eventData.isCancelled === true) {
-            return Promise.reject();
-        }
-
-        return this.close()
+        var eventData = {type: 'open', execute: 'before', target: this, file: file};
+        return this.trigger(eventData)
+            .then(() => this.close())
             .then(() => API.get_file(file.dir, file.name))
             .then(content => {
                 this._currentFile = file;
                 this._editor = new editor(this, this._box, content);
-
-                if (file.dir[0] == 'content')
-                    this._toolbar.enable('rebuild_page');
-
-                this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
             })
-            .catch(e => {
-                this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
-                return Promise.reject(e);
-            });
+            .then(
+                () => this.trigger(Object.assign(eventData, {execute: 'after', success: true})),
+                e => {
+                    this.trigger(Object.assign(eventData, {execute: 'after', success: false, error: e}));
+                    return Promise.reject(e);
+                }
+            );
     }
 
     save() {
@@ -206,20 +204,61 @@ export default class Editor {
             return Promise.resolve();
         }
 
-        var eventData = {type: 'save', phase: 'before', target: this, file: this._currentFile};
-        this.trigger(eventData);
-        if (eventData.isCancelled) {
-            return Promise.reject();
+        var eventData = {type: 'save', execute: 'before', target: this, file: this._currentFile};
+        return this.trigger(eventData)
+            .then(() => API.put_file(this._currentFile.dir, this._currentFile.name, this._editor.content()))
+            .then(
+                () => {
+                    this.dirty = false;
+                    this.trigger(Object.assign(eventData, {execute: 'after', success: true}));
+                }, e => {
+                    this.trigger(Object.assign(eventData, {execute: 'after', success: false, error: e}));
+                    return Promise.reject(e);
+                }
+            );
+    }
+
+    _checkClose(saveBeforeClose) {
+        if (!this.dirty || !saveBeforeClose) {
+            return Promise.resolve();
         }
 
-        return API.put_file(this._currentFile.dir, this._currentFile.name, this._editor.content())
-            .then(() => {
-                this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
-                this.dirty = false;
-            }, e => {
-                this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
-                return Promise.reject(e);
-            });
+        if (settings.get('autoSaveInterval')) {
+            return this.save();
+        }
+
+        return new Promise((resolve, reject) => jQuery().w2popup({
+            title: 'Confirm close',
+            width: 450,
+            height: 220,
+            body: '<div class="w2ui-centered w2ui-confirm-msg" style="font-size: 13px;">' +
+                  '<p>The content of the currently opened file has changed.</p>' +
+                  '<p>Are you sure you want to close this file?</p></div>',
+            buttons: '<button value="save" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Save</button>' +
+                     '<button value="discard" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Discard</button>' +
+                     '<button value="cancel" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Cancel</button>',
+
+            onOpen: event => {
+                event.onComplete = () => {
+                    jQuery('.px-confirm-close').on('click', event => {
+                        w2popup.close();
+
+                        var result = jQuery(event.target).val();
+                        switch (result) {
+                            case 'save':
+                                resolve(this.save());
+                                break;
+                            case 'discard':
+                                this.dirty = false;
+                                resolve();
+                                break;
+                            default:
+                                reject();
+                        }
+                    });
+                };
+            }
+        }));
     }
 
     close(saveBeforeClose = true) {
@@ -227,97 +266,41 @@ export default class Editor {
             return Promise.resolve();
         }
 
-        var eventData = { type: 'close', phase: 'before', target: this, file: this._currentFile };
-        this.trigger(eventData);
-        if (eventData.isCancelled === true) {
-            return Promise.reject();
-        }
-
-        var _close = () => {
-            this.removeEditorToolbarItems();
-            this._toolbar.disable('rebuild_page');
-            this._editor.close();
-            this._editor = null;
-            this._currentFile = null;
-            jQuery(this._box).empty();
-            this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
-        };
-
-        if (!this.dirty || !saveBeforeClose) {
-            _close();
-            return Promise.resolve();
-        }
-
-        if (settings.get('autoSaveInterval')) {
-            return this.save().then(_close);
-        }
-
-        return new Promise((resolve, reject) => {
-            jQuery().w2popup({
-                title: 'Confirm close',
-                width: 450,
-                height: 220,
-                body: '<div class="w2ui-centered w2ui-confirm-msg" style="font-size: 13px;">' +
-                      '<p>The content of the currently opened file has changed.</p>' +
-                      '<p>Are you sure you want to close this file?</p></div>',
-                buttons: '<button value="save" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Save</button>' +
-                         '<button value="discard" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Discard</button>' +
-                         '<button value="cancel" class="w2ui-popup-btn w2ui-btn px-confirm-close" style="width: 80px; margin: 0 10px">Cancel</button>',
-
-                onOpen: event => {
-                    event.onComplete = () => {
-                        jQuery('.px-confirm-close').on('click', event => {
-                            w2popup.close();
-
-                            var result = jQuery(event.target).val();
-                            switch (result) {
-                                case 'save':
-                                    resolve(this.save().then(_close));
-                                    break;
-                                case 'discard':
-                                    this.dirty = false;
-                                    _close();
-                                    resolve();
-                                    break;
-                                default:
-                                    this.trigger(Object.assign(eventData, { phase: 'after', success: false }));
-                                    reject();
-                            }
-                        });
-                    };
+        var eventData = {type: 'close', execute: 'before', target: this, file: this._currentFile, saveBeforeClose};
+        return this.trigger(eventData)
+            .then(() => this._checkClose(saveBeforeClose))
+            .then(() => {
+                this.removeEditorToolbarItems();
+                this._editor.close();
+                this._editor = null;
+                this._currentFile = null;
+                jQuery(this._box).empty();
+            })
+            .then(
+                () => this.trigger(Object.assign(eventData, {execute: 'after', success: true})),
+                e => {
+                    this.trigger(Object.assign(eventData, {execute: 'after', success: false, error: e}));
+                    return Promise.reject(e);
                 }
-            });
-        });
+            );
     }
 
     rebuild() {
         var state = this.state;
-
-        this._toolbar.disable('rebuild_page');
-
-        if (!state)
+        if (!state) {
             return Promise.reject(new Error('No open file.'));
-
-        var eventData = {
-            type: 'rebuild',
-            phase: 'before',
-            target: this,
-            onComplete: () => {
-                this._toolbar.set('rebuild_page', {disabled: this._editor === null || this._currentFile.dir[0] != 'content'});
-            }
-        };
-        this.trigger(eventData);
-        if (eventData.isCancelled === true) {
-            eventData.onComplete();
-            return Promise.reject();
         }
 
-        return this.save()
-            .then(() => { return API.build([[state.file.dir, state.file.name]]); })
-            .then(() => { this.trigger(Object.assign(eventData, { phase: 'after', success: true })); })
-            .catch(e => {
-                this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
-                return Promise.reject(e);
-            });
+        var eventData = {type: 'rebuild', execute: 'before', target: this};
+        return this.trigger(eventData)
+            .then(() => this.save())
+            .then(() => API.build([[state.file.dir, state.file.name]]))
+            .then(
+                () => this.trigger(Object.assign(eventData, {execute: 'after', success: true})),
+                e => {
+                    this.trigger(Object.assign(eventData, {execute: 'after', success: false, error: e}));
+                    return Promise.reject(e);
+                }
+            );
     }
 }

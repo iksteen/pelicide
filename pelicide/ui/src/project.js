@@ -1,12 +1,13 @@
 import {alert, confirm, dialog} from 'src/util'
 import API from 'src/api'
+import EventEmitter from 'src/prevent'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
 
 
 export default class Project {
     constructor(pelicide, {sitename = '', contentTypes = [], canDeploy = false}) {
-        Object.assign(this, w2utils.event);
+        Object.assign(this, EventEmitter);
 
         this.pelicide = pelicide;
         this._sitename = sitename;
@@ -162,10 +163,10 @@ export default class Project {
         this._sidebar.on('menuClick', e => e.menuItem.onClick && e.menuItem.onClick(e.menuItem));
 
         /* Select node after opening a file. */
-        this.pelicide.editor.on({type: 'open', execute: 'after'}, e => { this.selectedFile = e.file });
+        this.pelicide.editor.on({type: 'open', execute: 'after', success: true}, e => this.selectedFile = e.file);
 
         /* Update node path after saving a file. */
-        this.pelicide.editor.on({type: 'save', execute: 'after'}, e => this.update(e.file));
+        this.pelicide.editor.on({type: 'save', execute: 'after', success: true}, e => this.update(e.file));
 
         /* Set up global hot keys. */
         this.pelicide.listen('meta shift l', () => { this.reload().catch(alert) });
@@ -173,6 +174,14 @@ export default class Project {
             if (!this._toolbar.get('rebuild').disabled)
                 this.reload().catch(alert);
         });
+
+        /* Connect events to toolbar button states. */
+        this.on({type: 'reload', execute: 'before'}, () => this._sidebar.lock('Loading...', true));
+        this.on({type: 'reload', execute: 'after'}, () => this._sidebar.unlock());
+        this.on({type: 'rebuild', execute: 'before'}, () => this._toolbar.set('rebuild', {disabled: true}));
+        this.on({type: 'rebuild', execute: 'after'}, () => this._toolbar.set('rebuild', {disabled: false}));
+        this.on({type: 'deploy', execute: 'before'}, () => this._toolbar.set('deploy', {disabled: true}));
+        this.on({type: 'deploy', execute: 'after'}, () => this._toolbar.set('deploy', {disabled: !this._canDeploy}));
 
         /* Load project. */
         this.reload().catch(alert);
@@ -445,82 +454,50 @@ export default class Project {
     }
 
     reload() {
-        var eventData = {type: 'reload', phase: 'before', target: this};
-        this.trigger(eventData);
-        if (eventData.isCancelled === true) {
-            return Promise.reject();
-        }
-
-        return this.pelicide.editor.close()
-            .then(() => {
-                this._sidebar.lock('Loading...', true);
-                this.clear();
-                return API.list_files();
-            })
+        var eventData = {type: 'reload', execute: 'before', target: this};
+        return this.trigger(eventData)
+            .then(() => this.pelicide.editor.close())
+            .then(() => this.clear())
+            .then(() => API.list_files())
             .then(content => {
                 for (let file of content) {
                     this.addFile(file);
                 }
-                this._sidebar.unlock();
-                this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
-            }, e => {
-                this._sidebar.unlock();
-                this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
-                return Promise.reject(e);
-            });
+            })
+            .then(
+                () => this.trigger(Object.assign(eventData, {execute: 'after', success: true})),
+                e => {
+                    this.trigger(Object.assign(eventData, {execute: 'after', success: false, error: e}));
+                    return Promise.reject(e);
+                }
+            );
     }
 
     rebuild() {
-        this._toolbar.disable('rebuild');
-
-        var eventData = {
-            type: 'rebuild',
-            phase: 'before',
-            target: this,
-            onComplete: () => {
-                this._toolbar.enable('rebuild');
-            }
-        };
-        this.trigger(eventData);
-        if (eventData.isCancelled === true) {
-            eventData.onComplete();
-            return Promise.reject();
-        }
-
-        return this.pelicide.editor.save()
-            .then(() => { return API.build(); })
-            .then(() => {
-                this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
-            }, e => {
-                this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
-                return Promise.reject(e);
-            });
+        var eventData = {type: 'rebuild', execute: 'before', target: this};
+        return this.trigger(eventData)
+            .then(() => this.pelicide.editor.save())
+            .then(() => API.build())
+            .then(
+                () => this.trigger(Object.assign(eventData, {execute: 'after', success: true})),
+                e => {
+                    this.trigger(Object.assign(eventData, {execute: 'after', success: false, error: e}));
+                    return Promise.reject(e);
+                }
+            );
     }
 
     deploy() {
-        this._toolbar.disable('deploy');
-
-        var eventData = {
-            type: 'deploy',
-            phase: 'before',
-            target: this,
-            onComplete: () => {
-                this._toolbar.enable('deploy');
-            }
-        };
-        this.trigger(eventData);
-        if (eventData.isCancelled === true) {
-            eventData.onComplete();
-            return Promise.reject();
-        }
-
-        return this.pelicide.editor.save()
-            .then(() => { return API.deploy(); })
-            .then(() => {
-                this.trigger(Object.assign(eventData, { phase: 'after', success: true }));
-            }, e => {
-                this.trigger(Object.assign(eventData, { phase: 'after', success: false, error: e }));
-                return Promise.reject(e);
-            });
+        var eventData = {type: 'deploy', execute: 'before', target: this};
+        return this.trigger(eventData)
+            .then(() => this.pelicide.editor.save())
+            .then(() => API.deploy())
+            .then(
+                () => this.trigger(Object.assign(eventData, {execute: 'after', success: true})),
+                e => {
+                    this.trigger(Object.assign(eventData, {execute: 'after', success: false, error: e}));
+                    return Promise.reject(e);
+                }
+            );
     }
 }
