@@ -40,6 +40,7 @@ Create a project file (pelicide.ini) in your pelican directory::
     pelicanconf=pelicanconf.py
     python=~/.pyenv/pelican/bin/python
     deploy=make rsync_upload
+    tempdir=tmp
 
 All settings are optional (in fact, you can run pelicide without a project
 file). The default value for the ``pelicanconf`` setting is *pelicanconf.py*,
@@ -52,6 +53,11 @@ environment than the one you build your site with.
 The deploy option specifies what command to execute to deploy (or publish)
 your site. You can specify any shell command. The command will be executed in
 the directory your pelican config file resides in.
+
+By default, pelicide will create a temporary directory to store the output
+files in (and cleans it up when pelicide exits). If you have a lot of media
+files that need to be copied and you restart pelicide often, you may want to
+specify a persistent output using *tempdir*.
 
 You can also create a global configuration file in
 *~/.config/pelicide/pelicide.ini*. This config file will be loaded first and

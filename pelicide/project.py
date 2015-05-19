@@ -45,8 +45,10 @@ def start_service(token, root, project):
         print('Cleaning up {}'.format(tmp_path), file=sys.stderr)
         shutil.rmtree(tmp_path, True)
 
-    temp_path = tempfile.mkdtemp()
-    atexit.register(clean, temp_path)
+    temp_path = project['tempdir']
+    if temp_path is None:
+        temp_path = tempfile.mkdtemp()
+        atexit.register(clean, temp_path)
 
     output_path = os.path.join(temp_path, 'output')
 
