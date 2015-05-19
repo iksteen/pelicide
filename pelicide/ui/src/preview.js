@@ -59,7 +59,7 @@ export default class Preview {
         this._box = box;
         this._toolbar = toolbar;
 
-        this.pelicide.editor.on({type: 'change', execute: 'after'}, () => this.schedule());
+        this.pelicide.editor.on({type: 'change'}, () => this.schedule());
         this.pelicide.editor.on({type: 'open', execute: 'after', success: true}, () => {
             toolbar.enable('update_preview');
             toolbar.enable('external_preview');
