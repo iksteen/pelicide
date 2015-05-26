@@ -61,7 +61,7 @@ class Runner(object):
             protocol,
             self.python,
             [
-                'pelicide-runner',
+                self.python,
                 runner,
                 self.config_path,
                 json.dumps(self.init_settings),
