@@ -1,8 +1,22 @@
 import {alert, confirm, dialog} from 'src/util'
 import API from 'src/api'
 import EventEmitter from 'src/prevent'
+import settings from 'src/settings'
 import jQuery from 'jquery'
 import 'vitmalina/w2ui'
+
+
+settings.register(
+    {
+        name: 'hideNonEditableFiles',
+        defaultValue: true,
+        type: 'checkbox',
+        html: {
+            caption: '&nbsp;',
+            text: '&nbsp;Hide files that are not editable.'
+        }
+    }
+);
 
 
 export default class Project {
@@ -329,10 +343,13 @@ export default class Project {
         if (path === null)
             return;
 
+        var editor = this.pelicide.editor.getEditor(file);
+        if (!editor && settings.get('hideNonEditableFiles'))
+            return;
+
         var parent = this._sidebar.get(this.ensurePath(path)),
             id = this._newId(),
-            before = null,
-            editor = this.pelicide.editor.getEditor(file);
+            before = null;
 
         for (let sibling of parent.nodes) {
             if (sibling.file !== undefined && sibling.text.localeCompare(file.name) > 0) {
