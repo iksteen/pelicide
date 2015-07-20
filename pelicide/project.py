@@ -5,6 +5,9 @@ import os
 import shutil
 import sys
 import tempfile
+from autobahn.twisted.resource import WebSocketResource
+from autobahn.twisted.websocket import WebSocketServerFactory
+
 
 from twisted.web import resource, static, script
 from zope.interface import implements
@@ -62,7 +65,12 @@ def start_service(token, root, project):
         },
     )
 
-    root.putChild('rpc', PelicideService(token, runner, project))
+    factory = WebSocketServerFactory()
+    factory.token = token
+    factory.runner = runner
+    factory.project = project
+    factory.protocol = PelicideService
+    root.putChild('ws', WebSocketResource(factory))
     root.putChild('site', NoCacheFile(output_path))
 
     return runner.start().addCallback(

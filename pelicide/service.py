@@ -1,36 +1,66 @@
-from __future__ import print_function
+import json
 import mimetypes
 import os
 import itertools
-
-from fastjsonrpc.server import JSONRPCServer
 import functools
+
 from twisted.internet import defer
+from autobahn.twisted.websocket import WebSocketServerProtocol
 
 
-def check_token(f):
+def require_authentication(f):
     @functools.wraps(f)
-    def proxy(self, token, *args):
-        if token != self.token:
-            raise RuntimeError('Invalid RPC token')
+    def proxy(self, *args):
+        if not self.authenticated:
+            raise RuntimeError('Session not authenticated.')
         return f(self, *args)
     return proxy
 
 
-class PelicideService(JSONRPCServer):
-    def __init__(self, token, runner, project):
-        JSONRPCServer.__init__(self)
-        self.token = token
-        self.runner = runner
-        self.deploy_command = project['deploy']
+class PelicideService(WebSocketServerProtocol):
+    authenticated = False
+
+    def onMessage(self, payload, isBinary):
+        def success(result, msg_id):
+            self.sendMessage(json.dumps({
+                'jsonrpc': '2.0',
+                'result': result,
+                'id': msg_id,
+            }), isBinary)
+
+        def error_handler(f, msg_id):
+            self.sendMessage(json.dumps({
+                'jsonrpc': '2.0',
+                'error': {
+                    'code': -32000,
+                    'message': f.getErrorMessage(),
+                },
+                'id': msg_id,
+            }), isBinary)
+
+        message = json.loads(payload)
+
+        method = getattr(self, 'jsonrpc_%s' % message['method'])
+        d = defer.maybeDeferred(method, *message.get('params', []))
+
+        msg_id = message['id']
+        if msg_id is not None:
+            d.addCallbacks(
+                success,
+                error_handler,
+                callbackArgs=[msg_id],
+                errbackArgs=[msg_id],
+            )
+
+        return d
 
     def get_sub_path(self, subdir):
         origin, subdir = subdir[0], subdir[1:]
 
         if origin == 'content':
-            base_path = self.runner.settings['PATH']
+            base_path = self.factory.runner.settings['PATH']
         elif origin == 'theme':
-            base_path = self.runner.settings['THEME']
+            base_path = self.factory.runner.settings['THEME']
         else:
             raise RuntimeError('Unknown origin %s' % origin)
 
@@ -41,37 +71,45 @@ class PelicideService(JSONRPCServer):
 
         return path
 
-    @check_token
+    def jsonrpc_authenticate(self, token):
+        if token == self.factory.token:
+            self.authenticated = True
+        else:
+            self.authenticated = False
+            raise RuntimeError('Authentication failed.')
+        return self.authenticated
+
+    @require_authentication
     def jsonrpc_restart(self):
-        return self.runner.restart().addCallback(lambda _: None)
+        return self.factory.runner.restart().addCallback(lambda _: None)
 
-    @check_token
+    @require_authentication
     def jsonrpc_get_settings(self):
-        return self.runner.settings
+        return self.factory.runner.settings
 
-    @check_token
+    @require_authentication
     def jsonrpc_get(self, key):
-        return self.runner.command('setting', [key])
+        return self.factory.runner.command('setting', [key])
 
-    @check_token
+    @require_authentication
     def jsonrpc_set(self, key, value):
-        return self.runner.command('setting', [key, value])
+        return self.factory.runner.command('setting', [key, value])
 
-    @check_token
+    @require_authentication
     def jsonrpc_list_extensions(self):
-        return self.runner.command('extensions')
+        return self.factory.runner.command('extensions')
 
-    @check_token
+    @require_authentication
     def jsonrpc_build(self, paths=None):
         if paths:
             map(lambda p: p[0].pop(0), paths)
-        return self.runner.command('build', paths)
+        return self.factory.runner.command('build', paths)
 
-    @check_token
+    @require_authentication
     def jsonrpc_render(self, fmt, content):
-        return self.runner.command('render', [fmt, content]).addCallback(lambda v: v['content'])
+        return self.factory.runner.command('render', [fmt, content]).addCallback(lambda v: v['content'])
 
-    @check_token
+    @require_authentication
     def jsonrpc_list_files(self):
         def add_origin(content, origin):
             return [
@@ -93,7 +131,7 @@ class PelicideService(JSONRPCServer):
 
         return defer.gatherResults(
             [
-                self.runner.command('scan').addCallback(add_origin, 'content'),
+                self.factory.runner.command('scan').addCallback(add_origin, 'content'),
                 defer.succeed(list_files('theme')),
             ],
             consumeErrors=True
@@ -101,7 +139,7 @@ class PelicideService(JSONRPCServer):
             lambda r: list(itertools.chain(*r))
         )
 
-    @check_token
+    @require_authentication
     def jsonrpc_get_file(self, subdir, filename):
         path = self.get_sub_path(subdir + [filename])
 
@@ -111,7 +149,7 @@ class PelicideService(JSONRPCServer):
         with open(path, 'rb') as f:
             return f.read().decode('utf-8')
 
-    @check_token
+    @require_authentication
     def jsonrpc_put_file(self, subdir, filename, content):
         path = self.get_sub_path(subdir + [filename])
 
@@ -122,7 +160,7 @@ class PelicideService(JSONRPCServer):
         with open(path, 'wb') as f:
             f.write(content.encode('utf-8'))
 
-    @check_token
+    @require_authentication
     def jsonrpc_delete_file(self, subdir, filename):
         path = self.get_sub_path(subdir + [filename])
 
@@ -131,7 +169,7 @@ class PelicideService(JSONRPCServer):
 
         os.remove(path)
 
-    @check_token
+    @require_authentication
     def jsonrpc_rename_file(self, subdir, old_name, new_name):
         old_path = self.get_sub_path(subdir + [old_name])
         new_path = self.get_sub_path(subdir + [new_name])
@@ -146,11 +184,11 @@ class PelicideService(JSONRPCServer):
 
         os.rename(old_path, new_path)
 
-    @check_token
+    @require_authentication
     def jsonrpc_can_deploy(self):
-        return bool(self.deploy_command)
+        return bool(self.factory.project['deploy'])
 
-    @check_token
+    @require_authentication
     def jsonrpc_deploy(self):
-        if self.deploy_command:
-            return self.runner.command('exec', [self.deploy_command])
+        if self.factory.project['deploy']:
+            return self.factory.runner.command('exec', [self.factory.project['deploy']])

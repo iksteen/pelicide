@@ -20,7 +20,6 @@ System.config({
     "codemirror": "npm:codemirror@5.4.0",
     "core-js": "npm:core-js@0.9.10",
     "css": "github:systemjs/plugin-css@0.1.13",
-    "datagraph/jquery-jsonrpc": "github:datagraph/jquery-jsonrpc@0.1.1",
     "fullscreen": "npm:fullscreen@1.0.0",
     "jquery": "github:components/jquery@2.1.4",
     "js-cookie": "npm:js-cookie@1.5.1",

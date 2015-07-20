@@ -7,7 +7,7 @@ __version__ = '0.0.0.dev0'
 
 requires = [
     'Twisted',
-    'fastjsonrpc',
+    'autobahn',
 ]
 
 
