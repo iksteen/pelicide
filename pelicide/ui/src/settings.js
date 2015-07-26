@@ -7,6 +7,7 @@ import 'vitmalina/w2ui';
 class CookieSettings {
     constructor() {
         this._data = JSON.parse(Cookie.get('pelicide-settings') || '{}');
+        this._keys = new Set();
         this._fields = [];
         this._form = null;
     }
@@ -26,9 +27,12 @@ class CookieSettings {
 
     register(...fields) {
         for (let field of fields) {
-            this._fields.push(field);
-            if (!this._data.hasOwnProperty(field.name)) {
-                this._data[field.name] = field.defaultValue;
+            if (! this._keys.has(field.name)) {
+                this._keys.add(field.name);
+                this._fields.push(field);
+                if (!this._data.hasOwnProperty(field.name)) {
+                    this._data[field.name] = field.defaultValue;
+                }
             }
         }
     }
