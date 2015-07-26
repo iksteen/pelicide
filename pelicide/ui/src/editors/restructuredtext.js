@@ -1,13 +1,28 @@
+import settings from 'src/settings'
 import CMEditor from 'src/editors/codemirror';
 import 'codemirror/mode/rst/rst';
 
 
+settings.register(
+    {
+        name: 'author',
+        defaultValue: '',
+        type: 'text',
+        html: {
+            caption: 'Author'
+        }
+    }
+);
+
+
 function template(record) {
+    var author = settings.get('author');
     return `${record.title}
 ${'#'.repeat(record.title.length)}
 
 :date: ${record.date}
-:status: ${record.status.id}
+:status: ${record.status.id}` + (author ? `
+:author: ${author}` : '') + `
 :tags: `+ (record.category ? `
 :category: ${record.category}` : '') + `
 :slug: ${record.slug}

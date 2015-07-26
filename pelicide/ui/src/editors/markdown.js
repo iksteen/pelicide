@@ -1,11 +1,26 @@
+import settings from 'src/settings'
 import CMEditor from 'src/editors/codemirror';
 import 'codemirror/mode/markdown/markdown';
 
 
+settings.register(
+    {
+        name: 'author',
+        defaultValue: '',
+        type: 'text',
+        html: {
+            caption: 'Author'
+        }
+    }
+);
+
+
 function template(record) {
+    var author = settings.get('author');
     return `Title: ${record.title}
 Date: ${record.date}
-Status: ${record.status.id}
+Status: ${record.status.id}` + (author ? `
+Author: ${author}` : '' ) + `
 Tags:`  + (record.category ? `
 Category: ${record.category}` : '') + `
 Slug: ${record.slug}
