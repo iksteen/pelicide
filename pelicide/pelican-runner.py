@@ -2,6 +2,14 @@ from __future__ import print_function
 import mimetypes
 
 
+# chdir before anything else or docutils won't be able to find its template
+# as it uses a relative path to a file inside its package for whatever reason.
+import os
+import sys
+if __name__ == '__main__':
+    os.chdir(os.path.dirname(sys.argv[1]))
+
+
 # Augment mime types before importing anything else. Required because Twisted
 # captures the mime type table on class declaration.
 def augment_mime_types():
@@ -29,8 +37,6 @@ augment_mime_types()
 
 
 import json
-import os
-import sys
 import tempfile
 import jinja2.filters
 from pelican.log import init as log_init
@@ -258,5 +264,4 @@ def run(config_file, init_settings):
 if __name__ == '__main__':
     log_init(logging.DEBUG)
     os.environ['PATH'] = os.path.dirname(sys.executable) + os.pathsep + os.environ['PATH']
-    os.chdir(os.path.dirname(sys.argv[1]))
     run(sys.argv[1], json.loads(sys.argv[2]))
