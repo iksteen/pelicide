@@ -209,7 +209,7 @@ def run(config_file, init_settings):
                 settings[args[0]] = args[1]
             success(cmd_id, settings[args[0]])
         elif cmd == 'extensions':
-            success(cmd_id, readers.extensions)
+            success(cmd_id, list(readers.extensions))
         elif cmd == 'scan':
             try:
                 context, _ = scan(pelican, settings)
