@@ -47,7 +47,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'pelicide = pelicide.__main__:main',
+            'pelicide = pelicide.twisted.__main__:main',
         ],
     },
 

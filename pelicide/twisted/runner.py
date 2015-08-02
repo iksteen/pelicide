@@ -55,7 +55,7 @@ class Runner(object):
 
     def start(self):
         self.d = defer.Deferred()
-        runner = os.path.join(os.path.dirname(__file__), 'pelican-runner.py')
+        runner = os.path.join(os.path.dirname(__file__), '..', 'pelican-runner.py')
         protocol = RunnerProtocol(self.responseReceived)
         self.transport = self.reactor.spawnProcess(
             protocol,

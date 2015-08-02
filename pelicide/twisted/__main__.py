@@ -26,7 +26,7 @@ import sys
 from twisted.internet import reactor, defer, error
 from twisted.web import server
 
-from pelicide.project import start_project, SetTokenWrapper
+from pelicide.twisted.project import start_project, SetTokenWrapper
 
 
 def parse_project(project_path):

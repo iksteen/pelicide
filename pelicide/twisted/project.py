@@ -5,15 +5,14 @@ import os
 import shutil
 import sys
 import tempfile
+
 from autobahn.twisted.resource import WebSocketResource
 from autobahn.twisted.websocket import WebSocketServerFactory
-
-
 from twisted.web import resource, static, script
 from zope.interface import implements
 
-from pelicide.runner import Runner
-from pelicide.service import PelicideService
+from pelicide.twisted.runner import Runner
+from pelicide.twisted.service import PelicideService
 
 
 class NoCacheFile(static.File):
@@ -81,7 +80,7 @@ def start_service(token, root, project):
 
 
 def start_project(token, project):
-    root = NoCacheFile(os.path.join(os.path.dirname(__file__), 'ui'))
+    root = NoCacheFile(os.path.join(os.path.dirname(__file__), '..', 'ui'))
     root.indexNames = ['index.rpy', 'index.html']
     root.processors = {'.rpy': script.ResourceScript}
     return root, start_service(token, root, project)
