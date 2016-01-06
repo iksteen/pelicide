@@ -13,7 +13,7 @@ import JSEditor from 'src/editors/javascript';
 
 export function bootstrap(demo=false) {
     /* Set up API endpoint. */
-    API.configure('ws://' + window.location.host + window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/')) + '/ws');
+    API.configure((window.location.protocol == 'https:' ? 'wss://' : 'ws://') + window.location.host + window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/')) + '/ws');
 
     Promise.all([
         API.get('SITENAME'),
