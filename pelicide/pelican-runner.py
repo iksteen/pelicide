@@ -227,7 +227,7 @@ def run(config_file, init_settings):
                         'url': url,
                         'status': getattr(content, 'status', None),
                         'meta': getattr(content, 'metadata', {}),
-                        'mimetype': mimetypes.guess_type(filename)[0],
+                        'mimetype': mimetypes.guess_type(filename)[0] or 'application/octet-stream',
                     })
                 success(cmd_id, project_contents)
             except Exception as e:

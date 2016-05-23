@@ -37,7 +37,7 @@ class API {
                     () => { resolve(ws); },
                     e => {
                         /* Refresh authentication token cookie and retry. */
-                        jQuery.get('', () => {
+                        jQuery.get('ws-cookie', () => {
                             this._realRequest(ws, 'authenticate', [Cookie.get('pelicide-token')]).then(
                                 () => { resolve(ws); },
                                 e => { reject(new Error('Authentication failed.')); }
